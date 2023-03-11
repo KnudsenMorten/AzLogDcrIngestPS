@@ -2,6 +2,64 @@
 I am realy happy to announce my Powershell module, **AzLogDcrIngestPS**
 
 ## Background for building this Powershell module
+For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
+
+I have using the API with my Powershell scripts to upload 'tons' of custom data into Azure LogAnalytics. On top, I provided 35 Azure dashboards, that gives me (and my customers) great insight to the health and security of their environment.
+
+![Flow-MMA](img/Concept-legacy-mma.png)
+
+Moving forward, Microsoft has introduced the concept of Azure Data Collection Rules (DCRs), which I have been really fan of.
+
+## Introduction of the new method using Azure Data Collection Rules (DCRs)
+
+### Data In to Data Collection Rules pipeline - or in short DCR-pipeline
+
+![Flow-DCR](img/Concept-dcr-pipeline.png)
+
+### Transformation of data using DCR pipeline
+
+|Category | Details |
+|:--------|:--------|
+| Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons.
+
+Filter sensitive information. Filter out entire rows or just particular columns that contain sensitive information.
+
+Obfuscate sensitive information. For example, you might replace digits with a common character in an IP address or telephone number.|
+|Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.
+
+Add a column with additional information. For example, you might add a column identifying whether an IP address in another column is internal or external.
+
+Add business specific information. For example, you might add a column indicating a company division based on location information in other columns.|
+|Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.
+
+Remove entire rows. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.
+
+Remove a column from each row. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.
+
+Parse important data from a column. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.   Examples of where data-transformation is useful: We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix itWe want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
+
+
+![Transformation](img/Concept-transformation-ama.png)
+
+![Transformation](img/Concept-transformation-log-ingest.png)
+
+![Transformation](img/Concept-transformation-workspace.png)
+
+Sample of Kusto query
+```
+source | where (EventID != 12345)
+```
+
+More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
+
+### Data Out of DCR pipeline
+
+The Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
+
+> Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API.
+
+> Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
+
 
 ## Introduction
 Core features of Powershell module **AzLogDcrIngestPS**:
@@ -75,7 +133,7 @@ I have spent a significant time understanding the technology and reporting my fi
 
 ## Introduction to Log Ingestion API
 
-THe Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
+The Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
 
 > Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API.
 
