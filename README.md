@@ -8,12 +8,8 @@ I have using the API with my Powershell scripts to upload 'tons' of custom data 
 
 ![Flow-MMA](img/Concept-legacy-mma.png)
 
-Moving forward, Microsoft has introduced the concept of **Azure Data Collection Rules (DCRs)**, which I have been really fan of.
+Moving forward, Microsoft has introduced the concept of **Azure Data Collection Rules (DCRs)**, which I am a big fan of.
 
-If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the next section
-
-## Introduction of the new method using Azure Data Collection Rules (DCRs)
-As mentioned
 The reasons for that are:
 * support for file based logs collection (txt, Windows Firewall)
 * advanced support for collection of performance data (fx. SQL performance performance counters)
@@ -32,8 +28,12 @@ If I should mention some disadvantages, then they are:
 
 The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - and **ensure data schema alignment to requirement**.
 
+If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the next section
 
-### Understanding DCR-pipeline - step 1: Data-in (sources)
+## Introduction of the new method using Azure Data Collection Rules (DCRs)
+
+
+### Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
 
 ![Flow-DCR](img/Concept-dcr-pipeline.png)
@@ -55,7 +55,7 @@ Microsoft supports data  from the following **sources (data-in)**:
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
 
 
-### Understanding DCR-pipeline - step 2: Data-Transformation
+### Understanding Data Collection Rules - step 2: Data-Transformation
 Currently, Microsoft supports doing transformation using 3 methods:
 
 |Collection source|Transformation (where) |How|Purpose / limitatations |
@@ -95,8 +95,8 @@ More information about the topic on my blog - [How to do data transformation wit
 
 
 
-### Transformation using DCR pipeline (destinations, data out)
-Azure Data Collection Rules (DCRs) does also support **transforming the destination of the data**.
+### Understanding Data Collection Rules - step 3 Data-Out (destinations)
+The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
 
 Currently, DCRs support the following destinations:
 
