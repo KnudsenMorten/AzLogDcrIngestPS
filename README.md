@@ -8,15 +8,42 @@ I have using the API with my Powershell scripts to upload 'tons' of custom data 
 
 ![Flow-MMA](img/Concept-legacy-mma.png)
 
-Moving forward, Microsoft has introduced the concept of Azure Data Collection Rules (DCRs), which I have been really fan of.
+Moving forward, Microsoft has introduced the concept of **Azure Data Collection Rules (DCRs)**, which I have been really fan of.
+
+If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the next section
 
 ## Introduction of the new method using Azure Data Collection Rules (DCRs)
+As mentioned
+The reasons for that are:
+* support for file based logs collection (txt, Windows Firewall)
+* advanced support for collection of performance data (fx. SQL performance performance counters)
+* support for SNMP traps logs collection
+* possibiity to remove data before being sent into LogAnalytics (remove "noice" data/cost optimization, GDPR/compliance)
+* possibility to add data before being sent into LogAnalytics (normalization)
+* possibility to merge data before being sent into LogAnalytics (normalization)
+* security is based on Azure AD RBAC
+* naming of data columns are prettier, as they contain the actual name - and not for example ComputerName_s indicating it is a string value
+* data quality is better for array data, as array data is converted into dynamic - whereas the old MMA-method would convert array data into strings
+* future: support to send to other destinations (AMA only)
 
-### Data In to Data Collection Rules pipeline - or in short DCR-pipeline
+If I should mention some disadvantages, then they are:
+* complexity is higher, because you have 1-2 more "middle-tiers" involved (DCR, DCE)
+* table/DCR/schema must be defined before sending data (this is why I build the powershell function AzLogDcrIngestPS)
 
-Currently, Microsoft supports many sources of data coming through DCR pipeline - outlined in the table below:
+The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - and **ensure data schema alignment to requirement**.
+
+
+### Understanding DCR-pipeline - step 1: Data-in (sources)
+As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
+
+![Flow-DCR](img/Concept-dcr-pipeline.png)
+
+Microsoft supports data  from the following **sources (data-in)**:
+
 |Collection source|Technologies required|Flow|
 |:----------------|:--------------------|:---|
+|(legacy)<br>Performance<br>Eventlog<br>Syslog|MMA (legacy)|1. MMA<br>2. Azure LogAnalytics|
+|(legacy)<br>API|HTTP Data Collection API (legacy)|1. REST API endpoint<br>2. Azure LogAnalytics|
 |Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
 |Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE<br>|1. AMA<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
 |SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>A<br>AMA<br>DCR (syslog stream)|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
@@ -28,9 +55,25 @@ Currently, Microsoft supports many sources of data coming through DCR pipeline -
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
 
 
-![Flow-DCR](img/Concept-dcr-pipeline.png)
+### Understanding DCR-pipeline - step 2: Data-Transformation
+Currently, Microsoft supports doing transformation using 3 methods:
 
-### Transformation using DCR pipeline (data transformation)
+|Collection source|Transformation (where) |How|Purpose / limitatations |
+|:--------|:--------|
+(legacy)<br>Performance<br>Eventlog<br>Syslog|DCR-pipeline|Workspace transformation DCR|Only one transformation per table
+All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do unions, so be aware of double data. Governance is important
+|REST API using Log ingestion API|DCR-pipeline|Log Ingestion transformation DCR|
+
+![Transformation](img/Concept-transformation-ama.png)
+
+
+![Transformation](img/Concept-transformation-log-ingest.png)
+
+
+![Transformation](img/Concept-transformation-workspace.png)
+
+
+As shown below, you can do great things with the concept of **data transformation**:
 
 |Category | Details |
 |:--------|:--------|
@@ -38,7 +81,9 @@ Currently, Microsoft supports many sources of data coming through DCR pipeline -
 |Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/><br/>**Add a column with additional information**. For example, you might add a column identifying whether an IP address in another column is internal or external.<br/><br/>**Add business specific information**. For example, you might add a column indicating a company division based on location information in other columns.|
 |Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/><br/>**Remove entire rows**. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/><br/>**Remove a column from each row**. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/><br/>**Parse important data from a column**. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.<br/><br/>Examples of where data-transformation is useful:<br/><br/>We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix it.<br/><br/>We want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
 
-Sample of Kusto query
+Examples of transformations, based on Kusto syntax
+Start by testing the query in Azure LogAnalytics. When the query is working, you will change the tablename to **source** - as shown below
+
 | Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
 |:-----------|:------|:---------------------------------------------------|
 |SecurityEvent \| where (EventID != 12345)|Remove events with EventID 12345 in SecurityEvent table|source \| where (EventID != 12345)|
@@ -46,18 +91,12 @@ Sample of Kusto query
 |Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
 |Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
 
-
-![Transformation](img/Concept-transformation-ama.png)
-
-![Transformation](img/Concept-transformation-log-ingest.png)
-
-![Transformation](img/Concept-transformation-workspace.png)
-
 More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
 
 
+
 ### Transformation using DCR pipeline (destinations, data out)
-As an alternative to doing data transformation, DCRs does also support transforming the destination of the data.
+Azure Data Collection Rules (DCRs) does also support **transforming the destination of the data**.
 
 Currently, DCRs support the following destinations:
 
@@ -73,7 +112,7 @@ Currently, DCRs support the following destinations:
 |Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|Azure LogAnalytics standard table|
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR|Azure LogAnalytics standard table|
 
-You should expect to see more 'destinations' in the future, where DCRs can send data to. I am really excited about the future :-)
+You should expect to see more 'destinations' in the future, DCRs can send data to. I am really excited about the future :-)
 
 
 ### Data Out of DCR pipeline
