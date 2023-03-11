@@ -20,23 +20,9 @@ Moving forward, Microsoft has introduced the concept of Azure Data Collection Ru
 
 |Category | Details |
 |:--------|:--------|
-| Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons.
-
-Filter sensitive information. Filter out entire rows or just particular columns that contain sensitive information.
-
-Obfuscate sensitive information. For example, you might replace digits with a common character in an IP address or telephone number.|
-|Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.
-
-Add a column with additional information. For example, you might add a column identifying whether an IP address in another column is internal or external.
-
-Add business specific information. For example, you might add a column indicating a company division based on location information in other columns.|
-|Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.
-
-Remove entire rows. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.
-
-Remove a column from each row. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.
-
-Parse important data from a column. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.   Examples of where data-transformation is useful: We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix itWe want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
+| Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons<br/> **Filter sensitive information**. Filter out entire rows or just particular columns that contain sensitive information<br/>**Obfuscate sensitive information**. For example, you might replace digits with a common character in an IP address or telephone number.|
+|Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/>**Add a column with additional information** For example, you might add a column identifying whether an IP address in another column is internal or external.<br/>**Add business specific information** For example, you might add a column indicating a company division based on location information in other columns.|
+|Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/>**Remove entire rows** For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/>**Remove a column from each row** For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/>**Parse important data from a column** You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original. Examples of where data-transformation is useful: We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix itWe want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
 
 
 ![Transformation](img/Concept-transformation-ama.png)
