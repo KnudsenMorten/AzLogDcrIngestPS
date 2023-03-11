@@ -14,15 +14,28 @@ Moving forward, Microsoft has introduced the concept of Azure Data Collection Ru
 
 ### Data In to Data Collection Rules pipeline - or in short DCR-pipeline
 
+Currently, Microsoft supports many sources of data coming through DCR pipeline - outlined in the table below:
+|Collection source|Technologies required|Flow|
+|:----------------|:--------------------|:---|
+|Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. LogAnalytics|
+
 ![Flow-DCR](img/Concept-dcr-pipeline.png)
 
-### Transformation of data using DCR pipeline
+### Transformation using DCR pipeline (data transformation)
 
 |Category | Details |
 |:--------|:--------|
 | Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons<br/><br/>**Filter sensitive information**. Filter out entire rows or just particular columns that contain sensitive information<br/><br/>**Obfuscate sensitive information**. For example, you might replace digits with a common character in an IP address or telephone number.|
 |Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/><br/>**Add a column with additional information**. For example, you might add a column identifying whether an IP address in another column is internal or external.<br/><br/>**Add business specific information**. For example, you might add a column indicating a company division based on location information in other columns.|
 |Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/><br/>**Remove entire rows**. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/><br/>**Remove a column from each row**. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/><br/>**Parse important data from a column**. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.<br/><br/>Examples of where data-transformation is useful:<br/><br/>We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix it.<br/><br/>We want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
+
+Sample of Kusto query
+| Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
+|:-----------|:------|:---------------------------------------------------|
+|SecurityEvent \| where (EventID != 12345)|Remove events with EventID 12345 in SecurityEvent table|source \| where (EventID != 12345)|
+|SecurityEvent \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|Remove events with EventId 4662,5058,8002 in SecurityEvent table|source \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|
+|Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
+|Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
 
 
 ![Transformation](img/Concept-transformation-ama.png)
@@ -31,13 +44,16 @@ Moving forward, Microsoft has introduced the concept of Azure Data Collection Ru
 
 ![Transformation](img/Concept-transformation-workspace.png)
 
-Sample of Kusto query
-| Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
-|:-----------|:------|:---------------------------------------------------|
-|source \| where (EventID != 12345)|ddd|ddd|
-
-
 More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
+
+
+### Transformation using DCR pipeline (destinations, data out)
+As an alternative to doing data transformation, DCRs does also support transforming the destination of the data.
+
+Currently, DCRs support the following destinations:
+
+You should expect to see more 'destinations' in the future, where DCRs can send data to. I am really excited about the future :-)
+
 
 ### Data Out of DCR pipeline
 
