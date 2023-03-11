@@ -17,7 +17,14 @@ Moving forward, Microsoft has introduced the concept of Azure Data Collection Ru
 Currently, Microsoft supports many sources of data coming through DCR pipeline - outlined in the table below:
 |Collection source|Technologies required|Flow|
 |:----------------|:--------------------|:---|
-|Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. LogAnalytics|
+|Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE<br>|1. AMA<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
+|SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>AMA<br>DCR (syslog stream)|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Change Tracking (legacy)|Change Tracking Extension (FIM)<br>DCR<br>|1. FIM<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Custom logs (log Ingestion API)|DCR<br>DCE<br>|1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
+|Platform Metrics/Telemetry (standard) Azure PaaS|DCR (build-in, non-manageable)<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure Monitor Metrics|
+|Custom Metrics/Telemetry (custom app)|Windows (1)<br>AMA<br>DCR<br>-or-<br>Windows (2)<br>Azure Diagnostics extension<br>-or-<br>API<br>Azure Monitor REST API<br>-or-<br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Windows (1)<br>1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics<br>Windows (2)<br>1. Azure Diagnostics<br>2. Azure LogAnalytics<br>API:<br>1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics<br>Linux<br>1. Linux InfluxData<br>2. Azure Monitor output plugin<br>3. Azure LogAnalytics|
+
 
 ![Flow-DCR](img/Concept-dcr-pipeline.png)
 
