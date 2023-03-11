@@ -25,7 +25,7 @@ You can download latest version here:
 
 THe Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
 
-> Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up sayng it is in **public preview**. This is still the legacy API which will be replaced by Log Ingestion API.
+> Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up sayng it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API.
 
 > Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
 
