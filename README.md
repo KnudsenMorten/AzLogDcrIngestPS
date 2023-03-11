@@ -34,7 +34,7 @@ Moving forward, Microsoft has introduced the concept of Azure Data Collection Ru
 Sample of Kusto query
 | Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
 |:-----------|:------|:---------------------------------------------------|
-|source ``| where (EventID != 12345)|ddd|ddd|
+|source \| where (EventID != 12345)|ddd|ddd|
 
 
 More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
