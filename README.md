@@ -82,14 +82,13 @@ Currently, Microsoft supports doing transformation using 3 methods:
 (legacy)<br>Performance<br>Eventlog<br>Syslog|DCR-pipeline|Workspace transformation DCR|Only one transformation per table
 All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do unions, so be aware of double data. Governance is important
 |REST API using Log ingestion API|DCR-pipeline|Log Ingestion transformation DCR|
-<br>
-<br>
+    
 **Transformation with Azure Monitor Agent (AMA) & Azure Data Collection Rules (DCR)**
 ![Transformation](img/Concept-transformation-ama.png)
-<br>
+    
 **Transformation with Azure DCR-pipeline (Log Ingestion API) & Azure Data Collection Rule (DCR)**
 ![Transformation](img/Concept-transformation-log-ingest.png)
-<br>
+    
 **Transformation with Azure LogAnalytics Workspace Data Collection Rule (DCR)**
 ![Transformation](img/Concept-transformation-workspace.png)
 
