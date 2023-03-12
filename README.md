@@ -18,6 +18,9 @@ You can download latest version here or Powershell Gallery:
 
 [AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
+[Thank You to the great people in Microsoft product teams - you are rock stars :smile:](#thank-you-to-the-great-people-in-microsoft-product-teams---you-are-rock-stars-smile)
+
+
 <details>
   <summary><h2>Background for building this Powershell module</h2></summary>
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
@@ -805,8 +808,8 @@ PS> Build-DataArrayToAlignWithSchema
  CheckCreateUpdate-TableDcr-Structure
 
 
-## Thank You to the great people in Microsoft product teams
-I would like to give **big credits** to a few people, who I have worked together with on this:
+## Thank You to the great people in Microsoft product teams - you are rock stars :smile:
+I would like to give **big credits** to a few people, who I have worked together with on building **AzLogDcrIngestPS Powershell module** and **my daily work with the Azure log & viewing capabilities**:
 
 |Name|Role|
 |:---|:---|
