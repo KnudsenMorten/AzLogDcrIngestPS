@@ -1,4 +1,4 @@
-## Introduction
+# Introduction
 I am realy happy to announce my Powershell module, **AzLogDcrIngestPS**
 
 This module can ease if you want to send any data to Azure LogAnalytics custom logs - using the cool features of Azure Data Colection Rules & Log Ingestion API. It supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes, includes lots of great data filtering capabilities.
@@ -22,8 +22,12 @@ You can download latest version here or Powershell Gallery:
 
 
 <details>
-  <summary><h2>Background for building this Powershell module</h2></summary>
+  <summary><h1>Background for building this Powershell module</h1></summary>
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
+
+> Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API and DCRs.
+
+> Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
 
 I have using the API with my Powershell scripts to upload 'tons' of custom data into Azure LogAnalytics. On top, I provided 35 Azure dashboards, that gives me (and my customers) great insight to the health and security of their environment.
 
@@ -49,14 +53,18 @@ If I should mention some disadvantages, then they are:
 
 The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - and **ensure data schema alignment to requirement**.
 
+I have built a showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), where you can see how you can use the Powershell module, **AzLogDcrIngestPS**. 
+
+ClientInspector is free to the community - built to be a cool showcase of how you can bring back data from your clients using Azure Log Ingestion Pipeline, Azure Data Collection Rules, Azure LogAnalytics; view them with Azure Monitor & Azure Dashboards - and get "drift-alerts" using Microsoft Sentinel.
+
 If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the next section
 
 </details>
 
 <details>
-  <summary><h2>Introduction of the new method using Azure Data Collection Rules (DCRs)</h2></summary>
+  <summary><h1>Introduction of the new method using Azure Data Collection Rules (DCRs)</h1></summary>
 
-### Understanding Data Collection Rules - step 1: Data-In (source data)
+## Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
 
 <br>
@@ -132,7 +140,7 @@ Start by testing the query in Azure LogAnalytics. When the query is working, you
 
 Intersted in learning more - check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
 
-###Understanding Data Collection Rules - step 3 Data-Out (destinations)
+## Understanding Data Collection Rules - step 3 Data-Out (destinations)
 The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
 
 Currently, DCRs support the following destinations:
@@ -158,9 +166,6 @@ You should expect to see more 'destinations' in the future, DCRs can send data t
 
 The Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
 
-> Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API.
-
-> Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
 
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
@@ -807,9 +812,10 @@ PS> Build-DataArrayToAlignWithSchema
  
  CheckCreateUpdate-TableDcr-Structure
 
+<br>
 
-## Thank You to the great people in Microsoft product teams - you are rock stars :smile:
-I would like to give **big credits** to a few people, who I have worked together with on building **AzLogDcrIngestPS Powershell module** and **my daily work with the Azure log & viewing capabilities**:
+# Big Thanks to the great people in Microsoft product teams - you are rock stars :smile:
+Lastly, I would like to give **big credits** to a few people, who I have worked together with on building **AzLogDcrIngestPS Powershell module** and **my daily work with the Azure log & viewing capabilities**:
 
 |Name|Role|
 |:---|:---|
@@ -839,3 +845,22 @@ I would like to give **big credits** to a few people, who I have worked together
 
 **John & Shikha from Azure Workbooks**
 ![AzurePipeline](img/AzureWorkbooks.jpg)
+
+
+# Contact
+If you have comments to the solution - or just want to connect with me, here are my details - would love to connect:
+
+[Github](https://github.com/KnudsenMorten)
+
+[Twitter](https://twitter.com/knudsenmortendk)
+
+[Blog](https://mortenknudsen.net/)
+
+[LinkedIn](https://www.linkedin.com/in/mortenwaltorpknudsen/)
+
+[Microsoft MVP profile](https://mvp.microsoft.com/en-us/PublicProfile/5005156?fullName=Morten%20Knudsen)
+
+[Sessionize](https://sessionize.com/mortenknudsen/)
+
+[Mail](mailto:mok@mortenknudsen.net)
+
