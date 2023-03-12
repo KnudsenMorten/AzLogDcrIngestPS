@@ -1,7 +1,7 @@
 # Introduction
 I am realy happy to announce my Powershell module, **AzLogDcrIngestPS**
 
-This module can ease if you want to send any data to Azure LogAnalytics custom logs - using the cool features of Azure Data Colection Rules & Log Ingestion API. It supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes, includes lots of great data filtering capabilities.
+This module can ease if you want to send any data to **Azure LogAnalytics custom logs** - using the cool features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. It supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes, includes lots of great data filtering capabilities.
 
 Core features of Powershell module **AzLogDcrIngestPS**:
 * create/update the DCRs and tables automatically - based on the source object schema
@@ -29,7 +29,10 @@ You can download latest version here or Powershell Gallery:
 
 <details>
   <summary><h1>Background for building this Powershell module</h1></summary>
+  
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
+
+
 
 > Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API and DCRs.
 
@@ -64,7 +67,7 @@ If you are interested in learning more about Azure Data Collection Rules and the
 </details>
 
 <details>
-  <summary><h1>Introduction of the new method using Azure Data Collection Rules (DCRs)</h1></summary>
+  <summary><h1>Deep-dive about Azure Data Collection Rules (DCRs)</h1></summary>
 
 ## Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
