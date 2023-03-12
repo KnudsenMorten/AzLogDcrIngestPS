@@ -14,7 +14,7 @@ Core features of Powershell module **AzLogDcrIngestPS**:
 
 I have built a showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), where you can see how you can use the Powershell module, **AzLogDcrIngestPS**. 
 
-ClientInspector is free to the community - built to be a cool showcase of how you can bring back data from your clients using Azure Log Ingestion Pipeline, Azure Data Collection Rules, Azure LogAnalytics; view them with Azure Monitor & Azure Dashboards - and get "drift-alerts" using Microsoft Sentinel.
+[ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) is free to the community - built to be a cool showcase of how you can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**.
 
 You can download latest version here or Powershell Gallery:
 
@@ -23,10 +23,6 @@ You can download latest version here or Powershell Gallery:
 [AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 [Big Thanks to the great people in Microsoft product teams - you are rock stars :smile:](#thank-you-to-the-great-people-in-microsoft-product-teams---you-are-rock-stars-smile)
-
-Happy hunting :smile:
-
-![ClientInspector](img/ClientInspector_300.jpg)
 
 
 <details>
