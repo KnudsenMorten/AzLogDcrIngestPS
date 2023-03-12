@@ -884,6 +884,8 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     WorkingSet64               int     
     WS                         int </details>
 	```
+</details>
+	
 <details>
   <summary><h3>ValidateFix-AzLogAnalyticsTableSchemaColumnNames</h3></summary>
     .SYNOPSIS
