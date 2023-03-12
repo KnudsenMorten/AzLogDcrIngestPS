@@ -81,6 +81,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Add-CollectionTimeToAllEntriesInArray</h3></summary>
+
     .SYNOPSIS
     Add property CollectionTime (based on current time) to all entries on the object
 
@@ -197,6 +198,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Add-ColumnDataToAllEntriesInArray</h3></summary>
+
     .SYNOPSIS
     Adds up to 3 extra columns and data to the object
 
@@ -617,6 +619,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Convert-PSArrayToObjectFixStructure</h3></summary>
+
     .SYNOPSIS
     Converts PS array and remove PS class information
 
@@ -750,6 +753,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Filter-ObjectExcludeProperty</h3></summary>
+
     .SYNOPSIS
     Removes columns from the object which is considered "noice" and shouldn't be send to logs
 
@@ -891,6 +895,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 	
 <details>
   <summary><h3>ValidateFix-AzLogAnalyticsTableSchemaColumnNames</h3></summary>
+
     .SYNOPSIS
     Validates the column names in the schema are valid according the requirement for LogAnalytics tables
     Fixes any issues by rebuild the source object
@@ -1163,6 +1168,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Get-AzLogAnalyticsTableAzDataCollectionRuleStatus</h3></summary>
+
     .SYNOPSIS
     Get status about Azure Loganalytics tables and Data Collection Rule.
 
@@ -1273,6 +1279,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Get-AzDcrDceDetails</h3></summary>
+
     .SYNOPSIS
     Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph
 
@@ -1389,6 +1396,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>CheckCreateUpdate-TableDcr-Structure</h3></summary>
+
     .SYNOPSIS
     Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API (combined)
 
@@ -1649,6 +1657,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>CreateUpdate-AzDataCollectionRuleLogIngestCustomLog</h3></summary>
+
     .SYNOPSIS
     Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API
 
@@ -1863,6 +1872,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h3></summary>
+
     .SYNOPSIS
     Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR)
     for Log Ingestion API upload to LogAnalytics
@@ -2006,6 +2016,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Get-ObjectSchemaAsArray</h3></summary>
+
     .SYNOPSIS
     Gets the schema of the object as array with column-names and their type (strin, boolean, dynamic, etc.)
 
@@ -2148,6 +2159,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Get-ObjectSchemaAsHash</h3></summary>
+
     .SYNOPSIS
     Gets the schema of the object as hash table with column-names and their type (strin, boolean, dynamic, etc.)
 
@@ -2586,6 +2598,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Delete-AzDataCollectionRules</h3></summary>
+
     .SYNOPSIS
     Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing
 
@@ -2669,6 +2682,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
  
 <details>
   <summary><h3>Delete-AzLogAnalyticsCustomLogTables</h3></summary>
+
     .SYNOPSIS
     Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing
 
@@ -2744,6 +2758,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
  
 <details>
   <summary><h3>Update-AzDataCollectionRuleDceEndpoint</h3></summary>
+
     .SYNOPSIS
     Updates the DceEndpointUri of the Data Collection Rule
 
@@ -2832,6 +2847,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
  
 <details>
   <summary><h3>Update-AzDataCollectionRuleResetTransformKqlDefault</h3></summary>
+
     .SYNOPSIS
     Updates the tranformKql parameter on an existing DCR - and resets it back to default
 
@@ -2968,6 +2984,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
  
 <details>
   <summary><h3>Update-AzDataCollectionRuleTransformKql</h3></summary>
+
     .SYNOPSIS
     Updates the tranformKql parameter on an existing DCR with the provided parameter
 
@@ -3038,6 +3055,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 <details>
   <summary><h3>Post-AzLogAnalyticsLogIngestCustomLogDcrDce</h3></summary>
+
     .SYNOPSIS
     Send data to LogAnalytics using Log Ingestion API and Data Collection Rule
 
@@ -3174,6 +3192,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
  
 <details>
   <summary><h3>Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output</h3></summary>
+
     .SYNOPSIS
     Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)
 
@@ -3550,6 +3569,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
  
 <details>
   <summary><h3>Get-AzAccessTokenManagement</h3></summary>
+  
     .SYNOPSIS
     Get access token for connecting management.azure.com - used for REST API connectivity
 
@@ -3608,7 +3628,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 <br>
 
 <details>
-  <summary><h1>Deep-dive about Azure Data Collection Rules (DCRs)</h1></summary>
+  <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
 
 ## Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
@@ -3708,7 +3728,7 @@ I am really excited about the future :smile:
 </details>
 
 <details>
-  <summary><h1>Azure Log Ingestion Pipeline & Log Ingestion API</h1></summary>
+  <summary><h2>Deep-dive about Log Ingestion API</h2></summary>
 
 The following section of information comes from [Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)
 
