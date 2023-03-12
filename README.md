@@ -3,7 +3,7 @@ I am realy happy to announce my Powershell module, **AzLogDcrIngestPS**
 
 This module can ease if you want to send any data to **Azure LogAnalytics custom logs** - using the cool features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. It supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes, includes lots of great data filtering capabilities.
 
-Core features of Powershell module **AzLogDcrIngestPS**:
+Core features of **AzLogDcrIngestPS** Powershell module are:
 * create/update the DCRs and tables automatically - based on the source object schema
 * validate the schema for naming convention issues. If exist found, it will mitigate the issues
 * update schema of DCRs and tables, if the structure of the source object changes
@@ -70,6 +70,394 @@ If you are interested in learning more about Azure Data Collection Rules and the
 You can use **any source data** which can be retrieved by Powershell into an object (wmi, cim, external data, rest api, xml-format, json-format, csv-format, etc.)
 
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
+
+# How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
+
+<details>
+  <summary><h3>Example of changing schema when source object changes</h3></summary>
+
+```
+#-------------------------------------------------------------------------------------------
+# Variables
+#-------------------------------------------------------------------------------------------
+            
+$TableName                                       = 'InvClientComputerOSInfoTest5V2'   # must not contain _CL
+$DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
+
+$TenantId                                        = "xxxxx" 
+$LogIngestAppId                                  = "xxxxx" 
+$LogIngestAppSecret                              = "xxxxx" 
+
+$DceName                                         = "dce-log-platform-management-client-demo1-p" 
+$LogAnalyticsWorkspaceResourceId                 = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log-platform-management-client-demo1-p" 
+
+$AzDcrPrefixClient                               = "clt1" 
+$AzDcrSetLogIngestApiAppPermissionsDcrLevel      = $false
+$AzDcrLogIngestServicePrincipalObjectId          = "xxxxxx" 
+
+$AzLogDcrTableCreateFromReferenceMachine         = @()
+$AzLogDcrTableCreateFromAnyMachine               = $true
+
+# building global variable with all DCEs, which can be viewed by Log Ingestion app
+$global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+    
+# building global variable with all DCRs, which can be viewed by Log Ingestion app
+$global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+
+#-------------------------------------------------------------------------------------------
+# Collecting data (in)
+#-------------------------------------------------------------------------------------------
+            
+Write-Output ""
+Write-Output "Collecting Defender demo data"
+
+$DataVariable = Get-MpComputerStatus
+
+#-------------------------------------------------------------------------------------------
+# Preparing data structure
+#-------------------------------------------------------------------------------------------
+
+# convert CIM array to PSCustomObject and remove CIM class information
+$DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$verbose
+    
+# add CollectionTime to existing array
+$DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$verbose
+
+# add Computer & UserLoggedOn info to existing array
+$DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$verbose
+$DataVariable
+
+# Get insight about the schema structure (Before)
+$SchemaBefore = Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$verbose
+$SchemaBefore
+        
+# we see, that we have 65 columns
+($SchemaBefore | Measure-Object).count
+
+<#
+name                             type    
+----                             ----    
+AMEngineVersion                  string  
+AMProductVersion                 string  
+AMRunningMode                    string  
+AMServiceEnabled                 boolean 
+AMServiceVersion                 string  
+AntispywareEnabled               boolean 
+AntispywareSignatureAge          int     
+AntispywareSignatureLastUpdated  datetime
+AntispywareSignatureVersion      string  
+AntivirusEnabled                 boolean 
+AntivirusSignatureAge            int     
+AntivirusSignatureLastUpdated    datetime
+AntivirusSignatureVersion        string  
+BehaviorMonitorEnabled           boolean 
+CollectionTime                   datetime
+Computer                         string  
+ComputerID                       string  
+ComputerState                    int     
+DefenderSignaturesOutOfDate      boolean 
+DeviceControlDefaultEnforcement  string  
+DeviceControlPoliciesLastUpdated datetime
+DeviceControlState               string  
+FullScanAge                      long    
+FullScanEndTime                  dynamic 
+FullScanOverdue                  boolean 
+FullScanRequired                 boolean 
+FullScanSignatureVersion         string  
+FullScanStartTime                dynamic 
+IoavProtectionEnabled            boolean 
+IsTamperProtected                boolean 
+IsVirtualMachine                 boolean 
+LastFullScanSource               int     
+LastQuickScanSource              int     
+NISEnabled                       boolean 
+NISEngineVersion                 string  
+NISSignatureAge                  int     
+NISSignatureLastUpdated          datetime
+NISSignatureVersion              string  
+OnAccessProtectionEnabled        boolean 
+ProductStatus                    int     
+PSComputerName                   dynamic 
+QuickScanAge                     int     
+QuickScanEndTime                 datetime
+QuickScanOverdue                 boolean 
+QuickScanSignatureVersion        string  
+QuickScanStartTime               datetime
+RealTimeProtectionEnabled        boolean 
+RealTimeScanDirection            int     
+RebootRequired                   boolean 
+SmartAppControlExpiration        dynamic 
+SmartAppControlState             string  
+TamperProtectionSource           string  
+TDTMode                          string  
+TDTSiloType                      string  
+TDTStatus                        string  
+TDTTelemetry                     string  
+TestColumn1                      string  
+TestColumn2                      string  
+TroubleShootingDailyMaxQuota     string  
+TroubleShootingDailyQuotaLeft    string  
+TroubleShootingEndTime           string  
+TroubleShootingExpirationLeft    string  
+TroubleShootingMode              string  
+TroubleShootingModeSource        string  
+TroubleShootingQuotaResetTime    string  
+TroubleShootingStartTime         string  
+UserLoggedOn                     string  
+65
+#>
+
+# Validating/fixing schema data structure of source data
+$DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$verbose
+
+# Aligning data structure with schema (requirement for DCR)
+$DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$verbose
+
+#-------------------------------------------------------------------------------------------
+# Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
+#-------------------------------------------------------------------------------------------
+
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
+                                    -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
+                                    -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
+                                    -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                    -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                    -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                    -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
+
+
+########### Simulation
+
+# now we simulate to add 2 more columns
+$TestColumn1Data = $Env:ComputerName
+$TestColumn2Data = "COMPANYNAME"
+
+$DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name TestColumn1 -Column1Data $TestColumn1Data -Verbose:$verbose
+$DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name TestColumn2 -Column1Data $TestColumn2Data -Verbose:$verbose
+
+# Get insight about the schema structure (After)
+$SchemaAfter = Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$verbose
+        
+# we now see 2 new columns 'TestColum1' + 'TestColumn2' - and we have 67 columns
+$SchemaAfter
+($SchemaAfter | Measure-Object).count
+
+<#
+name                             type    
+----                             ----    
+AMEngineVersion                  string  
+AMProductVersion                 string  
+AMRunningMode                    string  
+AMServiceEnabled                 boolean 
+AMServiceVersion                 string  
+AntispywareEnabled               boolean 
+AntispywareSignatureAge          int     
+AntispywareSignatureLastUpdated  datetime
+AntispywareSignatureVersion      string  
+AntivirusEnabled                 boolean 
+AntivirusSignatureAge            int     
+AntivirusSignatureLastUpdated    datetime
+AntivirusSignatureVersion        string  
+BehaviorMonitorEnabled           boolean 
+CollectionTime                   datetime
+Computer                         string  
+ComputerID                       string  
+ComputerState                    int     
+DefenderSignaturesOutOfDate      boolean 
+DeviceControlDefaultEnforcement  string  
+DeviceControlPoliciesLastUpdated datetime
+DeviceControlState               string  
+FullScanAge                      long    
+FullScanEndTime                  dynamic 
+FullScanOverdue                  boolean 
+FullScanRequired                 boolean 
+FullScanSignatureVersion         string  
+FullScanStartTime                dynamic 
+IoavProtectionEnabled            boolean 
+IsTamperProtected                boolean 
+IsVirtualMachine                 boolean 
+LastFullScanSource               int     
+LastQuickScanSource              int     
+NISEnabled                       boolean 
+NISEngineVersion                 string  
+NISSignatureAge                  int     
+NISSignatureLastUpdated          datetime
+NISSignatureVersion              string  
+OnAccessProtectionEnabled        boolean 
+ProductStatus                    int     
+PSComputerName                   dynamic 
+QuickScanAge                     int     
+QuickScanEndTime                 datetime
+QuickScanOverdue                 boolean 
+QuickScanSignatureVersion        string  
+QuickScanStartTime               datetime
+RealTimeProtectionEnabled        boolean 
+RealTimeScanDirection            int     
+RebootRequired                   boolean 
+SmartAppControlExpiration        dynamic 
+SmartAppControlState             string  
+TamperProtectionSource           string  
+TDTMode                          string  
+TDTSiloType                      string  
+TDTStatus                        string  
+TDTTelemetry                     string  
+TestColumn1                      string  
+TestColumn2                      string  
+TroubleShootingDailyMaxQuota     string  
+TroubleShootingDailyQuotaLeft    string  
+TroubleShootingEndTime           string  
+TroubleShootingExpirationLeft    string  
+TroubleShootingMode              string  
+TroubleShootingModeSource        string  
+TroubleShootingQuotaResetTime    string  
+TroubleShootingStartTime         string  
+UserLoggedOn                     string  
+67
+#>
+
+# Validating/fixing schema data structure of source data
+$DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$verbose
+
+# Aligning data structure with schema (requirement for DCR)
+$DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$verbose
+
+#-------------------------------------------------------------------------------------------
+# Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
+#-------------------------------------------------------------------------------------------
+
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
+                                    -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
+                                    -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
+                                    -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                    -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                    -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                    -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
+        
+
+
+<#
+# We see - Schema mismatch - Schema source object contains more properties than defined in current schema
+# when checking the DCR we now have 67 schema objects - and LA table has 68 schema objects (due to extra TimeGenerated column)
+
+VERBOSE:   Validating schema structure of source data ... Please Wait !
+VERBOSE:   SUCCESS - No issues found in schema structure
+VERBOSE:   Aligning source object structure with schema ... Please Wait !
+VERBOSE:   Checking LogAnalytics table and Data Collection Rule configuration .... Please Wait !
+VERBOSE: POST with -1-byte payload
+VERBOSE: received 1468-byte response of content type application/json; charset=utf-8
+VERBOSE: GET with 0-byte payload
+VERBOSE: received 7760-byte response of content type application/json; charset=utf-8
+VERBOSE:   Schema mismatch - Schema source object contains more properties than defined in current schema
+VERBOSE:   DCR was not found [ dcr-clt1-InvClientComputerOSInfoTest5V2_CL ]
+VERBOSE: POST with -1-byte payload
+VERBOSE: received 1468-byte response of content type application/json; charset=utf-8
+VERBOSE: 
+VERBOSE: Trying to update existing LogAnalytics table schema for table [ InvClientComputerOSInfoTest5V2_CL ] in 
+VERBOSE: /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/works
+paces/log-platform-management-client-demo1-p
+VERBOSE: PATCH with -1-byte payload
+VERBOSE: PUT with -1-byte payload
+VERBOSE: received 7956-byte response of content type application/json; charset=utf-8
+VERBOSE: 
+VERBOSE: LogAnalytics Table doesn't exist or problems detected .... creating table [ InvClientComputerOSInfoTest5V2_CL ] in
+VERBOSE: /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/works
+paces/log-platform-management-client-demo1-p
+VERBOSE: PUT with -1-byte payload
+VERBOSE: received 7956-byte response of content type application/json; charset=utf-8
+
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"properties":{"totalRetentionInDays":30,"archiveRetentionInDays":0,"plan":"Analytics","retentionInDaysAsDefault":tru
+                e,"totalRetentionInDaysAsDefault":true,"schema":{"tableSubType":"DataCollectionRule...
+RawContent        : HTTP/1.1 200 OK
+                Pragma: no-cache
+                Request-Context: appId=cid-v1:c7ec48f5-2684-46e8-accb-45e7dbec242b
+                X-Content-Type-Options: nosniff
+                api-supported-versions: 2015-03-20, 2015-11-01-preview, 2017-01-...
+Forms             : {}
+Headers           : {[Pragma, no-cache], [Request-Context, appId=cid-v1:c7ec48f5-2684-46e8-accb-45e7dbec242b], [X-Content-Type-Options, n
+                osniff], [api-supported-versions, 2015-03-20, 2015-11-01-preview, 2017-01-01-preview, 2017-03-03-preview, 2017-03-15-
+                preview, 2017-04-26-preview, 2020-03-01-preview, 2020-08-01, 2020-10-01, 2021-03-01-privatepreview, 2021-07-01-privat
+                epreview, 2021-12-01-preview, 2022-09-01-privatepreview, 2022-10-01]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 7956
+
+VERBOSE: POST with -1-byte payload
+VERBOSE: received 1468-byte response of content type application/json; charset=utf-8
+VERBOSE: POST with -1-byte payload
+VERBOSE: received 1342-byte response of content type application/json; charset=utf-8
+VERBOSE: Found required DCE info using Azure Resource Graph
+VERBOSE: 
+VERBOSE: GET with 0-byte payload
+VERBOSE: received 898-byte response of content type application/json; charset=utf-8
+VERBOSE: Found required LogAnalytics info
+VERBOSE: 
+VERBOSE: GET with 0-byte payload
+VERBOSE: received 291-byte response of content type application/json; charset=utf-8
+VERBOSE: 
+VERBOSE: Creating/updating DCR [ dcr-clt1-InvClientComputerOSInfoTest5V2_CL ] with limited payload
+VERBOSE: /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dcr-log-platform-management-client-demo1-p/providers/micros
+oft.insights/dataCollectionRules/dcr-clt1-InvClientComputerOSInfoTest5V2_CL
+VERBOSE: PUT with -1-byte payload
+VERBOSE: received 2178-byte response of content type application/json; charset=utf-8
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"properties":{"immutableId":"dcr-a06b8dae490548c28973b0a1fc2a9091","dataCollectionEndpointId":"/subscriptions/fce4f2
+                82-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dce-log-platform-management-client...
+RawContent        : HTTP/1.1 200 OK
+                Pragma: no-cache
+                Vary: Accept-Encoding
+                x-ms-ratelimit-remaining-subscription-resource-requests: 147
+                Request-Context: appId=cid-v1:2bbfbac8-e1b0-44af-b9c6-3a40669d37e3
+                x-ms-correla...
+Forms             : {}
+Headers           : {[Pragma, no-cache], [Vary, Accept-Encoding], [x-ms-ratelimit-remaining-subscription-resource-requests, 147], [Reques
+                t-Context, appId=cid-v1:2bbfbac8-e1b0-44af-b9c6-3a40669d37e3]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 2178
+
+VERBOSE: 
+VERBOSE: Updating DCR [ dcr-clt1-InvClientComputerOSInfoTest5V2_CL ] with full schema
+VERBOSE: /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dcr-log-platform-management-client-demo1-p/providers/micros
+oft.insights/dataCollectionRules/dcr-clt1-InvClientComputerOSInfoTest5V2_CL
+VERBOSE: PUT with -1-byte payload
+VERBOSE: received 4797-byte response of content type application/json; charset=utf-8
+StatusCode        : 200
+StatusDescription : OK
+Content           : {"properties":{"immutableId":"dcr-a06b8dae490548c28973b0a1fc2a9091","dataCollectionEndpointId":"/subscriptions/fce4f2
+                82-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-dce-log-platform-management-client...
+RawContent        : HTTP/1.1 200 OK
+                Pragma: no-cache
+                Vary: Accept-Encoding
+                x-ms-ratelimit-remaining-subscription-resource-requests: 146
+                Request-Context: appId=cid-v1:2bbfbac8-e1b0-44af-b9c6-3a40669d37e3
+                x-ms-correla...
+Forms             : {}
+Headers           : {[Pragma, no-cache], [Vary, Accept-Encoding], [x-ms-ratelimit-remaining-subscription-resource-requests, 146], [Reques
+                t-Context, appId=cid-v1:2bbfbac8-e1b0-44af-b9c6-3a40669d37e3]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 4797
+
+VERBOSE: 
+VERBOSE: Waiting 10 sec to let Azure sync up so DCR rule can be retrieved from Azure Resource Graph
+VERBOSE: 
+VERBOSE: Getting Data Collection Rules from Azure Resource Graph .... Please Wait !
+VERBOSE: POST with -1-byte payload
+VERBOSE: received 1468-byte response of content type application/json; charset=utf-8
+VERBOSE: POST with -1-byte payload
+VERBOSE: received 110861-byte response of content type application/json; charset=utf-8
+
+```
 
 <br>
 
