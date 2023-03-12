@@ -150,7 +150,7 @@ JSON-header to use in invoke-webrequest / invoke-restmethod commands
 PS> $Headers = Get-AzAccessTokenManagement -AzAppId <id> -AzAppSecret <secret> -TenantId <id>
 
 <details>
-  <summary><h3>### Sample Usage & Output</h3></summary>
+  <summary><h4>### Sample Usage & Output</h4></summary>
 fsdfdsfd
   </details>
 </details>
