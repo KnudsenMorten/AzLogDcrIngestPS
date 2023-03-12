@@ -787,3 +787,34 @@ PS> Build-DataArrayToAlignWithSchema
  Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
  
  CheckCreateUpdate-TableDcr-Structure
+
+
+## Thank You
+I would like to give **big credits** to a few people, who I have worked together with on this:
+|Name|Role|
+|:---|:---|
+|Ivan Varnitski|Program Manager<br>Azure Pipeline|
+|Evgeny Ternovsky|Program Manager<br>Azure Pipeline|
+|Nick Kiest|Program Manager<br>Azure Data Collection Rules|
+|Oren Salzberg|Program Manager<br>Azure LogAnalytics|
+|Guy Wild|Technical Writer<<br>Azure LogAnalytics|
+|John Gardner|Program Manager<<br>Azure Workbooks|
+|Shikha Jain|Program Manager<<br>Azure Workbooks|
+|Shayoni Seth|Program Manager<<br>Azure Monitor Agent|
+|Jeff Wolford|Program Manager<<br>Azure Monitor Agent|
+|Xema Pathak|Program Manager<<br>Azure VMInsight (integration to Azure Monitor Agent)|
+
+Ivan & Evgeny from Azure Pipeline
+![AzurePipeline](img/AzurePipeline.jpg)
+
+Program Managers from Azure LogAnalytics
+![AzurePipeline](img/LogAnalytics.jpg)
+
+Nick, Shayoni & Xema from Azure Data Collection Rules, Azure Monitor Agent and Azure VMInsight
+![AzurePipeline](img/AzureDCR_AMA.jpg)
+
+John & Shikha from Azure Workbooks
+![AzurePipeline](img/AzureWorkbooks.jpg)
+
+
+
