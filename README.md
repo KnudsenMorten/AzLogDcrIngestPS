@@ -72,9 +72,7 @@ You can use **any source data** which can be retrieved by Powershell into an obj
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
 
-## Detailed information about AzLogDcrIngestPS functions
-
-### Data Manipulation
+## Data Manipulation
 
 <details>
   <summary><h3>Add-CollectionTimeToAllEntriesInArray</h3></summary>
