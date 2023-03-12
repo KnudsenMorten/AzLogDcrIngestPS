@@ -51,11 +51,9 @@ If you are interested in learning more about Azure Data Collection Rules and the
 </details>
 
 <details>
-  <summary><h2>Introduction of the new method using Azure Data Collection Rules (DCRs)</h2></summary><blockquote>
+  <summary><h2>Introduction of the new method using Azure Data Collection Rules (DCRs)</h2></summary>
 
-<div id="data-step1">
-  <h2>Understanding Data Collection Rules - step 1: Data-In (source data)</h2>
-  <p>
+### Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
 
 ![Flow-DCR](img/Concept-dcr-pipeline.png)
@@ -76,10 +74,7 @@ Microsoft supports data from the following **sources (data-in)**:
 |Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
   
-  </p>
-  <div id="data-step2">
-    <h2>Understanding Data Collection Rules - step 2: Data-Transformation</h2>
-    <p>
+### Understanding Data Collection Rules - step 2: Data-Transformation
 Currently, Microsoft supports doing transformation using 3 methods:
 
 |Collection source|Transformation (where) |How|Purpose / limitatations |
@@ -116,20 +111,8 @@ Start by testing the query in Azure LogAnalytics. When the query is working, you
 |Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
 
 More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
-	</p>
-  </div>
-    <div id="section1-2">
-    <h2>Section1-2</h2>
-    <p>section 1-2 content</p>
-  </div>
-</div>
 
-
-
-			</blockquote></details>
-			<details>
-			  <summary><h3>Understanding Data Collection Rules - step 3 Data-Out (destinations)</h3></summary><blockquote>
-
+###Understanding Data Collection Rules - step 3 Data-Out (destinations)
 The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
 
 Currently, DCRs support the following destinations:
@@ -158,9 +141,6 @@ The Log Ingestion API replaces the legacy method called Log Analytics Data Colle
 > Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API.
 
 > Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
-
-
-
 
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
