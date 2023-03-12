@@ -73,8 +73,10 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 # How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
 
+It is supported .....
+
 <details>
-  <summary><h3>Example of changing schema when source object changes</h3></summary>
+  <summary><h2>Example of changing schema when source object changes</h2></summary>
 
 ```
 #-------------------------------------------------------------------------------------------
@@ -456,16 +458,17 @@ VERBOSE: POST with -1-byte payload
 VERBOSE: received 1468-byte response of content type application/json; charset=utf-8
 VERBOSE: POST with -1-byte payload
 VERBOSE: received 110861-byte response of content type application/json; charset=utf-8
-
 ```
+</details>
+
 
 <br>
 
-# Detailed information about functions
+# Detailed information about functions in AzLogDcrIngestPS
 
 <br>
 
-## Data Manipulation
+## Category: Data Manipulation
 
 <details>
   <summary><h3>Add-CollectionTimeToAllEntriesInArray</h3></summary>
@@ -1540,7 +1543,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 <br>
 
-## Table/DCR/Schema management
+## Category: Table/DCR/Schema management
 
 <details>
   <summary><h3>Get-AzLogAnalyticsTableAzDataCollectionRuleStatus</h3></summary>
@@ -3403,7 +3406,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 <br>
 
-## Data Out (upload to Azure Log Ingestion Pipeline / LogAnalytics)
+## Category: Data Out (upload to Azure LogAnalytics)
 
 <details>
   <summary><h3>Post-AzLogAnalyticsLogIngestCustomLogDcrDce</h3></summary>
@@ -3909,7 +3912,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 <br>
 
-## Support functions (security)
+## Category: Support functions (security)
  
 <details>
   <summary><h3>Get-AzAccessTokenManagement</h3></summary>
