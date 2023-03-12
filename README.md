@@ -233,7 +233,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated object with CollectionTime
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -330,7 +329,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     CollectionTime                          : 12-03-2023 16:19:12
     Computer                                : STRV-MOK-DT-02
     UserLoggedOn                            : 2LINKIT\mok</details>
-	```
 </details>
 
 <details>
@@ -352,7 +350,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated $DataVariable with valid column names
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
@@ -505,7 +502,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     WorkingSet                 : 6758400
     WorkingSet64               : 6758400
     WS                         : 6758400
-	```
 </details>
 
 <details>
@@ -527,7 +523,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Modified array
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -614,7 +609,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     VMMonitorModeExtensions                 : False
     VoltageCaps                             : 
     PSComputerName                          : 
-	```
 </details>
 
 <details>
@@ -636,7 +630,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Modified array
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Collecting data (in)
     #-------------------------------------------------------------------------------------------
@@ -748,7 +741,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     RegCompany           : 
     NoRepair             : 1
     QuietUninstallString : C:\Program Files (x86)\Hewlett-Packard\HP Support Framework\UninstallHPSA.exe -s
-	```
 </details>
 
 <details>
@@ -773,7 +765,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated object
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -890,7 +881,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     WorkingSet                 int     
     WorkingSet64               int     
     WS                         int </details>
-	```
 </details>
 	
 <details>
@@ -916,7 +906,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated $DataVariable with valid column names
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -1159,7 +1148,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     WorkingSet64               : 6762496
     WS                         : 6762496
     NounName                   : 
-	```
 </details>
 
 <br>
@@ -1207,7 +1195,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 	FALSE means everything is ok including schema - next step is to post data
 	
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -1274,7 +1261,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     VERBOSE: received 7749-byte response of content type application/json; charset=utf-8
     VERBOSE:   Success - Schema & DCR structure is OK
     $False
-	```
 </details>
 
 <details>
@@ -1309,7 +1295,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Information about DCR/DCE
 
     .EXAMPLE
-	```
     $verbose                                         = $true
 
     $TenantId                                        = "xxxxx" 
@@ -1391,7 +1376,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     /subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-logworkspaces/providers/Microsoft.OperationalInsights/workspaces/log
     -platform-management-client-demo1-p
     source | extend TimeGenerated = now()
-	```
 </details>
 
 <details>
@@ -1467,7 +1451,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -1652,7 +1635,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     VERBOSE: received 1468-byte response of content type application/json; charset=utf-8
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 104224-byte response of content type application/json; charset=utf-8
-	```
 </details>
 
 <details>
@@ -1716,7 +1698,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -1867,7 +1848,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     VERBOSE: Getting Data Collection Rules from Azure Resource Graph .... Please Wait !
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 203914-byte response of content type application/json; charset=utf-8
-	```
 </details>
 
 <details>
@@ -1905,7 +1885,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -2011,7 +1990,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Links             : {}
     ParsedHtml        : mshtml.HTMLDocumentClass
     RawContentLength  : 7761
-	```
 </details>
 
 <details>
@@ -2033,7 +2011,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated object with CollectionTime
 
     .EXAMPLE
-	```
     $verbose                                         = $true
 
     $TenantId                                        = "xxxxx" 
@@ -2154,7 +2131,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     UserLoggedOn                              string  
     Version                                   string  
     WindowsDirectory                          string  
-	```
 </details>
 
 <details>
@@ -2180,7 +2156,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated object with CollectionTime
 
     .EXAMPLE
-	```
     $verbose                                         = $true
 
     $TenantId                                        = "xxxxx" 
@@ -2593,7 +2568,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     type                           string                                                                                                    
     name                           WindowsDirectory                                                                                          
     type                           string  
-	```
 </details>
 
 <details>
@@ -2627,7 +2601,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     $verbose                                         = $true
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
@@ -2677,7 +2650,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     StatusCode : 200
     Method     : DELETE
     Content    : 
-	```
 </details>
  
 <details>
@@ -2711,7 +2683,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     $verbose                                         = $true
     $TenantId                                        = "xxxxx" 
     $LogIngestAppId                                  = "xxxxx" 
@@ -2753,7 +2724,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Deleting LogAnalytics table [ InvClientComputerOSInfoTest5V2_CL ] ... Please Wait !
     VERBOSE: DELETE with 0-byte payload
     VERBOSE: received 0-byte response of content type 
-	```
 </details>
  
 <details>
@@ -2787,7 +2757,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     $TableName                                       = 'InvClientComputerOSInfoTest4V2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
 
@@ -2842,7 +2811,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     hts/dataCollectionRules/dcr-clt1-InvClientComputerOSInfoTest5V2_CL
     VERBOSE: PUT with -1-byte payload
     VERBOSE: received 4769-byte response of content type application/json; charset=utf-8
-	```
 </details>
  
 <details>
@@ -2873,7 +2841,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     $TableName                                       = 'InvClientComputerOSInfoTest5V2'   # must not contain _CL
     $DcrName                                         = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
 
@@ -2979,7 +2946,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     hts/dataCollectionRules/dcr-clt1-InvClientComputerOSInfoTest6V2_CL
     VERBOSE: PUT with -1-byte payload
     VERBOSE: received 4691-byte response of content type application/json; charset=utf-8
-	```
 </details>
  
 <details>
@@ -3013,7 +2979,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     $Verbose = $true
 
     # make a DCR Event Log collection of security events - can be done through Sentinel
@@ -3046,7 +3011,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     ngest-exclude-security-eventid
     VERBOSE: PUT with -1-byte payload
     VERBOSE: received 1511-byte response of content type application/json; charset=utf-8
-	```
 </details>
 
 <br>
@@ -3093,7 +3057,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Output of REST PUT command. Should be 200 for success
 
     .EXAMPLE
-	```
     $verbose                                         = $true
 
     $TenantId                                        = "xxxxx" 
@@ -3187,7 +3150,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     VERBOSE: POST with -1-byte payload
     VERBOSE: received -1-byte response of content type 
     SUCCESS - data uploaded to LogAnalytics
-	```
 </details>
  
 <details>
@@ -3234,7 +3196,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     This is the Azure AD tenant id
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -3395,7 +3356,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     UserLoggedOn                              : 
     Version                                   : 10.0.22621
     WindowsDirectory                          : C:\WINDOWS
-	```
 </details>
  
 <details>
@@ -3425,7 +3385,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated object with CollectionTime
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Build data array
     #-------------------------------------------------------------------------------------------
@@ -3456,7 +3415,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     identity         : 
     zones            : 
     extendedLocation :
-	```
 </details>
  
 <details>
@@ -3486,7 +3444,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated object with CollectionTime
 
     .EXAMPLE
-	```
     #-------------------------------------------------------------------------------------------
     # Build data array
     #-------------------------------------------------------------------------------------------
@@ -3560,7 +3517,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     identity         : 
     zones            : 
     extendedLocation : 
-	```
 </details>
 
 <br>
@@ -3592,7 +3548,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     JSON-header to use in invoke-webrequest / invoke-restmethod commands
 
     .EXAMPLE
-	```
     # using App
     $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                            -AzAppSecret $AzAppSecret `
@@ -3622,7 +3577,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Accept                         application/json                                                                                          
     Content-Type                   application/json                                                                                          
     Authorization                  Bearer xxxxxx
-	```
 </details>
 
 <br>
