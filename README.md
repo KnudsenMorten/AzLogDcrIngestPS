@@ -808,8 +808,6 @@ PS> Build-DataArrayToAlignWithSchema
 ## Thank You to the great people in Microsoft product teams
 I would like to give **big credits** to a few people, who I have worked together with on this:
 
-<br>
-
 |Name|Role|
 |:---|:---|
 |Ivan Varnitski|Program Manager - Azure Pipeline|
@@ -825,20 +823,20 @@ I would like to give **big credits** to a few people, who I have worked together
 
 <br>
 
-Ivan & Evgeny from Azure Pipeline
+**Ivan & Evgeny from Azure Pipeline**
 ![AzurePipeline](img/AzurePipeline.jpg)
 
 <br>
 
-Program Managers from Azure LogAnalytics
+**Program Managers from Azure LogAnalytics**
 ![AzurePipeline](img/LogAnalytics.jpg)
 
 <br>
 
-Nick, Shayoni & Xema from Azure Data Collection Rules, Azure Monitor Agent and Azure VMInsight
+**Nick, Shayoni & Xema from Azure Data Collection Rules, Azure Monitor Agent and Azure VMInsight**
 ![AzurePipeline](img/AzureDCR_AMA.jpg)
 
 <br>
 
-John & Shikha from Azure Workbooks
+**John & Shikha from Azure Workbooks**
 ![AzurePipeline](img/AzureWorkbooks.jpg)
