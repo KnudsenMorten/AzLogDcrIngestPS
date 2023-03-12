@@ -106,6 +106,7 @@ All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do
 
 <br>
 
+### Why is data transformation important ?
 As shown below, you can do great things with the concept of **data transformation**:
 
 |Category | Details |
@@ -114,7 +115,9 @@ As shown below, you can do great things with the concept of **data transformatio
 |Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/><br/>**Add a column with additional information**. For example, you might add a column identifying whether an IP address in another column is internal or external.<br/><br/>**Add business specific information**. For example, you might add a column indicating a company division based on location information in other columns.|
 |Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/><br/>**Remove entire rows**. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/><br/>**Remove a column from each row**. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/><br/>**Parse important data from a column**. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.<br/><br/>Examples of where data-transformation is useful:<br/><br/>We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix it.<br/><br/>We want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
 
-Examples of transformations, based on Kusto syntax
+<br>
+
+### Examples of transformations, based on Kusto syntax
 Start by testing the query in Azure LogAnalytics. When the query is working, you will change the tablename to **source** - as shown below
 
 | Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
@@ -124,7 +127,7 @@ Start by testing the query in Azure LogAnalytics. When the query is working, you
 |Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
 |Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
 
-More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
+Intersted in learning more - check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
 
 ###Understanding Data Collection Rules - step 3 Data-Out (destinations)
 The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
@@ -804,6 +807,9 @@ PS> Build-DataArrayToAlignWithSchema
 
 ## Thank You to the great people in Microsoft product teams
 I would like to give **big credits** to a few people, who I have worked together with on this:
+
+<br>
+
 |Name|Role|
 |:---|:---|
 |Ivan Varnitski|Program Manager - Azure Pipeline|
@@ -817,17 +823,22 @@ I would like to give **big credits** to a few people, who I have worked together
 |Jeff Wolford|Program Manager - Azure Monitor Agent|
 |Xema Pathak|Program Manager - Azure VMInsight (integration to Azure Monitor Agent)|
 
+<br>
+
 Ivan & Evgeny from Azure Pipeline
 ![AzurePipeline](img/AzurePipeline.jpg)
+
+<br>
 
 Program Managers from Azure LogAnalytics
 ![AzurePipeline](img/LogAnalytics.jpg)
 
+<br>
+
 Nick, Shayoni & Xema from Azure Data Collection Rules, Azure Monitor Agent and Azure VMInsight
 ![AzurePipeline](img/AzureDCR_AMA.jpg)
 
+<br>
+
 John & Shikha from Azure Workbooks
 ![AzurePipeline](img/AzureWorkbooks.jpg)
-
-
-
