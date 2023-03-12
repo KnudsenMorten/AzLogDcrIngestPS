@@ -72,10 +72,10 @@ You can use **any source data** which can be retrieved by Powershell into an obj
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
 
-## Sample usage of AzLogDcrIngestPS
+## Detailed information about AzLogDcrIngestPS functions
 
 <details>
-  <summary>Examples of how to use functions Convert-CimArrayToObjectFixStructure, Add-CollectionTimeToAllEntriesInArray, Add-ColumnDataToAllEntriesInArray, ValidateFix-AzLogAnalyticsTableSchemaColumnNames, Build-DataArrayToAlignWithSchema, Filter-ObjectExcludeProperty</summary>
+  <summary>Sample usage of functions Convert-CimArrayToObjectFixStructure, Add-CollectionTimeToAllEntriesInArray, Add-ColumnDataToAllEntriesInArray, ValidateFix-AzLogAnalyticsTableSchemaColumnNames, Build-DataArrayToAlignWithSchema, Filter-ObjectExcludeProperty</summary>
 
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
@@ -642,12 +642,16 @@ Get-ObjectSchemaAsHash
  
 <details>
   <summary><h2>Filter-ObjectExcludeProperty</h2></summary>
+
 Filter-ObjectExcludeProperty
+
 </details>
  
 <details>
   <summary><h2>Get-AzDcrListAll</h2></summary>
+
 Get-AzDcrListAll
+
 </details>
  
 <details>
