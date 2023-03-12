@@ -218,13 +218,10 @@ Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
 </details>
 
 
+<details>
+  <summary><h1>Introduction to Log Ingestion API</h1></summary>
 
-# Deepdive of the architecture of AzLogDcrIngestPS
 The following section of information comes from [Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)
-
-I have spent a significant time understanding the technology and reporting my findings in close cooperation with the **Azure Pipeline product-team (reponsible for Log Ingestion API integration against Azure LogAnalytics)** - and ** Azure Data Collection Rules product-team**.
-
-## Introduction to Log Ingestion API
 
 The Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
 
@@ -324,10 +321,10 @@ For sample data and an API call using the Logs Ingestion API
 
 [Send data to Azure Monitor Logs using REST API (Resource Manager templates)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/tutorial-logs-ingestion-api)
 
-
+</details>
 
 <details>
-  <summary>Get-AzAccessTokenManagement</summary>
+  <summary><h1>Get-AzAccessTokenManagement</h1></summary>
 
 **Get-AzAccessTokenManagement**
 
@@ -359,7 +356,8 @@ PS> $Headers = Get-AzAccessTokenManagement -AzAppId <id> -AzAppSecret <secret> -
 
 </details>
 
-**CreateUpdate-AzLogAnalyticsCustomLogTableDcr**
+<details>
+  <summary><h1>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h1></summary>
 
  .SYNOPSIS
 Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR)
@@ -396,6 +394,7 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> CreateUpdate-AzLogAnalyticsCustomLogTableDcr
+</details>
 
 **CreateUpdate-AzDataCollectionRuleLogIngestCustomLog**
 
