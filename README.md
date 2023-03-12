@@ -1,5 +1,22 @@
-# AzLogDcrIngestPS
+## Introduction
 I am realy happy to announce my Powershell module, **AzLogDcrIngestPS**
+
+This module can ease if you want to send any data to Azure LogAnalytics custom logs - using the cool features of Azure Data Colection Rules & Log Ingestion API. It supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes, includes lots of great data filtering capabilities.
+
+Core features of Powershell module **AzLogDcrIngestPS**:
+* create/update the DCRs and tables automatically - based on the source object schema
+* validate the schema for naming convention issues. If exist found, it will mitigate the issues
+* update schema of DCRs and tables, if the structure of the source object changes
+* auto-fix if something goes wrong with a DCR or table
+* can remove data from the source object, if there are colums of data you don't want to send
+* can convert source objects based on CIM or PS objects into PSCustomObjects/array
+* can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
+
+You can download latest version here or Powershell Gallery:
+
+[AzLogDcringestPS (Github)](https://github.com/KnudsenMorten/AzLogDcrIngestPS)
+
+[AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 ## Background for building this Powershell module
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
@@ -123,22 +140,6 @@ The Log Ingestion API replaces the legacy method called Log Analytics Data Colle
 
 > Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
 
-
-## Introduction
-Core features of Powershell module **AzLogDcrIngestPS**:
-* create/update the DCRs and tables automatically - based on the source object schema
-* validate the schema for naming convention issues. If exist found, it will mitigate the issues
-* update schema of DCRs and tables, if the structure of the source object changes
-* auto-fix if something goes wrong with a DCR or table
-* can remove data from the source object, if there are colums of data you don't want to send
-* can convert source objects based on CIM or PS objects into PSCustomObjects/array
-* can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
-
-You can download latest version here:
-
-[AzLogDcringestPS (Github)](https://github.com/KnudsenMorten/AzLogDcrIngestPS)
-
-[AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 
 
