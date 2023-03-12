@@ -74,11 +74,11 @@ Microsoft supports data from the following **sources (data-in)**:
 |Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
   
-### Understanding Data Collection Rules - step 2: Data-Transformation
+## Understanding Data Collection Rules - step 2: Data-Transformation
 Currently, Microsoft supports doing transformation using 3 methods:
 
 |Collection source|Transformation (where) |How|Purpose / limitatations |
-|:--------|:--------|
+|:----------------|:----------------------|:--|:-----------------------|
 (legacy)<br>Performance<br>Eventlog<br>Syslog|DCR-pipeline|Workspace transformation DCR|Only one transformation per table
 All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do unions, so be aware of double data. Governance is important
 |REST API using Log ingestion API|DCR-pipeline|Log Ingestion transformation DCR|
