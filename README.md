@@ -101,7 +101,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     Updated object with CollectionTime
 
     .EXAMPLE
-	```
 	
     #-------------------------------------------------------------------------------------------
     # Variables
@@ -194,7 +193,6 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     VoltageCaps                             : 
     PSComputerName                          : 
     CollectionTime                          : 12-03-2023 16:08:33
-	```
 
 </details>
 
