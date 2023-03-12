@@ -12,13 +12,21 @@ Core features of Powershell module **AzLogDcrIngestPS**:
 * can convert source objects based on CIM or PS objects into PSCustomObjects/array
 * can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
 
+I have built a showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), where you can see how you can use the Powershell module, **AzLogDcrIngestPS**. 
+
+ClientInspector is free to the community - built to be a cool showcase of how you can bring back data from your clients using Azure Log Ingestion Pipeline, Azure Data Collection Rules, Azure LogAnalytics; view them with Azure Monitor & Azure Dashboards - and get "drift-alerts" using Microsoft Sentinel.
+
 You can download latest version here or Powershell Gallery:
 
 [AzLogDcringestPS (Github)](https://github.com/KnudsenMorten/AzLogDcrIngestPS)
 
 [AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
-[Thank You to the great people in Microsoft product teams - you are rock stars :smile:](#thank-you-to-the-great-people-in-microsoft-product-teams---you-are-rock-stars-smile)
+[Big Thanks to the great people in Microsoft product teams - you are rock stars :smile:](#thank-you-to-the-great-people-in-microsoft-product-teams---you-are-rock-stars-smile)
+
+Happy hunting :smile:
+
+![ClientInspector](img/ClientInspector_300.jpg)
 
 
 <details>
@@ -52,10 +60,6 @@ If I should mention some disadvantages, then they are:
 * table/DCR/schema must be defined before sending data (this is why I build the powershell function AzLogDcrIngestPS)
 
 The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - and **ensure data schema alignment to requirement**.
-
-I have built a showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), where you can see how you can use the Powershell module, **AzLogDcrIngestPS**. 
-
-ClientInspector is free to the community - built to be a cool showcase of how you can bring back data from your clients using Azure Log Ingestion Pipeline, Azure Data Collection Rules, Azure LogAnalytics; view them with Azure Monitor & Azure Dashboards - and get "drift-alerts" using Microsoft Sentinel.
 
 If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the next section
 
