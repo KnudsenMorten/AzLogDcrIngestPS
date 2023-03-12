@@ -79,6 +79,8 @@ Microsoft supports data  from the following **sources (data-in)**:
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
 
 			</blockquote></details>
+</blockquote></details>
+			
 			<details>
 			  <summary><h3>Understanding Data Collection Rules - step 2: Data-Transformation</h3></summary><blockquote>
 
