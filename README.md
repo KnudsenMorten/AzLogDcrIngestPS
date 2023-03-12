@@ -66,14 +66,11 @@ If you are interested in learning more about Azure Data Collection Rules and the
 
 </details>
 
-# Source data - what data can I use ?
+## Source data - what data can I use ?
 You can use **any source data** which can be retrieved by Powershell into an object (wmi, cim, external data, rest api, xml-format, json-format, csv-format, etc.)
 
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
-
-<details>
-  <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
 
 ## Sample usage of AzLogDcrIngestPS
 
@@ -616,6 +613,8 @@ PS> Build-DataArrayToAlignWithSchema
  CheckCreateUpdate-TableDcr-Structure
 
 
+<details>
+  <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
 
 ## Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
