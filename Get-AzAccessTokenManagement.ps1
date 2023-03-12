@@ -1,6 +1,6 @@
 Function Get-AzAccessTokenManagement
 {
-    <#
+  <#
     .SYNOPSIS
     Get access token for connecting management.azure.com - used for REST API connectivity
 
@@ -8,7 +8,7 @@ Function Get-AzAccessTokenManagement
     Can be used under current connected user - or by Azure app connectivity with secret
 
     .PARAMETER AzAppId
-    This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
+    This is the Azure app id
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
@@ -23,8 +23,36 @@ Function Get-AzAccessTokenManagement
     JSON-header to use in invoke-webrequest / invoke-restmethod commands
 
     .EXAMPLE
-    PS> $Headers = Get-AzAccessTokenManagement -AzAppId <id> -AzAppSecret <secret> -TenantId <id>
-   #>
+    # using App
+    $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
+                                           -AzAppSecret $AzAppSecret `
+                                           -TenantId $TenantId -Verbose:$Verbose
+
+    #-------------------------------------------------------------------------------------------
+    # Output
+    #-------------------------------------------------------------------------------------------
+    $Headers
+
+    Name                           Value                                                                                                     
+    ----                           -----                                                                                                     
+    Accept                         application/json                                                                                          
+    Content-Type                   application/json                                                                                          
+    Authorization                  Bearer xxxxxx
+
+
+
+    # connect using currently logged on admin
+    $Headers = Get-AzAccessTokenManagement
+
+    #Output sample
+    $Headers
+
+    Name                           Value                                                                                                     
+    ----                           -----                                                                                                     
+    Accept                         application/json                                                                                          
+    Content-Type                   application/json                                                                                          
+    Authorization                  Bearer xxxxxx
+ #>
 
     [CmdletBinding()]
     param(
