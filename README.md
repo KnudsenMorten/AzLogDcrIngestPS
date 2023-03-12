@@ -19,7 +19,7 @@ You can download latest version here or Powershell Gallery:
 [AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 <details>
-  <summary>##Background for building this Powershell module</summary>
+  <summary><h2>##Background for building this Powershell module</h2></summary>
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
 
 I have using the API with my Powershell scripts to upload 'tons' of custom data into Azure LogAnalytics. On top, I provided 35 Azure dashboards, that gives me (and my customers) great insight to the health and security of their environment.
