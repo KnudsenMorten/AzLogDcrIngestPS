@@ -18,7 +18,8 @@ You can download latest version here or Powershell Gallery:
 
 [AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
-## Background for building this Powershell module
+<details>
+  <summary>##Background for building this Powershell module</summary>
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
 
 I have using the API with my Powershell scripts to upload 'tons' of custom data into Azure LogAnalytics. On top, I provided 35 Azure dashboards, that gives me (and my customers) great insight to the health and security of their environment.
@@ -46,6 +47,9 @@ If I should mention some disadvantages, then they are:
 The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - and **ensure data schema alignment to requirement**.
 
 If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the next section
+
+</details>
+
 
 ## Introduction of the new method using Azure Data Collection Rules (DCRs)
 
@@ -789,7 +793,7 @@ PS> Build-DataArrayToAlignWithSchema
  CheckCreateUpdate-TableDcr-Structure
 
 
-## Thank You
+## Thank You to the great people in Microsoft product teams
 I would like to give **big credits** to a few people, who I have worked together with on this:
 |Name|Role|
 |:---|:---|
