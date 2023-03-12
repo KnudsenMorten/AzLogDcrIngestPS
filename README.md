@@ -497,12 +497,16 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 |Update-AzDataCollectionRuleTransformKql|Updates the tranformKql parameter on an existing DCR with the provided parameter|
 
 ## Category: Data Out (upload to Azure LogAnalytics)
+|Function name|Sysopsis|
+|:-------|:-------|
 |Post-AzLogAnalyticsLogIngestCustomLogDcrDce|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule|
 |Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)|
 |Get-AzDceListAll|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
 |Get-AzDcrListAll|Builds list of all Data Collection Rules (DCRs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
 
 ## Category: Support functions (security)
+|Function name|Sysopsis|
+|:-------|:-------|
 |Get-AzAccessTokenManagement|Get access token for connecting management.azure.com - used for REST API connectivity|
 
 <br>
