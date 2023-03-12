@@ -102,6 +102,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
     .EXAMPLE
 	```
+	
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -194,6 +195,7 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
     PSComputerName                          : 
     CollectionTime                          : 12-03-2023 16:08:33
 	```
+
 </details>
 
 <details>
