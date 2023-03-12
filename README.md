@@ -821,22 +821,18 @@ I would like to give **big credits** to a few people, who I have worked together
 |Jeff Wolford|Program Manager - Azure Monitor Agent|
 |Xema Pathak|Program Manager - Azure VMInsight (integration to Azure Monitor Agent)|
 
-<br>
 
 **Ivan & Evgeny from Azure Pipeline**
 ![AzurePipeline](img/AzurePipeline.jpg)
 
-<br>
 
 **Program Managers from Azure LogAnalytics**
 ![AzurePipeline](img/LogAnalytics.jpg)
 
-<br>
 
 **Nick, Shayoni & Xema from Azure Data Collection Rules, Azure Monitor Agent and Azure VMInsight**
 ![AzurePipeline](img/AzureDCR_AMA.jpg)
 
-<br>
 
 **John & Shikha from Azure Workbooks**
 ![AzurePipeline](img/AzureWorkbooks.jpg)
