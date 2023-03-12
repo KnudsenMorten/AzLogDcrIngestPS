@@ -672,7 +672,7 @@ CheckCreateUpdate-TableDcr-Structure
 <details>
   <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
 
-## Understanding Data Collection Rules - step 1: Data-In (source data)
+# Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
 
 <br>
@@ -770,7 +770,7 @@ I am really excited about the future :smile:
 </details>
 
 <details>
-  <summary><h2>Introduction to Azure Log Ingestion Pipeline & Log Ingestion API</h2></summary>
+  <summary><h1>Introduction to Azure Log Ingestion Pipeline & Log Ingestion API</h1></summary>
 
 The following section of information comes from [Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)
 
