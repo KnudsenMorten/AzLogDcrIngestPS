@@ -770,7 +770,7 @@ I am really excited about the future :smile:
 </details>
 
 <details>
-  <summary><h1>Introduction to Azure Log Ingestion Pipeline & Log Ingestion API</h1></summary>
+  <summary><h1>Azure Log Ingestion Pipeline & Log Ingestion API</h1></summary>
 
 The following section of information comes from [Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)
 
