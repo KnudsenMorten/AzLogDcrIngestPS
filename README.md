@@ -478,7 +478,6 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 |Convert-PSArrayToObjectFixStructure|Data-manipulate|Converts PS array and remove PS class information|
 |Filter-ObjectExcludeProperty|Data-manipulate|Removes columns from the object which is considered "noice" and shouldn't be send to logs|
 |ValidateFix-AzLogAnalyticsTableSchemaColumnNames|Data-manipulate|Validates the column names in the schema are valid according the requirement for LogAnalytics tables.<br>Fixes any issues by rebuild the source object|
-
 |Get-AzLogAnalyticsTableAzDataCollectionRuleStatus|Table/DCR/Schema management|Get status about Azure Loganalytics tables and Data Collection Rule|
 |Get-AzDcrDceDetails|Table/DCR/Schema management|Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph|
 |CheckCreateUpdate-TableDcr-Structure|Table/DCR/Schema management|Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API (combined)|
