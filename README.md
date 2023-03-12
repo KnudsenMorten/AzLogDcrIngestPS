@@ -814,7 +814,7 @@ PS> Build-DataArrayToAlignWithSchema
 
 <br>
 
-# Big Thanks to the great people in Azure LogAnaytics/DCR/AMA/VMInsight product teams - you deliver rock stars solution :smile:
+# Big Thanks to the great people in Azure LogAnaytics/DCR/AMA/VMInsight/Workbooks product teams - you deliver rock stars solution :smile:
 Lastly, I would like to give **big credits** to a few people, who I have worked together with on building **AzLogDcrIngestPS Powershell module** and **my daily work with the Azure log & viewing capabilities**:
 
 |Name|Role|
