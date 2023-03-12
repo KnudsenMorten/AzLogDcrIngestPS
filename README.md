@@ -56,66 +56,66 @@ If you are interested in learning more about Azure Data Collection Rules and the
 <div id="data-step1">
   <h2>Understanding Data Collection Rules - step 1: Data-In (source data)</h2>
   <p>
-		As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
+As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
 
-		![Flow-DCR](img/Concept-dcr-pipeline.png)
+![Flow-DCR](img/Concept-dcr-pipeline.png)
 
-		Microsoft supports data from the following **sources (data-in)**:
+Microsoft supports data from the following **sources (data-in)**:
 
-		|Collection source|Technologies required|Flow|
-		|:----------------|:--------------------|:---|
-		|(legacy)<br>Performance<br>Eventlog<br>Syslog|MMA (legacy)|1. MMA<br>2. Azure LogAnalytics|
-		|(legacy)<br>API|HTTP Data Collection API (legacy)|1. REST API endpoint<br>2. Azure LogAnalytics|
-		|Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-		|Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE<br>|1. AMA<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
-		|SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>A<br>AMA<br>DCR (syslog stream)|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-		|Change Tracking (legacy)|Change Tracking Extension (FIM)<br>DCR<br>|1. FIM<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-		|REST Log Ingestion API|REST endpoint<br>DCR<br>DCE<br>|1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
-		|Platform Metrics/Telemetry (standard) Azure PaaS|DCR (build-in, non-manageable)<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure Monitor Metrics|
-		|Custom Metrics/Telemetry (custom app)|Windows (1):<br>AMA<br>DCR<br><br>-or-<br><br>Windows (2):<br>Azure Diagnostics extension<br><br>-or-<br><br>API:<br>Azure Monitor REST API<br><br>-or-<br><br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Windows (1):<br>1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics<br><br>Windows (2):<br>1. Azure Diagnostics<br>2. Azure LogAnalytics<br><br>API:<br>1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics<br><br>Linux:<br>1. Linux InfluxData<br>2. Azure Monitor output plugin<br>3. Azure LogAnalytics|
-		|Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-		|Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Collection source|Technologies required|Flow|
+|:----------------|:--------------------|:---|
+|(legacy)<br>Performance<br>Eventlog<br>Syslog|MMA (legacy)|1. MMA<br>2. Azure LogAnalytics|
+|(legacy)<br>API|HTTP Data Collection API (legacy)|1. REST API endpoint<br>2. Azure LogAnalytics|
+|Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE<br>|1. AMA<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
+|SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>A<br>AMA<br>DCR (syslog stream)|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Change Tracking (legacy)|Change Tracking Extension (FIM)<br>DCR<br>|1. FIM<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|REST Log Ingestion API|REST endpoint<br>DCR<br>DCE<br>|1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
+|Platform Metrics/Telemetry (standard) Azure PaaS|DCR (build-in, non-manageable)<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure Monitor Metrics|
+|Custom Metrics/Telemetry (custom app)|Windows (1):<br>AMA<br>DCR<br><br>-or-<br><br>Windows (2):<br>Azure Diagnostics extension<br><br>-or-<br><br>API:<br>Azure Monitor REST API<br><br>-or-<br><br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Windows (1):<br>1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics<br><br>Windows (2):<br>1. Azure Diagnostics<br>2. Azure LogAnalytics<br><br>API:<br>1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics<br><br>Linux:<br>1. Linux InfluxData<br>2. Azure Monitor output plugin<br>3. Azure LogAnalytics|
+|Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
   
   </p>
   <div id="data-step2">
     <h2>Understanding Data Collection Rules - step 2: Data-Transformation</h2>
     <p>
-		Currently, Microsoft supports doing transformation using 3 methods:
+Currently, Microsoft supports doing transformation using 3 methods:
 
-		|Collection source|Transformation (where) |How|Purpose / limitatations |
-		|:--------|:--------|
-		(legacy)<br>Performance<br>Eventlog<br>Syslog|DCR-pipeline|Workspace transformation DCR|Only one transformation per table
-		All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do unions, so be aware of double data. Governance is important
-		|REST API using Log ingestion API|DCR-pipeline|Log Ingestion transformation DCR|
+|Collection source|Transformation (where) |How|Purpose / limitatations |
+|:--------|:--------|
+(legacy)<br>Performance<br>Eventlog<br>Syslog|DCR-pipeline|Workspace transformation DCR|Only one transformation per table
+All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do unions, so be aware of double data. Governance is important
+|REST API using Log ingestion API|DCR-pipeline|Log Ingestion transformation DCR|
 
-		![Transformation](img/Concept-transformation-ama.png)
-
-
-		![Transformation](img/Concept-transformation-log-ingest.png)
+![Transformation](img/Concept-transformation-ama.png)
 
 
-		![Transformation](img/Concept-transformation-workspace.png)
+![Transformation](img/Concept-transformation-log-ingest.png)
 
 
-		As shown below, you can do great things with the concept of **data transformation**:
+![Transformation](img/Concept-transformation-workspace.png)
 
-		|Category | Details |
-		|:--------|:--------|
-		| Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons<br/><br/>**Filter sensitive information**. Filter out entire rows or just particular columns that contain sensitive information<br/><br/>**Obfuscate sensitive information**. For example, you might replace digits with a common character in an IP address or telephone number.|
-		|Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/><br/>**Add a column with additional information**. For example, you might add a column identifying whether an IP address in another column is internal or external.<br/><br/>**Add business specific information**. For example, you might add a column indicating a company division based on location information in other columns.|
-		|Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/><br/>**Remove entire rows**. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/><br/>**Remove a column from each row**. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/><br/>**Parse important data from a column**. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.<br/><br/>Examples of where data-transformation is useful:<br/><br/>We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix it.<br/><br/>We want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
 
-		Examples of transformations, based on Kusto syntax
-		Start by testing the query in Azure LogAnalytics. When the query is working, you will change the tablename to **source** - as shown below
+As shown below, you can do great things with the concept of **data transformation**:
 
-		| Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
-		|:-----------|:------|:---------------------------------------------------|
-		|SecurityEvent \| where (EventID != 12345)|Remove events with EventID 12345 in SecurityEvent table|source \| where (EventID != 12345)|
-		|SecurityEvent \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|Remove events with EventId 4662,5058,8002 in SecurityEvent table|source \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|
-		|Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
-		|Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
+|Category | Details |
+|:--------|:--------|
+| Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons<br/><br/>**Filter sensitive information**. Filter out entire rows or just particular columns that contain sensitive information<br/><br/>**Obfuscate sensitive information**. For example, you might replace digits with a common character in an IP address or telephone number.|
+|Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/><br/>**Add a column with additional information**. For example, you might add a column identifying whether an IP address in another column is internal or external.<br/><br/>**Add business specific information**. For example, you might add a column indicating a company division based on location information in other columns.|
+|Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/><br/>**Remove entire rows**. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/><br/>**Remove a column from each row**. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/><br/>**Parse important data from a column**. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.<br/><br/>Examples of where data-transformation is useful:<br/><br/>We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix it.<br/><br/>We want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
 
-		More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
+Examples of transformations, based on Kusto syntax
+Start by testing the query in Azure LogAnalytics. When the query is working, you will change the tablename to **source** - as shown below
+
+| Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
+|:-----------|:------|:---------------------------------------------------|
+|SecurityEvent \| where (EventID != 12345)|Remove events with EventID 12345 in SecurityEvent table|source \| where (EventID != 12345)|
+|SecurityEvent \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|Remove events with EventId 4662,5058,8002 in SecurityEvent table|source \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|
+|Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
+|Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
+
+More information about the topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
 	</p>
   </div>
     <div id="section1-2">
