@@ -149,7 +149,7 @@ Function CheckCreateUpdate-TableDcr-Structure
             [Parameter(mandatory)]
                 [string]$LogIngestServicePricipleObjectId,
             [Parameter(mandatory)]
-                [string]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
+                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
             [Parameter(mandatory)]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
             [Parameter(mandatory)]
@@ -217,14 +217,15 @@ Function Convert-CimArrayToObjectFixStructure
 
     Write-Verbose "  Converting CIM array to Object & removing CIM class data in array .... please wait !"
 
-    # Convert from array to object
-    $Object = $Data | ConvertTo-Json -Depth 20 | ConvertFrom-Json 
-
     # remove CIM info columns from object
-    $ObjectModified = $Object | Select-Object -Property * -ExcludeProperty CimClass, CimInstanceProperties, CimSystemProperties
+    $Object = $Data | Select-Object -Property * -ExcludeProperty CimClass, CimInstanceProperties, CimSystemProperties
+
+    # Convert from array to object
+    $ObjectModified = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json 
 
     return $ObjectModified
 }
+
 Function Convert-PSArrayToObjectFixStructure
 {
     [CmdletBinding()]
@@ -235,11 +236,11 @@ Function Convert-PSArrayToObjectFixStructure
 
     Write-Verbose "  Converting PS array to Object & removing PS class data in array .... please wait !"
 
-    # Convert from array to object
-    $Object = $Data | ConvertTo-Json -Depth 20 | ConvertFrom-Json 
-
     # remove CIM info columns from object
-    $ObjectModified = $Object | Select-Object -Property * -ExcludeProperty PSPath, PSProvider, PSParentPath, PSDrive, PSChildName, PSSnapIn
+    $Object = $Data | Select-Object -Property * -ExcludeProperty PSPath, PSProvider, PSParentPath, PSDrive, PSChildName, PSSnapIn
+
+    # Convert from array to object
+    $ObjectModified = $Object | ConvertTo-Json -Depth 10 | ConvertFrom-Json 
 
     return $ObjectModified
 }
@@ -1232,7 +1233,7 @@ Function Get-AzDcrDceDetails
                                     Start-Sleep -s 10
 
                                     # building global variable with all DCEs, which can be viewed by Log Ingestion app
-                                    $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose -Verbose:$Verbose
+                                    $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
     
                                     $DceInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DceName }
                                        If (!($DceInfo))
@@ -1289,7 +1290,7 @@ Function Get-AzDcrDceDetails
                                     Start-Sleep -s 10
 
                                     # building global variable with all DCEs, which can be viewed by Log Ingestion app
-                                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose -Verbose:$Verbose
+                                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
     
                                     $DcrInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DcrName }
                                        If (!($DcInfo))
@@ -2590,4 +2591,3 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
         }
     Return [array]$Data
 }
-Export-ModuleMember -Function * -Cmdlet *
