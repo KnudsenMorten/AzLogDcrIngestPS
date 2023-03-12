@@ -66,6 +66,213 @@ If you are interested in learning more about Azure Data Collection Rules and the
 
 </details>
 
+<br>
+
+<details>
+  <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
+
+## Understanding Data Collection Rules - step 1: Data-In (source data)
+As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
+
+<br>
+
+![Flow-DCR](img/Concept-dcr-pipeline.png)
+
+<br>
+
+Microsoft supports data from the following **sources (data-in)**:
+
+|Collection source|Technologies required|Flow|
+|:----------------|:--------------------|:---|
+|(legacy)<br>Performance<br>Eventlog<br>Syslog|MMA (legacy)|1. MMA<br>2. Azure LogAnalytics|
+|(legacy)<br>API|HTTP Data Collection API (legacy)|1. REST API endpoint<br>2. Azure LogAnalytics|
+|Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE<br>|1. AMA<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
+|SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>A<br>AMA<br>DCR (syslog stream)|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Change Tracking (legacy)|Change Tracking Extension (FIM)<br>DCR<br>|1. FIM<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|REST Log Ingestion API|REST endpoint<br>DCR<br>DCE<br>|1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
+|Platform Metrics/Telemetry (standard) Azure PaaS|DCR (build-in, non-manageable)<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure Monitor Metrics|
+|Custom Metrics/Telemetry (custom app)|Windows (1):<br>AMA<br>DCR<br><br>-or-<br><br>Windows (2):<br>Azure Diagnostics extension<br><br>-or-<br><br>API:<br>Azure Monitor REST API<br><br>-or-<br><br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Windows (1):<br>1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics<br><br>Windows (2):<br>1. Azure Diagnostics<br>2. Azure LogAnalytics<br><br>API:<br>1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics<br><br>Linux:<br>1. Linux InfluxData<br>2. Azure Monitor output plugin<br>3. Azure LogAnalytics|
+|Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+|Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
+
+<br>
+
+## Understanding Data Collection Rules - step 2: Data-Transformation
+Currently, Microsoft supports doing transformation using 3 methods:
+
+|Collection source|Transformation (where) |How|Purpose / limitatations |
+|:----------------|:----------------------|:--|:-----------------------|
+(legacy)<br>Performance<br>Eventlog<br>Syslog|DCR-pipeline|Workspace transformation DCR|Only one transformation per table
+All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do unions, so be aware of double data. Governance is important
+|REST API using Log ingestion API|DCR-pipeline|Log Ingestion transformation DCR|
+
+<br>
+
+### Transformation with Azure Monitor Agent (AMA) & Azure Data Collection Rules (DCR)
+![Transformation](img/Concept-transformation-ama.png)
+
+<br>
+
+### Transformation with Azure DCR-pipeline (Log Ingestion API) & Azure Data Collection Rule (DCR)
+![Transformation](img/Concept-transformation-log-ingest.png)
+
+<br>
+
+### Transformation with Azure LogAnalytics Workspace Data Collection Rule (DCR)
+![Transformation](img/Concept-transformation-workspace.png)
+
+<br>
+
+### Why is data transformation important ?
+As shown below, you can do great things with the concept of **data transformation**:
+
+|Category | Details |
+|:--------|:--------|
+| Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons<br/><br/>**Filter sensitive information**. Filter out entire rows or just particular columns that contain sensitive information<br/><br/>**Obfuscate sensitive information**. For example, you might replace digits with a common character in an IP address or telephone number.|
+|Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/><br/>**Add a column with additional information**. For example, you might add a column identifying whether an IP address in another column is internal or external.<br/><br/>**Add business specific information**. For example, you might add a column indicating a company division based on location information in other columns.|
+|Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/><br/>**Remove entire rows**. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/><br/>**Remove a column from each row**. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/><br/>**Parse important data from a column**. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.<br/><br/>Examples of where data-transformation is useful:<br/><br/>We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix it.<br/><br/>We want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
+
+<br>
+
+### Examples of transformations, based on Kusto syntax
+Start by testing the query in Azure LogAnalytics. When the query is working, you will change the tablename to **source** - as shown below
+
+| Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
+|:-----------|:------|:---------------------------------------------------|
+|SecurityEvent \| where (EventID != 12345)|Remove events with EventID 12345 in SecurityEvent table|source \| where (EventID != 12345)|
+|SecurityEvent \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|Remove events with EventId 4662,5058,8002 in SecurityEvent table|source \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|
+|Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
+|Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
+
+Intersted in learning more - check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
+
+## Understanding Data Collection Rules - step 3 Data-Out (destinations)
+The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
+
+Currently, DCRs support the following destinations:
+
+|Collection source|Technologies required|Supported Targets|
+|:----------------|:--------------------|:----------------|
+|Performance<br>Eventlog<br>Syslog|AMA<br>DCR|Azure LogAnalytics standard table|
+|Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE|Azure LogAnalytics custom log table|
+|SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>A<br>AMA<br>DCR (syslog stream)|Azure LogAnalytics custom log table|
+|Change Tracking (legacy)|Change Tracking Extension (FIM)<br>DCR|Azure LogAnalytics standard table|
+|REST Log Ingestion API|REST endpoint<br>DCR<br>DCE<br>|Azure LogAnalytics standard table (CommonSecurityLog, SecurityEvents, Syslog, WindowsEvents)<br>Azure LogAnalytics custom table|
+|Platform Metrics/Telemetry (standard) Azure PaaS|DCR (build-in, non-manageable)|Azure Monitor Metrics|
+|Custom Metrics/Telemetry (custom app)|Windows (1):<br>AMA<br>DCR<br><br>-or-<br><br>Windows (2):<br>Azure Diagnostics extension<br><br>-or-<br><br>API:<br>Azure Monitor REST API<br><br>-or-<br><br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Azure Monitor Metrics|
+|Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|Azure LogAnalytics standard table|
+|Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR|Azure LogAnalytics standard table|
+
+You should expect to see more 'destinations' in the future, DCRs can send data to. 
+I am really excited about the future :smile:
+</details>
+
+<details>
+  <summary><h2>Deep-dive about Log Ingestion API</h2></summary>
+
+The following section of information comes from [Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)
+
+The Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
+
+> Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API.
+
+> Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
+
+The Logs Ingestion API in Azure Monitor lets you send data to a Log Analytics workspace from any REST API client. 
+
+By using this API, you can send data from almost any source to supported Azure tables or to custom tables that you create. 
+
+You can even extend the schema of Azure tables with custom columns.
+
+The Logs Ingestion API was previously referred to as the custom logs API.
+
+## Dataflow
+The endpoint application sends data to a data collection endpoint (DCE), which is a unique connection point for your subscription. 
+
+The payload of your API call includes the source data formatted in JSON. 
+
+The call:
+
+1. Specifies a data collection rule (DCR) that understands the format of the source data.
+2. Potentially filters and transforms it for the target table.
+3. Directs it to a specific table in a specific workspace.
+
+You can modify the target table and workspace by modifying the DCR without any change to the REST API call or source data.
+
+![Flow](img/flow.png)
+
+### Migration
+To migrate solutions from the Data Collector API, see [Migrate from Data Collector API and custom fields-enabled tables to DCR-based custom logs](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/custom-logs-migrate).
+
+## Supported tables
+
+### Custom tables
+The Logs Ingestion API can send data to any custom table that you create and to certain Azure tables in your Log Analytics workspace. The target table must exist before you can send data to it. Custom tables must have the _CL suffix.
+
+### Azure tables
+The Logs Ingestion API can send data to the following Azure tables. Other tables may be added to this list as support for them is implemented.
+
+* CommonSecurityLog
+* SecurityEvents
+* Syslog
+* WindowsEvents
+
+#### Naming conventions
+Column names must start with a letter and can consist of up to 45 alphanumeric characters and the characters _ and -. 
+
+The following are reserved column names: Type, TenantId, resource, resourceid, resourcename, resourcetype, subscriptionid, tenanted. 
+
+Custom columns you add to an Azure table must have the suffix _CF.
+
+### Authentication
+Authentication for the Logs Ingestion API is performed at the DCE, which uses standard Azure Resource Manager authentication. 
+
+A common strategy is to use an application ID and application secret.
+
+### Data collection rule
+Data collection rules define data collected by Azure Monitor and specify how and where that data should be sent or stored. The REST API call must specify a DCR to use. A single DCE can support multiple DCRs, so you can specify a different DCR for different sources and target tables.
+
+The DCR must understand the structure of the input data and the structure of the target table. If the two don't match, it can use a transformation to convert the source data to match the target table. You can also use the transformation to filter source data and perform any other calculations or conversions.
+
+### Send data
+To send data to Azure Monitor with the Logs Ingestion API, make a POST call to the DCE over HTTP.
+
+
+#### Endpoint URI
+The endpoint URI uses the following format, where the Data Collection Endpoint and DCR Immutable ID identify the DCE and DCR. 
+
+Stream Name refers to the stream in the DCR that should handle the custom data.
+
+```
+{Data Collection Endpoint URI}/dataCollectionRules/{DCR Immutable ID}/streams/{Stream Name}?api-version=2021-11-01-preview
+```
+
+### Headers
+|Header | Required | Value | Description|
+|:------|:------   |:------|:------     |
+|Authorization|Yes|Bearer (bearer token obtained through the client credentials flow)||
+|Content-Type|Yes|application/json||
+Content-Encoding|No|gzip|Use the gzip compression scheme for performance optimization.|
+|x-ms-client-request-id|No|String-formatted GUID|Request ID that can be used by Microsoft for any troubleshooting purposes.|
+
+### Body
+The body of the call includes the custom data to be sent to Azure Monitor. 
+
+The shape of the data must be a JSON object or array with a structure that matches the format expected by the stream in the DCR. 
+
+Additionally, it is important to ensure that the request body is properly encoded in UTF-8 to prevent any issues with data transmission.
+
+### Sample call
+For sample data and an API call using the Logs Ingestion API
+
+## Tutorials
+[Send data to Azure Monitor Logs by using a REST API (Azure portal)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/tutorial-logs-ingestion-portal)
+
+[Send data to Azure Monitor Logs using REST API (Resource Manager templates)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/tutorial-logs-ingestion-api)
+
+</details>
+
 ## Source data - what data can I use ?
 You can use **any source data** which can be retrieved by Powershell into an object (wmi, cim, external data, rest api, xml-format, json-format, csv-format, etc.)
 
@@ -4016,214 +4223,6 @@ VERBOSE: received 110861-byte response of content type application/json; charset
     Content-Type                   application/json                                                                                          
     Authorization                  Bearer xxxxxx
 </details>
-
-<br>
-
-<details>
-  <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
-
-## Understanding Data Collection Rules - step 1: Data-In (source data)
-As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
-
-<br>
-
-![Flow-DCR](img/Concept-dcr-pipeline.png)
-
-<br>
-
-Microsoft supports data from the following **sources (data-in)**:
-
-|Collection source|Technologies required|Flow|
-|:----------------|:--------------------|:---|
-|(legacy)<br>Performance<br>Eventlog<br>Syslog|MMA (legacy)|1. MMA<br>2. Azure LogAnalytics|
-|(legacy)<br>API|HTTP Data Collection API (legacy)|1. REST API endpoint<br>2. Azure LogAnalytics|
-|Performance<br>Eventlog<br>Syslog|AMA<br>DCR<br>|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-|Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE<br>|1. AMA<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
-|SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>A<br>AMA<br>DCR (syslog stream)|1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-|Change Tracking (legacy)|Change Tracking Extension (FIM)<br>DCR<br>|1. FIM<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-|REST Log Ingestion API|REST endpoint<br>DCR<br>DCE<br>|1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics|
-|Platform Metrics/Telemetry (standard) Azure PaaS|DCR (build-in, non-manageable)<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure Monitor Metrics|
-|Custom Metrics/Telemetry (custom app)|Windows (1):<br>AMA<br>DCR<br><br>-or-<br><br>Windows (2):<br>Azure Diagnostics extension<br><br>-or-<br><br>API:<br>Azure Monitor REST API<br><br>-or-<br><br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Windows (1):<br>1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics<br><br>Windows (2):<br>1. Azure Diagnostics<br>2. Azure LogAnalytics<br><br>API:<br>1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics<br><br>Linux:<br>1. Linux InfluxData<br>2. Azure Monitor output plugin<br>3. Azure LogAnalytics|
-|Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-|Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-
-<br>
-
-## Understanding Data Collection Rules - step 2: Data-Transformation
-Currently, Microsoft supports doing transformation using 3 methods:
-
-|Collection source|Transformation (where) |How|Purpose / limitatations |
-|:----------------|:----------------------|:--|:-----------------------|
-(legacy)<br>Performance<br>Eventlog<br>Syslog|DCR-pipeline|Workspace transformation DCR|Only one transformation per table
-All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do unions, so be aware of double data. Governance is important
-|REST API using Log ingestion API|DCR-pipeline|Log Ingestion transformation DCR|
-
-<br>
-
-### Transformation with Azure Monitor Agent (AMA) & Azure Data Collection Rules (DCR)
-![Transformation](img/Concept-transformation-ama.png)
-
-<br>
-
-### Transformation with Azure DCR-pipeline (Log Ingestion API) & Azure Data Collection Rule (DCR)
-![Transformation](img/Concept-transformation-log-ingest.png)
-
-<br>
-
-### Transformation with Azure LogAnalytics Workspace Data Collection Rule (DCR)
-![Transformation](img/Concept-transformation-workspace.png)
-
-<br>
-
-### Why is data transformation important ?
-As shown below, you can do great things with the concept of **data transformation**:
-
-|Category | Details |
-|:--------|:--------|
-| Remove sensitive data|You may have a data source that sends information you don’t want stored for privacy or compliancy reasons<br/><br/>**Filter sensitive information**. Filter out entire rows or just particular columns that contain sensitive information<br/><br/>**Obfuscate sensitive information**. For example, you might replace digits with a common character in an IP address or telephone number.|
-|Enrich data with additional or calculated information|Use a transformation to add information to data that provides business context or simplifies querying the data later.<br/><br/>**Add a column with additional information**. For example, you might add a column identifying whether an IP address in another column is internal or external.<br/><br/>**Add business specific information**. For example, you might add a column indicating a company division based on location information in other columns.|
-|Reduce data costs|Since you’re charged ingestion cost for any data sent to a Log Analytics workspace, you want to filter out any data that you don’t require to reduce your costs.<br/><br/>**Remove entire rows**. For example, you might have a diagnostic setting to collect resource logs from a particular resource but not require all of the log entries that it generates. Create a transformation that filters out records that match a certain criteria.<br/><br/>**Remove a column from each row**. For example, your data may include columns with data that’s redundant or has minimal value. Create a transformation that filters out columns that aren’t required.<br/><br/>**Parse important data from a column**. You may have a table with valuable data buried in a particular column. Use a transformation to parse the valuable data into a new column and remove the original.<br/><br/>Examples of where data-transformation is useful:<br/><br/>We want to remove specific security-events from a server, which are making lots of ”noise” in our logs due to a misconfiguration or error and it is impossible to fix it.<br/><br/>We want to remove security events, which we might show with a high amount, but we want to filter it out like kerberos computer-logon traffic.|
-
-<br>
-
-### Examples of transformations, based on Kusto syntax
-Start by testing the query in Azure LogAnalytics. When the query is working, you will change the tablename to **source** - as shown below
-
-| Kusto Query|Purpose|Transformation syntax for DCR 'transformKql' command|
-|:-----------|:------|:---------------------------------------------------|
-|SecurityEvent \| where (EventID != 12345)|Remove events with EventID 12345 in SecurityEvent table|source \| where (EventID != 12345)|
-|SecurityEvent \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|Remove events with EventId 4662,5058,8002 in SecurityEvent table|source \| where (EventID != 8002) and (EventID != 5058) and (EventID != 4662)|
-|Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
-|Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
-
-Intersted in learning more - check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
-
-## Understanding Data Collection Rules - step 3 Data-Out (destinations)
-The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
-
-Currently, DCRs support the following destinations:
-
-|Collection source|Technologies required|Supported Targets|
-|:----------------|:--------------------|:----------------|
-|Performance<br>Eventlog<br>Syslog|AMA<br>DCR|Azure LogAnalytics standard table|
-|Text log<br>IIS logs<br>Windows Firewall logs (preview)|AMA<br>DCR<br>DCE|Azure LogAnalytics custom log table|
-|SNMP traps|Linux with SNMP trap receiver<br>AMA<br>DCR (syslog file)<br><br>-or-<br>A<br>AMA<br>DCR (syslog stream)|Azure LogAnalytics custom log table|
-|Change Tracking (legacy)|Change Tracking Extension (FIM)<br>DCR|Azure LogAnalytics standard table|
-|REST Log Ingestion API|REST endpoint<br>DCR<br>DCE<br>|Azure LogAnalytics standard table (CommonSecurityLog, SecurityEvents, Syslog, WindowsEvents)<br>Azure LogAnalytics custom table|
-|Platform Metrics/Telemetry (standard) Azure PaaS|DCR (build-in, non-manageable)|Azure Monitor Metrics|
-|Custom Metrics/Telemetry (custom app)|Windows (1):<br>AMA<br>DCR<br><br>-or-<br><br>Windows (2):<br>Azure Diagnostics extension<br><br>-or-<br><br>API:<br>Azure Monitor REST API<br><br>-or-<br><br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Azure Monitor Metrics|
-|Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|Azure LogAnalytics standard table|
-|Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR|Azure LogAnalytics standard table|
-
-You should expect to see more 'destinations' in the future, DCRs can send data to. 
-I am really excited about the future :smile:
-</details>
-
-<details>
-  <summary><h2>Deep-dive about Log Ingestion API</h2></summary>
-
-The following section of information comes from [Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)
-
-The Log Ingestion API replaces the legacy method called Log Analytics Data Collector API (or Azure Monitor HTTP Data Collector API or my short name for it "MMA-method")
-
-> Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API.
-
-> Product team quotes: “Data Collector API was never officially released or considered "complete”. We are going to update Data Collector API documentation as part of its deprecation cycle”
-
-The Logs Ingestion API in Azure Monitor lets you send data to a Log Analytics workspace from any REST API client. 
-
-By using this API, you can send data from almost any source to supported Azure tables or to custom tables that you create. 
-
-You can even extend the schema of Azure tables with custom columns.
-
-The Logs Ingestion API was previously referred to as the custom logs API.
-
-## Dataflow
-The endpoint application sends data to a data collection endpoint (DCE), which is a unique connection point for your subscription. 
-
-The payload of your API call includes the source data formatted in JSON. 
-
-The call:
-
-1. Specifies a data collection rule (DCR) that understands the format of the source data.
-2. Potentially filters and transforms it for the target table.
-3. Directs it to a specific table in a specific workspace.
-
-You can modify the target table and workspace by modifying the DCR without any change to the REST API call or source data.
-
-![Flow](img/flow.png)
-
-### Migration
-To migrate solutions from the Data Collector API, see [Migrate from Data Collector API and custom fields-enabled tables to DCR-based custom logs](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/custom-logs-migrate).
-
-## Supported tables
-
-### Custom tables
-The Logs Ingestion API can send data to any custom table that you create and to certain Azure tables in your Log Analytics workspace. The target table must exist before you can send data to it. Custom tables must have the _CL suffix.
-
-### Azure tables
-The Logs Ingestion API can send data to the following Azure tables. Other tables may be added to this list as support for them is implemented.
-
-* CommonSecurityLog
-* SecurityEvents
-* Syslog
-* WindowsEvents
-
-#### Naming conventions
-Column names must start with a letter and can consist of up to 45 alphanumeric characters and the characters _ and -. 
-
-The following are reserved column names: Type, TenantId, resource, resourceid, resourcename, resourcetype, subscriptionid, tenanted. 
-
-Custom columns you add to an Azure table must have the suffix _CF.
-
-### Authentication
-Authentication for the Logs Ingestion API is performed at the DCE, which uses standard Azure Resource Manager authentication. 
-
-A common strategy is to use an application ID and application secret.
-
-### Data collection rule
-Data collection rules define data collected by Azure Monitor and specify how and where that data should be sent or stored. The REST API call must specify a DCR to use. A single DCE can support multiple DCRs, so you can specify a different DCR for different sources and target tables.
-
-The DCR must understand the structure of the input data and the structure of the target table. If the two don't match, it can use a transformation to convert the source data to match the target table. You can also use the transformation to filter source data and perform any other calculations or conversions.
-
-### Send data
-To send data to Azure Monitor with the Logs Ingestion API, make a POST call to the DCE over HTTP.
-
-
-#### Endpoint URI
-The endpoint URI uses the following format, where the Data Collection Endpoint and DCR Immutable ID identify the DCE and DCR. 
-
-Stream Name refers to the stream in the DCR that should handle the custom data.
-
-```
-{Data Collection Endpoint URI}/dataCollectionRules/{DCR Immutable ID}/streams/{Stream Name}?api-version=2021-11-01-preview
-```
-
-### Headers
-|Header | Required | Value | Description|
-|:------|:------   |:------|:------     |
-|Authorization|Yes|Bearer (bearer token obtained through the client credentials flow)||
-|Content-Type|Yes|application/json||
-Content-Encoding|No|gzip|Use the gzip compression scheme for performance optimization.|
-|x-ms-client-request-id|No|String-formatted GUID|Request ID that can be used by Microsoft for any troubleshooting purposes.|
-
-### Body
-The body of the call includes the custom data to be sent to Azure Monitor. 
-
-The shape of the data must be a JSON object or array with a structure that matches the format expected by the stream in the DCR. 
-
-Additionally, it is important to ensure that the request body is properly encoded in UTF-8 to prevent any issues with data transmission.
-
-### Sample call
-For sample data and an API call using the Logs Ingestion API
-
-## Tutorials
-[Send data to Azure Monitor Logs by using a REST API (Azure portal)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/tutorial-logs-ingestion-portal)
-
-[Send data to Azure Monitor Logs using REST API (Resource Manager templates)](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/tutorial-logs-ingestion-api)
-
-</details>
-
 
 <br>
 
