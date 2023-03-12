@@ -56,7 +56,11 @@ If you are interested in learning more about Azure Data Collection Rules and the
 ### Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
 
+<br>
+
 ![Flow-DCR](img/Concept-dcr-pipeline.png)
+
+<br>
 
 Microsoft supports data from the following **sources (data-in)**:
 
@@ -73,7 +77,9 @@ Microsoft supports data from the following **sources (data-in)**:
 |Custom Metrics/Telemetry (custom app)|Windows (1):<br>AMA<br>DCR<br><br>-or-<br><br>Windows (2):<br>Azure Diagnostics extension<br><br>-or-<br><br>API:<br>Azure Monitor REST API<br><br>-or-<br><br>Linux: Linux InfluxData Telegraf agent (Linux)<br>Azure Monitor output plugin|Windows (1):<br>1. AMA<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics<br><br>Windows (2):<br>1. Azure Diagnostics<br>2. Azure LogAnalytics<br><br>API:<br>1. REST endpoint<br>2. DCE<br>3. DCR ingestion pipeline<br>4. Azure LogAnalytics<br><br>Linux:<br>1. Linux InfluxData<br>2. Azure Monitor output plugin<br>3. Azure LogAnalytics|
 |Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR<br>|1. Azure Resource<br>2. DCR ingestion pipeline<br>3. Azure LogAnalytics|
-  
+
+<br>
+
 ## Understanding Data Collection Rules - step 2: Data-Transformation
 Currently, Microsoft supports doing transformation using 3 methods:
 
@@ -88,6 +94,8 @@ All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do
 ### Transformation with Azure Monitor Agent (AMA) & Azure Data Collection Rules (DCR)
 ![Transformation](img/Concept-transformation-ama.png)
 
+<br>
+
 ### Transformation with Azure DCR-pipeline (Log Ingestion API) & Azure Data Collection Rule (DCR)
 ![Transformation](img/Concept-transformation-log-ingest.png)
 
@@ -95,6 +103,8 @@ All sources sending in using AMA|DCR-pipeline|AMA transformation DCR|All DCRs do
 
 ### Transformation with Azure LogAnalytics Workspace Data Collection Rule (DCR)
 ![Transformation](img/Concept-transformation-workspace.png)
+
+<br>
 
 As shown below, you can do great things with the concept of **data transformation**:
 
