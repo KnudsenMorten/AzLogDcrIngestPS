@@ -120,9 +120,8 @@ Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
 </details>
 
 
-
 <details>
-  <summary><h3>Get-AzAccessTokenManagement</h3></summary>
+  <summary><h2>Get-AzAccessTokenManagement</h2></summary>
 
 .SYNOPSIS
 Get access token for connecting management.azure.com - used for REST API connectivity
@@ -150,10 +149,12 @@ JSON-header to use in invoke-webrequest / invoke-restmethod commands
 .EXAMPLE
 PS> $Headers = Get-AzAccessTokenManagement -AzAppId <id> -AzAppSecret <secret> -TenantId <id>
 
+### Sample Usage & Output
+
 </details>
 
 <details>
-  <summary><h3>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h3></summary>
+  <summary><h2>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h2></summary>
 
  .SYNOPSIS
 Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR)
