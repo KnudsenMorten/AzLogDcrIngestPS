@@ -28,7 +28,7 @@ You can download latest version here or Powershell Gallery:
 
 
 <details>
-  <summary><h1>Background for building this Powershell module</h1></summary>
+  <summary><h2>Background for building this Powershell module</h2></summary>
   
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
 
@@ -67,7 +67,7 @@ If you are interested in learning more about Azure Data Collection Rules and the
 </details>
 
 <details>
-  <summary><h1>Deep-dive about Azure Data Collection Rules (DCRs)</h1></summary>
+  <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
 
 ## Understanding Data Collection Rules - step 1: Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
@@ -162,61 +162,12 @@ Currently, DCRs support the following destinations:
 |Platform logs (diagnostics per resource)<br>AllMetrics<br>Resource logs (allLogs, audit)|Azure Policy (diagnostics)<br>DCR<br>|Azure LogAnalytics standard table|
 |Activity logs (audit per subscription)|Azure Policy (diagnostics)<br>DCR|Azure LogAnalytics standard table|
 
-You should expect to see more 'destinations' in the future, DCRs can send data to. I am really excited about the future :smile:
-			</blockquote></details>
-</blockquote></details>
-
-
-# Sample usage of AzLogDcrIngestPS
-
-<details>
-  <summary>Examples of how to use functions Convert-CimArrayToObjectFixStructure, Add-CollectionTimeToAllEntriesInArray, Add-ColumnDataToAllEntriesInArray, ValidateFix-AzLogAnalyticsTableSchemaColumnNames, Build-DataArrayToAlignWithSchema, Filter-ObjectExcludeProperty</summary>
-
-ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
-
-```js
-#-------------------------------------------------------------------------------------------
-# Collecting data (in)
-#-------------------------------------------------------------------------------------------
-	
-Write-Output ""
-Write-Output "Collecting Bios information ... Please Wait !"
-
-$DataVariable = Get-CimInstance -ClassName Win32_BIOS
-
-#-------------------------------------------------------------------------------------------
-# Preparing data structure
-#-------------------------------------------------------------------------------------------
-
-# convert CIM array to PSCustomObject and remove CIM class information
-$DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
-
-# add CollectionTime to existing array
-$DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
-# add Computer & UserLoggedOn info to existing array
-$DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$Verbose
-
-# Remove unnecessary columns in schema
-$DataVariable = Filter-ObjectExcludeProperty -Data $DataVariable -ExcludeProperty __*,SystemProperties,Scope,Qualifiers,Properties,ClassPath,Class,Derivation,Dynasty,Genus,Namespace,Path,Property_Count,RelPath,Server,Superclass -Verbose:$Verbose
-
-# Validating/fixing schema data structure of source data
-$DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
-# Aligning data structure with schema (requirement for DCR)
-$DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-````
-
-You can verify the source object by running this command
-````
-# Get insight about the schema structure of an object BEFORE changes. Command is only needed to verify columns in schema
-Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
-````
+You should expect to see more 'destinations' in the future, DCRs can send data to. 
+I am really excited about the future :smile:
 </details>
 
-
 <details>
-  <summary><h1>Introduction to Log Ingestion API</h1></summary>
+  <summary><h2>Introduction to Azure Log Ingestion Pipeline & Log Ingestion API</h2></summary>
 
 The following section of information comes from [Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)
 
@@ -320,10 +271,57 @@ For sample data and an API call using the Logs Ingestion API
 
 </details>
 
-<details>
-  <summary><h1>Get-AzAccessTokenManagement</h1></summary>
+## Sample usage of AzLogDcrIngestPS
 
-**Get-AzAccessTokenManagement**
+<details>
+  <summary>Examples of how to use functions Convert-CimArrayToObjectFixStructure, Add-CollectionTimeToAllEntriesInArray, Add-ColumnDataToAllEntriesInArray, ValidateFix-AzLogAnalyticsTableSchemaColumnNames, Build-DataArrayToAlignWithSchema, Filter-ObjectExcludeProperty</summary>
+
+ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
+
+```js
+#-------------------------------------------------------------------------------------------
+# Collecting data (in)
+#-------------------------------------------------------------------------------------------
+	
+Write-Output ""
+Write-Output "Collecting Bios information ... Please Wait !"
+
+$DataVariable = Get-CimInstance -ClassName Win32_BIOS
+
+#-------------------------------------------------------------------------------------------
+# Preparing data structure
+#-------------------------------------------------------------------------------------------
+
+# convert CIM array to PSCustomObject and remove CIM class information
+$DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
+
+# add CollectionTime to existing array
+$DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
+
+# add Computer & UserLoggedOn info to existing array
+$DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name UserLoggedOn -Column2Data $UserLoggedOn -Verbose:$Verbose
+
+# Remove unnecessary columns in schema
+$DataVariable = Filter-ObjectExcludeProperty -Data $DataVariable -ExcludeProperty __*,SystemProperties,Scope,Qualifiers,Properties,ClassPath,Class,Derivation,Dynasty,Genus,Namespace,Path,Property_Count,RelPath,Server,Superclass -Verbose:$Verbose
+
+# Validating/fixing schema data structure of source data
+$DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
+
+# Aligning data structure with schema (requirement for DCR)
+$DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
+````
+
+You can verify the source object by running this command
+````
+# Get insight about the schema structure of an object BEFORE changes. Command is only needed to verify columns in schema
+Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
+````
+</details>
+
+
+
+<details>
+  <summary><h3>Get-AzAccessTokenManagement</h3></summary>
 
 .SYNOPSIS
 Get access token for connecting management.azure.com - used for REST API connectivity
@@ -354,7 +352,7 @@ PS> $Headers = Get-AzAccessTokenManagement -AzAppId <id> -AzAppSecret <secret> -
 </details>
 
 <details>
-  <summary><h1>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h1></summary>
+  <summary><h3>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h3></summary>
 
  .SYNOPSIS
 Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR)
