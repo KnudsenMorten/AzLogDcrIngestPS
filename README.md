@@ -121,7 +121,7 @@ Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$Verbose
 
 
 <details>
-  <summary><h2>Get-AzAccessTokenManagement</h2></summary>
+  <summary><h4>Get-AzAccessTokenManagement</h4></summary>
 
 .SYNOPSIS
 Get access token for connecting management.azure.com - used for REST API connectivity
@@ -151,7 +151,7 @@ PS> $Headers = Get-AzAccessTokenManagement -AzAppId <id> -AzAppSecret <secret> -
 </details>
 
 <details>
-  <summary><h2>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h2></summary>
+  <summary><h3>CreateUpdate-AzLogAnalyticsCustomLogTableDcr</h3></summary>
 
  .SYNOPSIS
 Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR)
@@ -668,6 +668,8 @@ Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
   <summary><h2>CheckCreateUpdate-TableDcr-Structure</h2></summary>
 CheckCreateUpdate-TableDcr-Structure
 </details>
+
+<br>
 
 <details>
   <summary><h1>Deep-dive about Azure Data Collection Rules (DCRs)</h1></summary>
