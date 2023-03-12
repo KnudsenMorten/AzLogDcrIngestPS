@@ -469,32 +469,41 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 # Overview of function functionality
 
-|Function name|Category|Sysopsis|
-|:-------|:------------|:-------|
-|Add-CollectionTimeToAllEntriesInArray|Data-manipulate|Add property CollectionTime (based on current time) to all entries on the object|
-|Add-ColumnDataToAllEntriesInArray|Data-manipulate|Adds up to 3 extra columns and data to the object|
-|Build-DataArrayToAlignWithSchema|Data-manipulate|Rebuilds the source object to match modified schema structure - used after usage of ValidateFix-AzLogAnalyticsTableSchemaColumnNames|
-|Convert-CimArrayToObjectFixStructure|Data-manipulate|Converts CIM array and remove CIM class information|
-|Convert-PSArrayToObjectFixStructure|Data-manipulate|Converts PS array and remove PS class information|
-|Filter-ObjectExcludeProperty|Data-manipulate|Removes columns from the object which is considered "noice" and shouldn't be send to logs|
-|ValidateFix-AzLogAnalyticsTableSchemaColumnNames|Data-manipulate|Validates the column names in the schema are valid according the requirement for LogAnalytics tables.<br>Fixes any issues by rebuild the source object|
-|Get-AzLogAnalyticsTableAzDataCollectionRuleStatus|Table/DCR/Schema management|Get status about Azure Loganalytics tables and Data Collection Rule|
-|Get-AzDcrDceDetails|Table/DCR/Schema management|Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph|
-|CheckCreateUpdate-TableDcr-Structure|Table/DCR/Schema management|Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API (combined)|
-|CreateUpdate-AzDataCollectionRuleLogIngestCustomLog|Table/DCR/Schema management|Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API|
-|CreateUpdate-AzLogAnalyticsCustomLogTableDcr|Table/DCR/Schema management|Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR) for Log Ingestion API upload to LogAnalytics|
-|Get-ObjectSchemaAsArray|Table/DCR/Schema management|Gets the schema of the object as array with column-names and their type (strin, boolean, dynamic, etc.)|
-|Get-ObjectSchemaAsHash|Table/DCR/Schema management|Gets the schema of the object as hash table with column-names and their type (strin, boolean, dynamic, etc.)|
-|Delete-AzDataCollectionRules|Table/DCR/Schema management|Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing|
-|Delete-AzLogAnalyticsCustomLogTables|Table/DCR/Schema management|Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing|
-|Update-AzDataCollectionRuleDceEndpoint|Table/DCR/Schema management|Updates the DceEndpointUri of the Data Collection Rule|
-|Update-AzDataCollectionRuleResetTransformKqlDefaultTable/DCR/Schema management|Updates the tranformKql parameter on an existing DCR - and resets it back to default|
-|Update-AzDataCollectionRuleTransformKql|Table/DCR/Schema management|Updates the tranformKql parameter on an existing DCR with the provided parameter|
-|Post-AzLogAnalyticsLogIngestCustomLogDcrDce|Data Out (upload to Azure LogAnalytics)|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule|
-|Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output|Data Out (upload to Azure LogAnalytics)|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)|
-|Get-AzDceListAll|Data Out (upload to Azure LogAnalytics)|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
-|Get-AzDcrListAll|Data Out (upload to Azure LogAnalytics)|Builds list of all Data Collection Rules (DCRs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
-|Get-AzAccessTokenManagement|Support functions (security)|Get access token for connecting management.azure.com - used for REST API connectivity|
+## Category: Data Manipulate
+|Function name|Sysopsis|
+|:-------|:-------|
+|Add-CollectionTimeToAllEntriesInArray|Add property CollectionTime (based on current time) to all entries on the object|
+|Add-ColumnDataToAllEntriesInArray|Adds up to 3 extra columns and data to the object|
+|Build-DataArrayToAlignWithSchema|Rebuilds the source object to match modified schema structure - used after usage of ValidateFix-AzLogAnalyticsTableSchemaColumnNames|
+|Convert-CimArrayToObjectFixStructure|Converts CIM array and remove CIM class information|
+|Convert-PSArrayToObjectFixStructure|Converts PS array and remove PS class information|
+|Filter-ObjectExcludeProperty|Removes columns from the object which is considered "noice" and shouldn't be send to logs|
+|ValidateFix-AzLogAnalyticsTableSchemaColumnNames|Validates the column names in the schema are valid according the requirement for LogAnalytics tables.<br>Fixes any issues by rebuild the source object|
+
+## Category: Table/DCR/Schema management
+|Function name|Sysopsis|
+|:-------|:-------|
+|Get-AzLogAnalyticsTableAzDataCollectionRuleStatus|Get status about Azure Loganalytics tables and Data Collection Rule|
+|Get-AzDcrDceDetails|Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph|
+|CheckCreateUpdate-TableDcr-Structure|Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API (combined)|
+|CreateUpdate-AzDataCollectionRuleLogIngestCustomLog|Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API|
+|CreateUpdate-AzLogAnalyticsCustomLogTableDcr|Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR) for Log Ingestion API upload to LogAnalytics|
+|Get-ObjectSchemaAsArray|Gets the schema of the object as array with column-names and their type (strin, boolean, dynamic, etc.)|
+|Get-ObjectSchemaAsHash|Gets the schema of the object as hash table with column-names and their type (strin, boolean, dynamic, etc.)|
+|Delete-AzDataCollectionRules|Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing|
+|Delete-AzLogAnalyticsCustomLogTables|Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing|
+|Update-AzDataCollectionRuleDceEndpoint|Updates the DceEndpointUri of the Data Collection Rule|
+|Update-AzDataCollectionRuleResetTransformKqlDefault|Updates the tranformKql parameter on an existing DCR - and resets it back to default|
+|Update-AzDataCollectionRuleTransformKql|Updates the tranformKql parameter on an existing DCR with the provided parameter|
+
+## Category: Data Out (upload to Azure LogAnalytics)
+|Post-AzLogAnalyticsLogIngestCustomLogDcrDce|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule|
+|Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)|
+|Get-AzDceListAll|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
+|Get-AzDcrListAll|Builds list of all Data Collection Rules (DCRs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
+
+## Category: Support functions (security)
+|Get-AzAccessTokenManagement|Get access token for connecting management.azure.com - used for REST API connectivity|
 
 <br>
 
