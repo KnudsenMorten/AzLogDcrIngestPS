@@ -148,11 +148,6 @@ JSON-header to use in invoke-webrequest / invoke-restmethod commands
 
 .EXAMPLE
 PS> $Headers = Get-AzAccessTokenManagement -AzAppId <id> -AzAppSecret <secret> -TenantId <id>
-
-<details>
-  <summary><h4>### Sample Usage & Output</h4></summary>
-fsdfdsfd
-  </details>
 </details>
 
 <details>
@@ -195,8 +190,8 @@ Output of REST PUT command. Should be 200 for success
 PS> CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 </details>
 
-**CreateUpdate-AzDataCollectionRuleLogIngestCustomLog**
-
+<details>
+  <summary><h2>CreateUpdate-AzDataCollectionRuleLogIngestCustomLog</h2></summary>
 .SYNOPSIS
 Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using
 Log Ingestion API
@@ -261,9 +256,10 @@ Output of REST PUT command. Should be 200 for success
 PS> CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
 .NOTES
+</details>
 
-**Update-AzDataCollectionRuleResetTransformKqlDefault**
-
+<details>
+  <summary><h2>Update-AzDataCollectionRuleResetTransformKqlDefault</h2></summary>
 .SYNOPSIS
 Updates the tranformKql parameter on an existing DCR - and resets it back to default
 
@@ -294,9 +290,10 @@ Output of REST PUT command. Should be 200 for success
 PS> Update-AzDataCollectionRuleResetTransformKqlDefault
 
 .NOTES
+</details>
 
-**Update-AzDataCollectionRuleTransformKql**
-
+<details>
+  <summary><h2>Update-AzDataCollectionRuleTransformKql</h2></summary>
 .SYNOPSIS
 Updates the tranformKql parameter on an existing DCR with the provided parameter
 
@@ -328,9 +325,10 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> Update-AzDataCollectionRuleTransformKql
+</details>
 
-**Update-AzDataCollectionRuleLogAnalyticsCustomLogTableSchema**
-
+<details>
+  <summary><h2>Update-AzDataCollectionRuleLogAnalyticsCustomLogTableSchema</h2></summary>
 .SYNOPSIS
 Updates the schema of Azure Loganalytics table + Azure Data Collection Rule - based on source object schema
 
@@ -368,9 +366,10 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> Update-AzDataCollectionRuleLogAnalyticsCustomLogTableSchema
+</details>
 
-**Update-AzDataCollectionRuleDceEndpoint**
-
+<details>
+  <summary><h2>Update-AzDataCollectionRuleDceEndpoint</h2></summary>
 .SYNOPSIS
 Updates the DceEndpointUri of the Data Collection Rule
 
@@ -402,8 +401,10 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> Update-AzDataCollectionRuleDceEndpoint
+</details>
 
-**Delete-AzLogAnalyticsCustomLogTables**
+<details>
+  <summary><h2>Delete-AzLogAnalyticsCustomLogTables</h2></summary>
 .SYNOPSIS
 Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing
 
@@ -435,8 +436,10 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> Delete-AzLogAnalyticsCustomLogTables -TableLike *demo* will delete all tables with the word demo in it
+</details>
 
-**Delete-AzDataCollectionRules**
+<details>
+  <summary><h2>Delete-AzDataCollectionRules</h2></summary>
 .SYNOPSIS
 Deletes the Azure Loganalytics defined in like-format, so you can fast clean-up for example after demo or testing
 
@@ -468,8 +471,10 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> Delete-AzDataCollectionRules -DcrNameLike *demo* will delete all DCRs with the word demo in it
+</details>
 
-**Get-AzDcrDceDetails**
+<details>
+  <summary><h2>Get-AzDcrDceDetails</h2></summary>
 .SYNOPSIS
 Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph
 
@@ -502,8 +507,10 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> Get-AzDcrDceDetails
+</details>
 
-**Post-AzLogAnalyticsLogIngestCustomLogDcrDce**
+<details>
+  <summary><h2>Post-AzLogAnalyticsLogIngestCustomLogDcrDce</h2></summary>
 .SYNOPSIS
 Send data to LogAnalytics using Log Ingestion API and Data Collection Rule
 
@@ -544,8 +551,10 @@ Output of REST PUT command. Should be 200 for success
 
 .EXAMPLE
 PS> Get-AzDcrDceDetails
+</details>
 
-**ValidateFix-AzLogAnalyticsTableSchemaColumnNames**
+<details>
+  <summary><h2>ValidateFix-AzLogAnalyticsTableSchemaColumnNames</h2></summary>
 .SYNOPSIS
 Validates the column names in the schema are valid according the requirement for LogAnalytics tables
 Fixes any issues by rebuild the source object
@@ -569,8 +578,10 @@ Updated $DataVariable with valid column names
 
 .EXAMPLE
 PS> ValidateFix-AzLogAnalyticsTableSchemaColumnNames
+</details>
 
-**Build-DataArrayToAlignWithSchema**
+<details>
+  <summary><h2>Build-DataArrayToAlignWithSchema</h2></summary>
 .SYNOPSIS
 Rebuilds the source object to match modified schema structure - used after usage of ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 
@@ -590,31 +601,69 @@ Updated $DataVariable with valid column names
 
 .EXAMPLE
 PS> Build-DataArrayToAlignWithSchema
+</details>
 
- **Get-AzLogAnalyticsTableAzDataCollectionRuleStatus**
- 
- **Add-ColumnDataToAllEntriesInArray**
- 
- **Add-CollectionTimeToAllEntriesInArray**
- 
- **Convert-CimArrayToObjectFixStructure**
- 
- **Convert-PSArrayToObjectFixStructure**
- 
- **Get-ObjectSchemaAsArray**
- 
- **Get-ObjectSchemaAsHash**
- 
- **Filter-ObjectExcludeProperty**
- 
- **Get-AzDcrListAll**
- 
- Get-AzDceListAll
- 
- Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
- 
- CheckCreateUpdate-TableDcr-Structure
+<details>
+  <summary><h2>Get-AzLogAnalyticsTableAzDataCollectionRuleStatus</h2></summary>
 
+Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
+
+</details>
+ 
+<details>
+  <summary><h2>Add-ColumnDataToAllEntriesInArray</h2></summary>
+Add-ColumnDataToAllEntriesInArray
+</details>
+ 
+<details>
+  <summary><h2>Add-CollectionTimeToAllEntriesInArray</h2></summary>
+Add-CollectionTimeToAllEntriesInArray
+</details>
+ 
+<details>
+  <summary><h2>Convert-CimArrayToObjectFixStructure</h2></summary>
+Convert-CimArrayToObjectFixStructure
+</details>
+ 
+<details>
+  <summary><h2>Convert-PSArrayToObjectFixStructure</h2></summary>
+Convert-PSArrayToObjectFixStructure
+</details>
+ 
+<details>
+  <summary><h2>Get-ObjectSchemaAsArray</h2></summary>
+Get-ObjectSchemaAsArray
+</details>
+ 
+<details>
+  <summary><h2>Get-ObjectSchemaAsHash</h2></summary>
+Get-ObjectSchemaAsHash
+</details>
+ 
+<details>
+  <summary><h2>Filter-ObjectExcludeProperty</h2></summary>
+Filter-ObjectExcludeProperty
+</details>
+ 
+<details>
+  <summary><h2>Get-AzDcrListAll</h2></summary>
+Get-AzDcrListAll
+</details>
+ 
+<details>
+  <summary><h2>Get-AzDceListAll</h2></summary>
+Get-AzDceListAll
+</details>
+ 
+<details>
+  <summary><h2>Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output</h2></summary>
+Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
+</details>
+ 
+<details>
+  <summary><h2>CheckCreateUpdate-TableDcr-Structure</h2></summary>
+CheckCreateUpdate-TableDcr-Structure
+</details>
 
 <details>
   <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
