@@ -668,8 +668,6 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 </details>
 
 
-<br>
-
 # Function synopsis
 
 ## Category: Data Manipulate
