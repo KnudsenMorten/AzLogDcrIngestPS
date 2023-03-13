@@ -297,10 +297,30 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 # How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
 
-It is supported ..... true / false
-reference computer
-app permissions
+It is fuly supported by AzLogDcringestPS to modify the schema, if it detects changes. But I recommend to do this as a controlled step, when you detect that the source object layout/schema has changed.
 
+There are 2 settings in the Variables, that handles how and where changes can happen:
+
+$AzLogDcrTableCreateFromReferenceMachine         = @()
+
+## How to disable so only you can make changes to the schema ?
+If your solution is running on many machines, I would recommend, that you control the process of making changes to the table/DCR schema.
+In my example with ClientInspector, I don't want 5000 clients to be able to change the schema - but do this from a reference machine.
+
+You need to add 2 variables to your Powershell script: $AzLogDcrTableCreateFromAnyMachine and $AzLogDcrTableCreateFromReferenceMachine
+
+Change the variable $AzLogDcrTableCreateFromAnyMachine to $False, which tells the script to not let changes happen from any machine.
+It is OK in the beginning, when you are setting it up - but make sure to set it to $false when going in production.
+```
+$AzLogDcrTableCreateFromAnyMachine               = $false
+```
+
+Now it is important, that you activate the second parameter telling from which reference machine you will let changes happen:
+```
+$AzLogDcrTableCreateFromReferenceMachine         = @("mycomputername1","referencecomputer")
+```
+
+I would also recommend that you manage these changes using a second Azure app, so you have 2 app's - 1 for lg ingestion and 1 for table/scr/schema management. [See how to configurere the permission here](https://github.com/KnudsenMorten/ClientInspectorV2-DeploymentKit#azure-rbac-security-adjustment-separation-of-permissions-between-log-ingestion-and-tabledcr-management)
 
 <details>
   <summary><h2>Example of changing schema when source object changes</h2></summary>
