@@ -22,7 +22,7 @@ You can download latest version here or Powershell Gallery:
 
 [AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
-Quick links:
+### Quick links
 [Function synopsis](#function-synopsis)
 
 [Detailed - Data Manipulation](#category-data-manipulation)
@@ -33,11 +33,11 @@ Quick links:
 
 [Detailed - Support functions (security)](#category-support-functions-security-1)
 
-[Background for building this Powershell module]#background-for-building-this-powershell-module
+[Background for building this Powershell module](#background-for-building-this-powershell-module)
 
-[Deep-dive about Azure Data Collection Rules (DCRs)]#deep-dive-about-azure-data-collection-rules-dcrs
+[Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)
 
-[Deep-dive about Log Ingestion API]#deep-dive-about-log-ingestion-api
+[Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)
 
 <br>
 
