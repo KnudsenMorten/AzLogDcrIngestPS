@@ -708,15 +708,29 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 ```
 </details>
 
-## Verbose-mode & More help
+## How to enable verbose-mode & get more help ?
+
+### Verbose mode vs Normal mode (output)
 If you want to get more detailed information about that is happening, you can enable verbose mode (-verbose:$true)
+
+Here is an example with ClientInspector, where verbose mode is activated. 
 ```
 .\ClientInspector.ps1 -verbose:$true -function:localpath
 
 ```
 
-If you want to get help with the syntax and examples from the AzLogDcrLogIngestPS module, you can write
-get-module
+Here is an example where the function is called in verbose-mode
+```
+Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$true
+
+```
+[You can see examples of normal-mode and verbose-mode output from all the functions here](https://github.com/KnudsenMorten/ClientInspectorV2#sample-output-of-clientinspector)
+
+
+### How can I see which cmdlets are available in the module?
+
+If you want to get help with the syntax and examples from the AzLogDcrLogIngestPS module, you can use the cmdlet get-command as show below
+
 ```
 PS  get-command -module AzLogDcrIngestPS
 
@@ -749,9 +763,12 @@ Function        ValidateFix-AzLogAnalyticsTableSchemaColumnNames   1.1.17     Az
 
 ```
 
+### How can I get access to the help, parameters, syntax, examples - using get-help ?
+
 Get help with a specific cmdlet - get-help <cmdlet>Add-CollectionTimeToAllEntriesInArray -full
+
 ```
-get-help Add-CollectionTimeToAllEntriesInArray -full
+PS> get-help Add-CollectionTimeToAllEntriesInArray -full
 
 NAME
     Add-CollectionTimeToAllEntriesInArray
