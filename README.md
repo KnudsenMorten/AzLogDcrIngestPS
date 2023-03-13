@@ -22,6 +22,17 @@ You can download latest version here or Powershell Gallery:
 
 [AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
+Quick links:
+[Function synopsis](#function-synopsis)
+[Detailed - Data Manipulation](#category-data-manipulation)
+[Detailed - Table/DCR/Schema management](#category-tabledcrschema-management-1)
+[Detailed - Data Out (upload to Azure LogAnalytics)](#category-data-out-upload-to-azure-loganalytics-1)
+[Detailed - Support functions (security)](#category-support-functions-security-1)
+
+[Background for building this Powershell module]#background-for-building-this-powershell-module
+[Deep-dive about Azure Data Collection Rules (DCRs)]#deep-dive-about-azure-data-collection-rules-dcrs
+[Deep-dive about Log Ingestion API]#deep-dive-about-log-ingestion-api
+
 <br>
 
 [Big Thanks to the great people in Azure LogAnaytics/DCR/AMA/VMInsight/Workbooks product teams - you deliver rock stars solution :smile:](#big-thanks-to-the-great-people-in-azure-loganayticsdcramavminsightworkbooks-product-teams---you-deliver-rock-stars-solution-smile)
