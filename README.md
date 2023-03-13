@@ -708,6 +708,197 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 ```
 </details>
 
+## Verbose-mode & More help
+If you want to get more detailed information about that is happening, you can enable verbose mode (-verbose:$true)
+```
+.\ClientInspector.ps1 -verbose:$true -function:localpath
+
+```
+
+If you want to get help with the syntax and examples from the AzLogDcrLogIngestPS module, you can write
+get-module
+```
+PS  get-command -module AzLogDcrIngestPS
+
+CommandType     Name                                               Version    Source                                                                         
+-----------     ----                                               -------    ------                                                                         
+Function        Add-CollectionTimeToAllEntriesInArray              1.1.17     AzLogDcrIngestPS                                                               
+Function        Add-ColumnDataToAllEntriesInArray                  1.1.17     AzLogDcrIngestPS                                                               
+Function        Build-DataArrayToAlignWithSchema                   1.1.17     AzLogDcrIngestPS                                                               
+Function        CheckCreateUpdate-TableDcr-Structure               1.1.17     AzLogDcrIngestPS                                                               
+Function        Convert-CimArrayToObjectFixStructure               1.1.17     AzLogDcrIngestPS                                                               
+Function        Convert-PSArrayToObjectFixStructure                1.1.17     AzLogDcrIngestPS                                                               
+Function        CreateUpdate-AzDataCollectionRuleLogIngestCusto... 1.1.17     AzLogDcrIngestPS                                                               
+Function        CreateUpdate-AzLogAnalyticsCustomLogTableDcr       1.1.17     AzLogDcrIngestPS                                                               
+Function        Delete-AzDataCollectionRules                       1.1.17     AzLogDcrIngestPS                                                               
+Function        Delete-AzLogAnalyticsCustomLogTables               1.1.17     AzLogDcrIngestPS                                                               
+Function        Filter-ObjectExcludeProperty                       1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-AzAccessTokenManagement                        1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-AzDceListAll                                   1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-AzDcrDceDetails                                1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-AzDcrListAll                                   1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-AzLogAnalyticsTableAzDataCollectionRuleStatus  1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-ObjectSchemaAsArray                            1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-ObjectSchemaAsHash                             1.1.17     AzLogDcrIngestPS                                                               
+Function        Post-AzLogAnalyticsLogIngestCustomLogDcrDce        1.1.17     AzLogDcrIngestPS                                                               
+Function        Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output 1.1.17     AzLogDcrIngestPS                                                               
+Function        Update-AzDataCollectionRuleDceEndpoint             1.1.17     AzLogDcrIngestPS                                                               
+Function        Update-AzDataCollectionRuleResetTransformKqlDef... 1.1.17     AzLogDcrIngestPS                                                               
+Function        Update-AzDataCollectionRuleTransformKql            1.1.17     AzLogDcrIngestPS                                                               
+Function        ValidateFix-AzLogAnalyticsTableSchemaColumnNames   1.1.17     AzLogDcrIngestPS                                                               
+
+```
+
+Get help with a specific cmdlet - get-help <cmdlet>Add-CollectionTimeToAllEntriesInArray -full
+```
+get-help Add-CollectionTimeToAllEntriesInArray -full
+
+NAME
+    Add-CollectionTimeToAllEntriesInArray
+    
+SYNOPSIS
+    Add property CollectionTime (based on current time) to all entries on the object
+    
+    
+SYNTAX
+    Add-CollectionTimeToAllEntriesInArray [-Data] <Array> [<CommonParameters>]
+    
+    
+DESCRIPTION
+    Gives capability to do proper searching in queries to find latest set of records with same collection time
+    Time Generated cannot be used when you are sending data in batches, as TimeGenerated will change
+    An example where this is important is a complete list of applications for a computer. We want all applications to
+    show up when queriying for the latest data
+    
+
+PARAMETERS
+    -Data <Array>
+        Object to modify
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
+        about_CommonParameters (https:/go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    None. You cannot pipe objects
+    
+    
+OUTPUTS
+    Updated object with CollectionTime
+    
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS C:\>#-------------------------------------------------------------------------------------------
+    
+    # Variables
+    #-------------------------------------------------------------------------------------------
+    $Verbose                   = $true  # $true or $false
+    
+    #-------------------------------------------------------------------------------------------
+    # Collecting data (in)
+    #-------------------------------------------------------------------------------------------
+    $DNSName                   = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
+    $ComputerName              = (Get-CimInstance win32_computersystem).DNSHostName
+    [datetime]$CollectionTime  = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
+    
+    $UserLoggedOnRaw           = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
+    $UserLoggedOn              = $UserLoggedOnRaw.UserName
+    
+    $DataVariable = Get-CimInstance -ClassName Win32_Processor | Select-Object -ExcludeProperty "CIM*"
+    
+    #-------------------------------------------------------------------------------------------
+    # Preparing data structure
+    #-------------------------------------------------------------------------------------------
+    $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
+    $DataVariable
+    
+    # add CollectionTime to existing array
+    $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
+    $DataVariable
+    
+    #-------------------------------------------------------------------------------------------
+    # Output
+    #-------------------------------------------------------------------------------------------
+    
+    VERBOSE:   Adding CollectionTime to all entries in array .... please wait !
+    Caption                                 : Intel64 Family 6 Model 165 Stepping 5
+    Description                             : Intel64 Family 6 Model 165 Stepping 5
+    InstallDate                             : 
+    Name                                    : Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz
+    Status                                  : OK
+    Availability                            : 3
+    ConfigManagerErrorCode                  : 
+    ConfigManagerUserConfig                 : 
+    CreationClassName                       : Win32_Processor
+    DeviceID                                : CPU0
+    ErrorCleared                            : 
+    ErrorDescription                        : 
+    LastErrorCode                           : 
+    PNPDeviceID                             : 
+    PowerManagementCapabilities             : 
+    PowerManagementSupported                : False
+    StatusInfo                              : 3
+    SystemCreationClassName                 : Win32_ComputerSystem
+    SystemName                              : STRV-MOK-DT-02
+    AddressWidth                            : 64
+    CurrentClockSpeed                       : 2904
+    DataWidth                               : 64
+    Family                                  : 198
+    LoadPercentage                          : 1
+    MaxClockSpeed                           : 2904
+    OtherFamilyDescription                  : 
+    Role                                    : CPU
+    Stepping                                : 
+    UniqueId                                : 
+    UpgradeMethod                           : 1
+    Architecture                            : 9
+    AssetTag                                : To Be Filled By O.E.M.
+    Characteristics                         : 252
+    CpuStatus                               : 1
+    CurrentVoltage                          : 8
+    ExtClock                                : 100
+    L2CacheSize                             : 2048
+    L2CacheSpeed                            : 
+    L3CacheSize                             : 16384
+    L3CacheSpeed                            : 0
+    Level                                   : 6
+    Manufacturer                            : GenuineIntel
+    NumberOfCores                           : 8
+    NumberOfEnabledCore                     : 8
+    NumberOfLogicalProcessors               : 16
+    PartNumber                              : To Be Filled By O.E.M.
+    ProcessorId                             : BFEBFBFF000A0655
+    ProcessorType                           : 3
+    Revision                                : 
+    SecondLevelAddressTranslationExtensions : False
+    SerialNumber                            : To Be Filled By O.E.M.
+    SocketDesignation                       : U3E1
+    ThreadCount                             : 16
+    Version                                 : 
+    VirtualizationFirmwareEnabled           : False
+    VMMonitorModeExtensions                 : False
+    VoltageCaps                             : 
+    PSComputerName                          : 
+    CollectionTime                          : 12-03-2023 16:08:33
+    
+    
+    
+    
+    
+RELATED LINKS
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
+```
+
 
 # Function synopsis
 
