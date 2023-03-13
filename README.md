@@ -297,15 +297,8 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 
 # How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
 
-It is fuly supported by AzLogDcringestPS to modify the schema, if it detects changes. But I recommend to do this as a controlled step, when you detect that the source object layout/schema has changed.
-
-There are 2 settings in the Variables, that handles how and where changes can happen:
-
-$AzLogDcrTableCreateFromReferenceMachine         = @()
-
-$AzLogDcrTableCreateFromAnyMachine               = $false
-
-I will cover this in next topic.
+It is fuly supported by AzLogDcringestPS to automatically modify the schema, if it detects changes. It is managed by a variable (AzLogDcrTableCreateFromAnyMachine).
+But I recommend to do this as a controlled step, when you detect that the source object layout/schema has changed. I will cover this in the next section.
 
 ## How to disable so only you can make changes to the schema ?
 If your solution is running on many machines, I would recommend, that you control the process of making changes to the table/DCR schema.
