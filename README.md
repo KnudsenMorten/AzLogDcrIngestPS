@@ -311,9 +311,19 @@ I will cover this in next topic.
 If your solution is running on many machines, I would recommend, that you control the process of making changes to the table/DCR schema.
 In my example with ClientInspector, I don't want 5000 clients to be able to change the schema - but do this from a reference machine.
 
-You need to add 2 variables to your Powershell script: $AzLogDcrTableCreateFromAnyMachine and $AzLogDcrTableCreateFromReferenceMachine
+You need to add 2 variables to your Powershell script (or what you prefer to call them): **$AzLogDcrTableCreateFromAnyMachine** and **$AzLogDcrTableCreateFromReferenceMachine**
+You will use them as data-values, when you call the function **CheckCreateUpdate-TableDcr-Structure** using the parameters **AzLogDcrTableCreateFromReferenceMachine** and **AzLogDcrTableCreateFromAnyMachine**
 
-Change the variable $AzLogDcrTableCreateFromAnyMachine to $False, which tells the script to not let changes happen from any machine.
+```
+.PARAMETER AzLogDcrTableCreateFromReferenceMachine
+Array with list of computers, where schema management can be done
+
+.PARAMETER AzLogDcrTableCreateFromAnyMachine
+True means schema changes can be made from any computer - FALSE means it can only happen from reference machine(s)
+
+```
+
+Change the variable **$AzLogDcrTableCreateFromAnyMachine** to **$False**, which tells the script to not let changes happen from any machine.
 It is OK in the beginning, when you are setting it up - but make sure to set it to $false when going in production.
 ```
 $AzLogDcrTableCreateFromAnyMachine               = $false
@@ -324,7 +334,7 @@ Now it is important, that you activate the second parameter telling from which r
 $AzLogDcrTableCreateFromReferenceMachine         = @("mycomputername1","referencecomputer")
 ```
 
-I would also recommend that you manage these changes using a second Azure app, so you have 2 app's - 1 for lg ingestion and 1 for table/scr/schema management. [See how to configurere the permission here](https://github.com/KnudsenMorten/ClientInspectorV2-DeploymentKit#azure-rbac-security-adjustment-separation-of-permissions-between-log-ingestion-and-tabledcr-management)
+I would also recommend that you manage these changes using a second Azure app, so you have 2 app's - one app for **log ingestion** and one for **table/scr/schema management**. [Azure RBAC Security adjustment, separation of permissions between log ingestion and table/DCR management](https://github.com/KnudsenMorten/ClientInspectorV2-DeploymentKit#azure-rbac-security-adjustment-separation-of-permissions-between-log-ingestion-and-tabledcr-management)
 
 <details>
   <summary><h2>Example of changing schema when source object changes</h2></summary>
