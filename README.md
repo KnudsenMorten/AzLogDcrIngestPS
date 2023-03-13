@@ -24,13 +24,19 @@ You can download latest version here or Powershell Gallery:
 
 Quick links:
 [Function synopsis](#function-synopsis)
+
 [Detailed - Data Manipulation](#category-data-manipulation)
+
 [Detailed - Table/DCR/Schema management](#category-tabledcrschema-management-1)
+
 [Detailed - Data Out (upload to Azure LogAnalytics)](#category-data-out-upload-to-azure-loganalytics-1)
+
 [Detailed - Support functions (security)](#category-support-functions-security-1)
 
 [Background for building this Powershell module]#background-for-building-this-powershell-module
+
 [Deep-dive about Azure Data Collection Rules (DCRs)]#deep-dive-about-azure-data-collection-rules-dcrs
+
 [Deep-dive about Log Ingestion API]#deep-dive-about-log-ingestion-api
 
 <br>
