@@ -63,7 +63,6 @@ The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - a
 If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the section
 </details>
 
-<br>
 
 <details>
   <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
