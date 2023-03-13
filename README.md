@@ -26,12 +26,10 @@ You can download latest version here or Powershell Gallery:
 
 [Big Thanks to the great people in Azure LogAnaytics/DCR/AMA/VMInsight/Workbooks product teams - you deliver rock stars solution :smile:](#big-thanks-to-the-great-people-in-azure-loganayticsdcramavminsightworkbooks-product-teams---you-deliver-rock-stars-solution-smile)
 
-
 <details>
   <summary><h2>Background for building this Powershell module</h2></summary>
   
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
-
 
 
 > Don't let yourself be confused, when you are searching the internet for 'Azure Monitor HTTP Data Collector' and it comes up saying it is in **public preview**. It is <ins>still the legacy API</ins> which will be **replaced** by Log Ingestion API and DCRs.
@@ -63,7 +61,6 @@ If I should mention some disadvantages, then they are:
 The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - and **ensure data schema alignment to requirement**.
 
 If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the section
-
 </details>
 
 <br>
@@ -674,7 +671,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 <br>
 
-# Functions synopsis
+# Function synopsis
 
 ## Category: Data Manipulate
 |Function name|Synopsis|
