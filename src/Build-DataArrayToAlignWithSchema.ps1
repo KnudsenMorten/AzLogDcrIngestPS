@@ -7,6 +7,15 @@ Function Build-DataArrayToAlignWithSchema
     .DESCRIPTION
     Builds new PSCustomObject object
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER Data
     This is the data array
 

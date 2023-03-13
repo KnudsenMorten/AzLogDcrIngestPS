@@ -7,6 +7,15 @@ Function Add-ColumnDataToAllEntriesInArray
     .DESCRIPTION
     Gives capability to extend the data with for example Computer and UserLoggedOn, which are nice data to have in the inventory
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER Data
     Object to modify
 

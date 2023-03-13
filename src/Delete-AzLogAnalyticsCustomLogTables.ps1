@@ -7,6 +7,15 @@ Function Delete-AzLogAnalyticsCustomLogTables
     .DESCRIPTION
     Used to delete many tables in one task
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER TableNameLike
     Here you can put in the table name(s) you wan to delete using like-format - sample *demo* 
 

@@ -9,6 +9,15 @@ Function Get-AzDcrListAll
     Result is saved in global-variable in Powershell
     Main reason for saving as global-variable is to optimize number of times to do lookup - due to throttling in Azure Resource Graph
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER AzAppId
     This is the Azure app id
         

@@ -7,6 +7,15 @@ Function Update-AzDataCollectionRuleDceEndpoint
     .DESCRIPTION
     Used to change the Data Collection Endpoint in a Data Collection Rule
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER DcrResourceId
     This is resource id of the Data Collection Rule which should be changed
 

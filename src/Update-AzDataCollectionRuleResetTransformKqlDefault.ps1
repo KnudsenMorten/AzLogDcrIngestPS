@@ -7,6 +7,15 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault
     .DESCRIPTION
     Used to set transformation back to default, where all data is being sent in - with needed TimeGenerated column
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER $DcrResourceId
     This is the resource id of the data collection rule
 

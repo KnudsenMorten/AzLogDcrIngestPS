@@ -8,6 +8,15 @@ Function Get-ObjectSchemaAsHash
     Used to validate the data structure - and give insight of any potential data manipulation
     Support to return in both LogAnalytics table-format and DCR-format
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER Data
     Object to modify
 

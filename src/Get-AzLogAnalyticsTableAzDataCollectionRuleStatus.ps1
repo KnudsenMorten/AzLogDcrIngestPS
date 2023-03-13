@@ -7,6 +7,15 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
     .DESCRIPTION
     Used to detect if table/DCR must be create/updated - or it is valid to send in data
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER DcrName
     Specifies the DCR name
 

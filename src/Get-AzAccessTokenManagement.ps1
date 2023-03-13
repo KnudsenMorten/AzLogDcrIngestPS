@@ -7,6 +7,15 @@ Function Get-AzAccessTokenManagement
     .DESCRIPTION
     Can be used under current connected user - or by Azure app connectivity with secret
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER AzAppId
     This is the Azure app id
         

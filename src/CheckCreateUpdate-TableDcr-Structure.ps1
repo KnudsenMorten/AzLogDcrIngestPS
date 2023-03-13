@@ -10,6 +10,15 @@ Function CheckCreateUpdate-TableDcr-Structure
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER Data
     Data object
 

@@ -8,6 +8,15 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     .DESCRIPTION
     Uses schema based on source object
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
 
