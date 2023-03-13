@@ -302,6 +302,9 @@ It is fuly supported by AzLogDcringestPS to modify the schema, if it detects cha
 There are 2 settings in the Variables, that handles how and where changes can happen:
 
 $AzLogDcrTableCreateFromReferenceMachine         = @()
+$AzLogDcrTableCreateFromAnyMachine               = $false
+
+I will cover this in next topic.
 
 ## How to disable so only you can make changes to the schema ?
 If your solution is running on many machines, I would recommend, that you control the process of making changes to the table/DCR schema.
