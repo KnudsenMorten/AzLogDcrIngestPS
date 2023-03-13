@@ -39,11 +39,12 @@ You can download latest version here or Powershell Gallery:
 
 [Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)
 
-<br>
 
 ### Credits & Thank You
 
 [Big Thanks to the great people in Azure LogAnaytics/DCR/AMA/VMInsight/Workbooks product teams - you deliver rock stars solution :smile:](#big-thanks-to-the-great-people-in-azure-loganayticsdcramavminsightworkbooks-product-teams---you-deliver-rock-stars-solution-smile)
+
+<br>
 
 <details>
   <summary><h2>Background for building this Powershell module</h2></summary>
