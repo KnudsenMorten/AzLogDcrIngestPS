@@ -302,6 +302,7 @@ It is fuly supported by AzLogDcringestPS to modify the schema, if it detects cha
 There are 2 settings in the Variables, that handles how and where changes can happen:
 
 $AzLogDcrTableCreateFromReferenceMachine         = @()
+
 $AzLogDcrTableCreateFromAnyMachine               = $false
 
 I will cover this in next topic.
