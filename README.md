@@ -39,6 +39,7 @@ You can download latest version here or Powershell Gallery:
 
 [Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)
 
+[Contact me](#contact)
 
 ### Credits & Thank You
 
