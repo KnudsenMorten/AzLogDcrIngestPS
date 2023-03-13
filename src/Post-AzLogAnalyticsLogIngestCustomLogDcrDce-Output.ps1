@@ -209,8 +209,10 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
             [Parameter(mandatory)]
                 [Array]$Data,
             [Parameter(mandatory)]
+                [AllowEmptyString()]
                 [string]$DcrName,
             [Parameter(mandatory)]
+                [AllowEmptyString()]
                 [string]$DceName,
             [Parameter(mandatory)]
                 [string]$TableName,
@@ -235,4 +237,3 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
         # Write result to screen
         $DataVariable | Out-String | Write-Verbose 
 }
-

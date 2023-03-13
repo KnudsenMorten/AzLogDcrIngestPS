@@ -146,4 +146,3 @@ Function Convert-PSArrayToObjectFixStructure
 
     return $ObjectModified
 }
-

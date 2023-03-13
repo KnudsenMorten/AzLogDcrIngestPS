@@ -149,17 +149,34 @@ Function Get-AzDcrDceDetails
                             If (!($DceInfo))
                                 {
                                     # record not found - rebuild list and try again
+                                    Write-Output "DCE name was not found in index ... fallback to Azure Resource Graph query !"
                                     
-                                    Start-Sleep -s 10
+                                    $AzGraphQuery = @{
+                                                        'query' = 'Resources | where type =~ "microsoft.insights/datacollectionendpoints" '
+                                                        } | ConvertTo-Json -Depth 20
 
-                                    # building global variable with all DCEs, which can be viewed by Log Ingestion app
-                                    $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-    
-                                    $DceInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DceName }
-                                       If (!($DceInfo))
+                                    $ResponseData = @()
+
+                                    $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
+                                    $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                    $ResponseData       += $ResponseRaw.content
+                                    $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
+
+                                    While ($ResponseNextLink -ne $null)
                                         {
-                                            Write-Output "Could not find DCE with name [ $($DceName) ]"
+                                            $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                            $ResponseData       += $ResponseRaw.content
+                                            $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                                         }
+                                    $DataJson = $ResponseData | ConvertFrom-Json
+                                    $Data     = $DataJson.data
+
+                                    # Retrieve DCE in scope
+                                    $DceInfo = $Data | Where-Object { $_.name -eq $DceName }
+                                        If (!($DceInfo))
+                                            {
+                                                Write-Output "Could not find DCE with name [ $($DceName) ]"
+                                            }
                                 }
                     }
                 Else
@@ -205,15 +222,30 @@ Function Get-AzDcrDceDetails
                         $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
                             If (!($DcrInfo))
                                 {
-                                    # record not found - rebuild list and try again
+                                    Write-Output "DCR name was not found in index ... fallback to Azure Resource Graph query !"
                                     
-                                    Start-Sleep -s 10
+                                    $AzGraphQuery = @{
+                                                        'query' = 'Resources | where type =~ "microsoft.insights/datacollectionendpoints" '
+                                                        } | ConvertTo-Json -Depth 20
 
-                                    # building global variable with all DCEs, which can be viewed by Log Ingestion app
-                                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                    $ResponseData = @()
+
+                                    $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
+                                    $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                    $ResponseData       += $ResponseRaw.content
+                                    $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
+
+                                    While ($ResponseNextLink -ne $null)
+                                        {
+                                            $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                            $ResponseData       += $ResponseRaw.content
+                                            $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
+                                        }
+                                    $DataJson = $ResponseData | ConvertFrom-Json
+                                    $Data     = $DataJson.data
     
-                                    $DcrInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DcrName }
-                                       If (!($DcInfo))
+                                    $DcrInfo = $Data | Where-Object { $_.name -eq $DcrName }
+                                       If (!($DcrInfo))
                                         {
                                             Write-Output "Could not find DCR with name [ $($DcrName) ]"
                                         }

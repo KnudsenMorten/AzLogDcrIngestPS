@@ -149,4 +149,3 @@ Function Filter-ObjectExcludeProperty
     $Data = $Data | Select-Object * -ExcludeProperty $ExcludeProperty
     Return $Data
 }
-

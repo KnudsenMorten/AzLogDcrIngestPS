@@ -147,4 +147,3 @@ Function Get-AzDcrListAll
 
         Return $Data
 }
-

@@ -155,4 +155,3 @@ Function Delete-AzLogAnalyticsCustomLogTables
             }
 
 }
-

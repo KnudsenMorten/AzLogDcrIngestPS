@@ -159,4 +159,3 @@ Function Delete-AzDataCollectionRules
             }
 
 }
-

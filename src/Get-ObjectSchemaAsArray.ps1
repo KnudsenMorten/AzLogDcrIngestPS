@@ -235,4 +235,3 @@ Function Get-ObjectSchemaAsArray
                 Return $SchemaArrayDcrFormat
             }
 }
-

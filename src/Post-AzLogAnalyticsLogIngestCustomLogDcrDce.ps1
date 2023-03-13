@@ -138,8 +138,10 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
             [Parameter(mandatory)]
                 [string]$DceURI,
             [Parameter(mandatory)]
+                [AllowEmptyString()]
                 [string]$DcrImmutableId,
             [Parameter(mandatory)]
+                [AllowEmptyString()]
                 [string]$DcrStream,
             [Parameter(mandatory)]
                 [Array]$Data,
@@ -158,117 +160,125 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
     #--------------------------------------------------------------------------
     # Data check
     #--------------------------------------------------------------------------
+    
+    # On a newly created DCR, sometimes we cannot retrieve the DCR info fast enough. So we skip trying to send in data !
+    If ( ($DcrImmutableId -eq $null) -or ($DcrStream -eq $null) )
+        {
+            # skipping as this is a newly created DCR. Just rerun the script and it will work !
+        }
+    Else
+        {
+            If ($DceURI -and $DcrImmutableId -and $DcrStream -and $Data)
+                {
+                    # Add assembly to upload using http
+                    Add-Type -AssemblyName System.Web
 
-        If ($DceURI -and $DcrImmutableId -and $DcrStream -and $Data)
-            {
-                # Add assembly to upload using http
-                Add-Type -AssemblyName System.Web
+                    #--------------------------------------------------------------------------
+                    # Obtain a bearer token used to authenticate against the data collection endpoint using Azure App & Secret
+                    #--------------------------------------------------------------------------
 
-                #--------------------------------------------------------------------------
-                # Obtain a bearer token used to authenticate against the data collection endpoint using Azure App & Secret
-                #--------------------------------------------------------------------------
+                        $scope       = [System.Web.HttpUtility]::UrlEncode("https://monitor.azure.com//.default")   
+                        $bodytoken   = "client_id=$AzAppId&scope=$scope&client_secret=$AzAppSecret&grant_type=client_credentials";
+                        $headers     = @{"Content-Type"="application/x-www-form-urlencoded"};
+                        $uri         = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token"
 
-                    $scope       = [System.Web.HttpUtility]::UrlEncode("https://monitor.azure.com//.default")   
-                    $bodytoken   = "client_id=$AzAppId&scope=$scope&client_secret=$AzAppSecret&grant_type=client_credentials";
-                    $headers     = @{"Content-Type"="application/x-www-form-urlencoded"};
-                    $uri         = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token"
+                        $bearerToken = (Invoke-RestMethod -Uri $uri -Method "Post" -Body $bodytoken -Headers $headers).access_token
 
-                    $bearerToken = (Invoke-RestMethod -Uri $uri -Method "Post" -Body $bodytoken -Headers $headers).access_token
-
-                    $headers = @{
-                                    "Authorization" = "Bearer $bearerToken";
-                                    "Content-Type" = "application/json";
-                                }
+                        $headers = @{
+                                        "Authorization" = "Bearer $bearerToken";
+                                        "Content-Type" = "application/json";
+                                    }
 
 
-                #--------------------------------------------------------------------------
-                # Upload the data using Log Ingesion API using DCE/DCR
-                #--------------------------------------------------------------------------
+                    #--------------------------------------------------------------------------
+                    # Upload the data using Log Ingesion API using DCE/DCR
+                    #--------------------------------------------------------------------------
                     
-                    # initial variable
-                    $indexLoopFrom = 0
+                        # initial variable
+                        $indexLoopFrom = 0
 
-                    # calculate size of data (entries)
-                    $TotalDataLines = ($Data | Measure-Object).count
+                        # calculate size of data (entries)
+                        $TotalDataLines = ($Data | Measure-Object).count
 
-                    # calculate number of entries to send during each transfer - log ingestion api limits to max 1 mb per transfer
-                    If ( ($TotalDataLines -gt 1) -and ($BatchAmount -eq $null) )
-                        {
-                            $SizeDataSingleEntryJson  = (ConvertTo-Json -Depth 100 -InputObject @($Data[0]) -Compress).length
-                            $DataSendAmountDecimal    = (( 1mb - 300Kb) / $SizeDataSingleEntryJson)   # 500 Kb is overhead (my experience !)
-                            $DataSendAmount           = [math]::Floor($DataSendAmountDecimal)
-                        }
-                    ElseIf ($BatchAmount)
-                        {
-                            $DataSendAmount           = $BatchAmount
-                        }
-                    Else
-                        {
-                            $DataSendAmount           = 1
-                        }
+                        # calculate number of entries to send during each transfer - log ingestion api limits to max 1 mb per transfer
+                        If ( ($TotalDataLines -gt 1) -and ($BatchAmount -eq $null) )
+                            {
+                                $SizeDataSingleEntryJson  = (ConvertTo-Json -Depth 100 -InputObject @($Data[0]) -Compress).length
+                                $DataSendAmountDecimal    = (( 1mb - 300Kb) / $SizeDataSingleEntryJson)   # 500 Kb is overhead (my experience !)
+                                $DataSendAmount           = [math]::Floor($DataSendAmountDecimal)
+                            }
+                        ElseIf ($BatchAmount)
+                            {
+                                $DataSendAmount           = $BatchAmount
+                            }
+                        Else
+                            {
+                                $DataSendAmount           = 1
+                            }
 
-                    # loop - upload data in batches, depending on possible size & Azure limits 
-                    Do
-                        {
-                            $DataSendRemaining = $TotalDataLines - $indexLoopFrom
+                        # loop - upload data in batches, depending on possible size & Azure limits 
+                        Do
+                            {
+                                $DataSendRemaining = $TotalDataLines - $indexLoopFrom
 
-                            If ($DataSendRemaining -le $DataSendAmount)
-                                {
-                                    # send last batch - or whole batch
-                                    $indexLoopTo    = $TotalDataLines - 1   # cause we start at 0 (zero) as first record
-                                    $DataScopedSize = $Data   # no need to split up in batches
-                                }
-                            ElseIf ($DataSendRemaining -gt $DataSendAmount)
-                                {
-                                    # data must be splitted in batches
-                                    $indexLoopTo    = $indexLoopFrom + $DataSendAmount
-                                    $DataScopedSize = $Data[$indexLoopFrom..$indexLoopTo]
-                                }
+                                If ($DataSendRemaining -le $DataSendAmount)
+                                    {
+                                        # send last batch - or whole batch
+                                        $indexLoopTo    = $TotalDataLines - 1   # cause we start at 0 (zero) as first record
+                                        $DataScopedSize = $Data   # no need to split up in batches
+                                    }
+                                ElseIf ($DataSendRemaining -gt $DataSendAmount)
+                                    {
+                                        # data must be splitted in batches
+                                        $indexLoopTo    = $indexLoopFrom + $DataSendAmount
+                                        $DataScopedSize = $Data[$indexLoopFrom..$indexLoopTo]
+                                    }
 
-                            # Convert data into JSON-format
-                            $JSON = ConvertTo-Json -Depth 100 -InputObject @($DataScopedSize) -Compress
+                                # Convert data into JSON-format
+                                $JSON = ConvertTo-Json -Depth 100 -InputObject @($DataScopedSize) -Compress
 
-                            If ($DataSendRemaining -gt 1)    # batch
-                                {
-                                    write-Output ""
+                                If ($DataSendRemaining -gt 1)    # batch
+                                    {
+                                        write-Output ""
                                     
-                                    # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                    Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
-                                }
-                            ElseIf ($DataSendRemaining -eq 1)   # single record
-                                {
-                                    write-Output ""
-                                    Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
-                                }
+                                        # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
+                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                    }
+                                ElseIf ($DataSendRemaining -eq 1)   # single record
+                                    {
+                                        write-Output ""
+                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                    }
 
-                            $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
+                                $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
                             
-                            # set encoding to UTF8
-                            $JSON = [System.Text.Encoding]::UTF8.GetBytes($JSON)
+                                # set encoding to UTF8
+                                $JSON = [System.Text.Encoding]::UTF8.GetBytes($JSON)
 
-                            $Result = Invoke-WebRequest -Uri $uri -Method POST -Body $JSON -Headers $headers -ErrorAction SilentlyContinue
-                            $StatusCode = $Result.StatusCode
+                                $Result = Invoke-WebRequest -Uri $uri -Method POST -Body $JSON -Headers $headers -ErrorAction SilentlyContinue
+                                $StatusCode = $Result.StatusCode
 
-                            If ($StatusCode -eq "204")
-                                {
-                                    Write-host "  SUCCESS - data uploaded to LogAnalytics"
-                                }
-                            ElseIf ($StatusCode -eq "RequestEntityTooLarge")
-                                {
-                                    Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
-                                }
-                            Else
-                                {
-                                    Write-Error $result
-                                }
+                                If ($StatusCode -eq "204")
+                                    {
+                                        Write-host "  SUCCESS - data uploaded to LogAnalytics"
+                                    }
+                                ElseIf ($StatusCode -eq "RequestEntityTooLarge")
+                                    {
+                                        Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
+                                    }
+                                Else
+                                    {
+                                        Write-Error $result
+                                    }
 
-                            # Set new Fom number, based on last record sent
-                            $indexLoopFrom = $indexLoopTo
+                                # Set new Fom number, based on last record sent
+                                $indexLoopFrom = $indexLoopTo
 
-                        }
-                    Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
-            
+                            }
+                        Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
               # return $result
         }
-        Write-host ""
+            
+            Write-host ""
+        }
 }

@@ -81,7 +81,7 @@ If I should mention some disadvantages, then they are:
 
 The overall goals for **AzLogDcrIngestPS** are to **automate** all the steps - and **ensure data schema alignment to requirement**.
 
-If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the section
+If you are interested in learning more about Azure Data Collection Rules and the different options, I urge you to read the next sections.
 </details>
 
 
