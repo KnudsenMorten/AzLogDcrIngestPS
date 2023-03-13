@@ -296,11 +296,12 @@ You can use **any source data** which can be retrieved by Powershell into an obj
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
 # How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
-
 It is fuly supported by AzLogDcringestPS to automatically modify the schema, if it detects changes. It is managed by a variable (AzLogDcrTableCreateFromAnyMachine).
 But I recommend to do this as a controlled step, when you detect that the source object layout/schema has changed. I will cover this in the next section.
 
-## How to disable so only you can make changes to the schema ?
+<details>
+  <summary><h2>How to disable so only you can make changes to the schema ?</h2></summary>
+
 If your solution is running on many machines, I would recommend, that you control the process of making changes to the table/DCR schema.
 In my example with ClientInspector, I don't want 5000 clients to be able to change the schema - but do this from a reference machine.
 
@@ -328,6 +329,8 @@ $AzLogDcrTableCreateFromReferenceMachine         = @("mycomputername1","referenc
 ```
 
 I would also recommend that you manage these changes using a second Azure app, so you have 2 app's - one app for **log ingestion** and one for **table/scr/schema management**. [Azure RBAC Security adjustment, separation of permissions between log ingestion and table/DCR management](https://github.com/KnudsenMorten/ClientInspectorV2-DeploymentKit#azure-rbac-security-adjustment-separation-of-permissions-between-log-ingestion-and-tabledcr-management)
+
+</details>
 
 <details>
   <summary><h2>Example of changing schema when source object changes</h2></summary>
