@@ -674,10 +674,10 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 <br>
 
-# Overview of function functionality
+# Function functionality (synopsis)
 
 ## Category: Data Manipulate
-|Function name|Sysopsis|
+|Function name|Synopsis|
 |:-------|:-------|
 |Add-CollectionTimeToAllEntriesInArray|Add property CollectionTime (based on current time) to all entries on the object|
 |Add-ColumnDataToAllEntriesInArray|Adds up to 3 extra columns and data to the object|
@@ -688,7 +688,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 |ValidateFix-AzLogAnalyticsTableSchemaColumnNames|Validates the column names in the schema are valid according the requirement for LogAnalytics tables.<br>Fixes any issues by rebuild the source object|
 
 ## Category: Table/DCR/Schema management
-|Function name|Sysopsis|
+|Function name|Synopsis|
 |:-------|:-------|
 |Get-AzLogAnalyticsTableAzDataCollectionRuleStatus|Get status about Azure Loganalytics tables and Data Collection Rule|
 |Get-AzDcrDceDetails|Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph|
@@ -704,7 +704,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 |Update-AzDataCollectionRuleTransformKql|Updates the tranformKql parameter on an existing DCR with the provided parameter|
 
 ## Category: Data Out (upload to Azure LogAnalytics)
-|Function name|Sysopsis|
+|Function name|Synopsis|
 |:-------|:-------|
 |Post-AzLogAnalyticsLogIngestCustomLogDcrDce|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule|
 |Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)|
@@ -712,7 +712,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 |Get-AzDcrListAll|Builds list of all Data Collection Rules (DCRs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
 
 ## Category: Support functions (security)
-|Function name|Sysopsis|
+|Function name|Synopsis|
 |:-------|:-------|
 |Get-AzAccessTokenManagement|Get access token for connecting management.azure.com - used for REST API connectivity|
 
