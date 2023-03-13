@@ -718,7 +718,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 ```
 </details>
 
-## How to enable verbose-mode & get more help ?
+# How to enable verbose-mode & get more help ?
 
 <details>
   <summary><h3>Verbose mode vs Normal mode (output)</h3></summary>
