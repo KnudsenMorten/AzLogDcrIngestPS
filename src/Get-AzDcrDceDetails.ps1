@@ -8,15 +8,6 @@ Function Get-AzDcrDceDetails
     Used to retrieve information about data collection rules and data collection endpoints - using Azure Resource Graph
     Used by other functions which are looking for DCR/DCE by name
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DcrName
     Here you can put in the DCR name you want to find
 
@@ -37,6 +28,9 @@ Function Get-AzDcrDceDetails
 
     .OUTPUTS
     Information about DCR/DCE
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true

@@ -7,15 +7,6 @@ Function Delete-AzDataCollectionRules
     .DESCRIPTION
     Used to delete many data collection rules in one task
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DcrnameLike
     Here you can put in the DCR name(s) you want to delete using like-format - sample *demo* 
 
@@ -36,6 +27,9 @@ Function Delete-AzDataCollectionRules
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true

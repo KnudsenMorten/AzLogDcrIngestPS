@@ -14,15 +14,6 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
     In case of diffent sizes, use 1 for BatchAmount
     Sending data in UTF8 format
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DceUri
     Here you can put in the DCE uri - typically found using Get-DceDcrDetails
 
@@ -49,6 +40,9 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
 
     .PARAMETER TenantId
     This is the Azure AD tenant id
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------

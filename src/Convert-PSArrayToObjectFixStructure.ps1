@@ -7,14 +7,6 @@ Function Convert-PSArrayToObjectFixStructure
     .DESCRIPTION
     Used to remove "noice" information of columns which we shouldn't send into the logs
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .PARAMETER Data
     Specifies the data object to modify
@@ -24,6 +16,9 @@ Function Convert-PSArrayToObjectFixStructure
 
     .OUTPUTS
     Modified array
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------

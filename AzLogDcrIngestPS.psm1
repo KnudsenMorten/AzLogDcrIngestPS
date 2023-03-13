@@ -10,15 +10,6 @@ Function Add-CollectionTimeToAllEntriesInArray
     An example where this is important is a complete list of applications for a computer. We want all applications to
     show up when queriying for the latest data
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -27,6 +18,9 @@ Function Add-CollectionTimeToAllEntriesInArray
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -153,15 +147,6 @@ Function Add-ColumnDataToAllEntriesInArray
     .DESCRIPTION
     Gives capability to extend the data with for example Computer and UserLoggedOn, which are nice data to have in the inventory
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -188,6 +173,9 @@ Function Add-ColumnDataToAllEntriesInArray
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -340,15 +328,6 @@ Function Build-DataArrayToAlignWithSchema
     .DESCRIPTION
     Builds new PSCustomObject object
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     This is the data array
 
@@ -357,6 +336,9 @@ Function Build-DataArrayToAlignWithSchema
 
     .OUTPUTS
     Updated $DataVariable with valid column names
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -573,15 +555,6 @@ Function CheckCreateUpdate-TableDcr-Structure
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Data object
 
@@ -641,6 +614,9 @@ Function CheckCreateUpdate-TableDcr-Structure
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -914,15 +890,6 @@ Function Convert-CimArrayToObjectFixStructure
     .DESCRIPTION
     Used to remove "noice" information of columns which we shouldn't send into the logs
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Specifies the data object to modify
 
@@ -931,6 +898,9 @@ Function Convert-CimArrayToObjectFixStructure
 
     .OUTPUTS
     Modified array
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -1048,14 +1018,6 @@ Function Convert-PSArrayToObjectFixStructure
     .DESCRIPTION
     Used to remove "noice" information of columns which we shouldn't send into the logs
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .PARAMETER Data
     Specifies the data object to modify
@@ -1065,6 +1027,9 @@ Function Convert-PSArrayToObjectFixStructure
 
     .OUTPUTS
     Modified array
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -1207,15 +1172,6 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     .DESCRIPTION
     Uses schema based on source object
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
 
@@ -1266,6 +1222,9 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -1763,15 +1722,6 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     .DESCRIPTION
     Uses schema based on source object
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
 
@@ -1795,6 +1745,9 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -2020,15 +1973,6 @@ Function Delete-AzDataCollectionRules
     .DESCRIPTION
     Used to delete many data collection rules in one task
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DcrnameLike
     Here you can put in the DCR name(s) you want to delete using like-format - sample *demo* 
 
@@ -2049,6 +1993,9 @@ Function Delete-AzDataCollectionRules
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true
@@ -2192,15 +2139,6 @@ Function Delete-AzLogAnalyticsCustomLogTables
     .DESCRIPTION
     Used to delete many tables in one task
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER TableNameLike
     Here you can put in the table name(s) you wan to delete using like-format - sample *demo* 
 
@@ -2221,6 +2159,9 @@ Function Delete-AzLogAnalyticsCustomLogTables
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true
@@ -2360,15 +2301,6 @@ Function Filter-ObjectExcludeProperty
     .DESCRIPTION
     Ensures that the log schema and data looks nice and clean
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -2380,6 +2312,9 @@ Function Filter-ObjectExcludeProperty
 
     .OUTPUTS
     Updated object
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -2522,15 +2457,6 @@ Function Get-AzAccessTokenManagement
     .DESCRIPTION
     Can be used under current connected user - or by Azure app connectivity with secret
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER AzAppId
     This is the Azure app id
         
@@ -2545,6 +2471,9 @@ Function Get-AzAccessTokenManagement
 
     .OUTPUTS
     JSON-header to use in invoke-webrequest / invoke-restmethod commands
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     # using App
@@ -2636,15 +2565,6 @@ Function Get-AzDceListAll
     Result is saved in global-variable in Powershell
     Main reason for saving as global-variable is to optimize number of times to do lookup - due to throttling in Azure Resource Graph
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER AzAppId
     This is the Azure app id
         
@@ -2659,6 +2579,9 @@ Function Get-AzDceListAll
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -2752,15 +2675,6 @@ Function Get-AzDcrDceDetails
     Used to retrieve information about data collection rules and data collection endpoints - using Azure Resource Graph
     Used by other functions which are looking for DCR/DCE by name
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DcrName
     Here you can put in the DCR name you want to find
 
@@ -2781,6 +2695,9 @@ Function Get-AzDcrDceDetails
 
     .OUTPUTS
     Information about DCR/DCE
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true
@@ -3089,15 +3006,6 @@ Function Get-AzDcrListAll
     Result is saved in global-variable in Powershell
     Main reason for saving as global-variable is to optimize number of times to do lookup - due to throttling in Azure Resource Graph
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER AzAppId
     This is the Azure app id
         
@@ -3112,6 +3020,9 @@ Function Get-AzDcrListAll
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -3247,15 +3158,6 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
     .DESCRIPTION
     Used to detect if table/DCR must be create/updated - or it is valid to send in data
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DcrName
     Specifies the DCR name
 
@@ -3287,6 +3189,9 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 	TRUE means existing environment must be updated - or table/DCR must be created
 	FALSE means everything is ok including schema - next step is to post data
 	
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
     # Variables
@@ -3468,15 +3373,6 @@ Function Get-ObjectSchemaAsArray
     .DESCRIPTION
     Used to validate the data structure - and give insight of any potential data manipulation
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -3485,6 +3381,9 @@ Function Get-ObjectSchemaAsArray
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true
@@ -3717,15 +3616,6 @@ Function Get-ObjectSchemaAsHash
     Used to validate the data structure - and give insight of any potential data manipulation
     Support to return in both LogAnalytics table-format and DCR-format
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -3737,6 +3627,9 @@ Function Get-ObjectSchemaAsHash
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true
@@ -4263,15 +4156,6 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
     In case of diffent sizes, use 1 for BatchAmount
     Sending data in UTF8 format
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DceUri
     Here you can put in the DCE uri - typically found using Get-DceDcrDetails
 
@@ -4298,6 +4182,9 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
 
     .PARAMETER TenantId
     This is the Azure AD tenant id
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -4509,15 +4396,6 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
     In case of diffent sizes, use 1 for BatchAmount
     Sending data in UTF8 format
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DceUri
     Here you can put in the DCE uri - typically found using Get-DceDcrDetails
 
@@ -4544,6 +4422,9 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true
@@ -4801,15 +4682,6 @@ Function Update-AzDataCollectionRuleDceEndpoint
     .DESCRIPTION
     Used to change the Data Collection Endpoint in a Data Collection Rule
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER DcrResourceId
     This is resource id of the Data Collection Rule which should be changed
 
@@ -4830,6 +4702,9 @@ Function Update-AzDataCollectionRuleDceEndpoint
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $TableName                                       = 'InvClientComputerOSInfoTest4V2'   # must not contain _CL
@@ -4951,15 +4826,6 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault
     .DESCRIPTION
     Used to set transformation back to default, where all data is being sent in - with needed TimeGenerated column
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER $DcrResourceId
     This is the resource id of the data collection rule
 
@@ -4977,6 +4843,9 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $TableName                                       = 'InvClientComputerOSInfoTest5V2'   # must not contain _CL
@@ -5161,15 +5030,6 @@ Function Update-AzDataCollectionRuleTransformKql
     .DESCRIPTION
     Used to enable transformation on a data collection rule
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER $DcrResourceId
     This is the resource id of the data collection rule
 
@@ -5190,6 +5050,9 @@ Function Update-AzDataCollectionRuleTransformKql
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $Verbose = $true
@@ -5304,15 +5167,6 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
     Checks for column names must not start with _ (underscore) - or contain " " (space) or . (period)
     In case of issues, an new source object is build
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     This is the data array
 
@@ -5321,6 +5175,9 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 
     .OUTPUTS
     Updated $DataVariable with valid column names
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------

@@ -12,15 +12,6 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
     Checks for column names must not start with _ (underscore) - or contain " " (space) or . (period)
     In case of issues, an new source object is build
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     This is the data array
 
@@ -29,6 +20,9 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 
     .OUTPUTS
     Updated $DataVariable with valid column names
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------

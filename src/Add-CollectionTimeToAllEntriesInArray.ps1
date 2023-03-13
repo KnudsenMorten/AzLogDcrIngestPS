@@ -10,15 +10,6 @@ Function Add-CollectionTimeToAllEntriesInArray
     An example where this is important is a complete list of applications for a computer. We want all applications to
     show up when queriying for the latest data
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -27,6 +18,9 @@ Function Add-CollectionTimeToAllEntriesInArray
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------

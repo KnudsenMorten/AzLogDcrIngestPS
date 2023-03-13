@@ -7,15 +7,6 @@ Function Filter-ObjectExcludeProperty
     .DESCRIPTION
     Ensures that the log schema and data looks nice and clean
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -27,6 +18,9 @@ Function Filter-ObjectExcludeProperty
 
     .OUTPUTS
     Updated object
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------

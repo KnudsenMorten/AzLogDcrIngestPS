@@ -7,15 +7,6 @@ Function Update-AzDataCollectionRuleTransformKql
     .DESCRIPTION
     Used to enable transformation on a data collection rule
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER $DcrResourceId
     This is the resource id of the data collection rule
 
@@ -36,6 +27,9 @@ Function Update-AzDataCollectionRuleTransformKql
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $Verbose = $true

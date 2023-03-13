@@ -7,15 +7,6 @@ Function Get-ObjectSchemaAsArray
     .DESCRIPTION
     Used to validate the data structure - and give insight of any potential data manipulation
 
-    .VERSION
-    1.0
-
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
     .PARAMETER Data
     Object to modify
 
@@ -24,6 +15,9 @@ Function Get-ObjectSchemaAsArray
 
     .OUTPUTS
     Updated object with CollectionTime
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     $verbose                                         = $true
