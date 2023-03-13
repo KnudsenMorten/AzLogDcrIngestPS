@@ -718,7 +718,7 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 <br>
 
-# Detailed information about functions in AzLogDcrIngestPS
+# Detailed information
 
 <br>
 
