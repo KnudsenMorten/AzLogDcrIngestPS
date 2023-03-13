@@ -1,7 +1,7 @@
 # Introduction
 I am realy happy to announce my Powershell module, **AzLogDcrIngestPS**
 
-This module can ease if you want to send any data to **Azure LogAnalytics custom logs** - using the cool features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. It supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes, includes lots of great data filtering capabilities.
+This module can ease if you want to send any data to **Azure LogAnalytics custom logs** - using the cool features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. The module supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes and includes lots of great data filtering capabilities.
 
 Core features of **AzLogDcrIngestPS** Powershell module are:
 * create/update the DCRs and tables automatically - based on the source object schema
@@ -12,11 +12,11 @@ Core features of **AzLogDcrIngestPS** Powershell module are:
 * can convert source objects based on CIM or PS objects into PSCustomObjects/array
 * can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
 
-I have built a showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), where you can see how you can use the Powershell module, **AzLogDcrIngestPS**. 
+I have built a showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), where you can see how you can use this Powershell module, **AzLogDcrIngestPS**. 
 
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) is free to the community - built to be a cool showcase of how you can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**.
 
-You can download latest version here or Powershell Gallery:
+You can download latest version of AzLogDcrIngestPS here or from Powershell Gallery:
 
 [AzLogDcringestPS (Github)](https://github.com/KnudsenMorten/AzLogDcrIngestPS)
 
