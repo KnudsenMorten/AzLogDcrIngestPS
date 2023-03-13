@@ -47,7 +47,7 @@ You can download latest version here or Powershell Gallery:
 <br>
 
 <details>
-  <summary><h2>Background for building this Powershell module</h2></summary>
+  <summary><h1>Background for building this Powershell module</h1></summary>
   
 For the last 5 years, I have been using the Log Analytics Data Collector API - also referred to 'Azure Monitor HTTP Data Collector API' - or my short name for it "MMA-method"
 
