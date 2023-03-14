@@ -14,9 +14,9 @@ Core features of **AzLogDcrIngestPS** are:
 
 The 24 functions will help you with:
 *  **data manipulation** before sending data in (7 functions)
-* table / dcr / schema management (12 functions)
-* data upload using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
-* support/security (1 function)
+*  **table / dcr / schema management** (12 functions)
+*  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
+*  **support/security** (1 function)
 
 ## See the functions in action
 ![ClientInspector](img/ClientInspector_300.png)
