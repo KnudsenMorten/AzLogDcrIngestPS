@@ -161,7 +161,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
          )
 
     #--------------------------------------------------------------------------
-    # Sending data
+    # Sending data to Azure LogAnalytics
     #--------------------------------------------------------------------------
     
     # On a newly created DCR, sometimes we cannot retrieve the DCR info fast enough. So we skip trying to send in data !
@@ -245,12 +245,12 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                                         write-Output ""
                                     
                                         # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
                                 ElseIf ($DataSendRemaining -eq 1)   # single record
                                     {
                                         write-Output ""
-                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
 
                                 $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
