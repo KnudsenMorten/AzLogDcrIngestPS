@@ -33,6 +33,12 @@ You can download latest version of AzLogDcrIngestPS here or from Powershell Gall
 
 [Detailed - Support functions (security)](#category-support-functions-security-1)
 
+[Source data - what data can I use ?](#source-data---what-data-can-i-use-)
+
+[How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)
+
+[How to enable verbose-mode & get more help ?](#how-to-enable-verbose-mode--get-more-help-)
+
 [Background for building this Powershell module](#background-for-building-this-powershell-module)
 
 [Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)
@@ -290,10 +296,14 @@ For sample data and an API call using the Logs Ingestion API
 
 </details>
 
+<br>
+
 # Source data - what data can I use ?
 You can use **any source data** which can be retrieved by Powershell into an object (wmi, cim, external data, rest api, xml-format, json-format, csv-format, etc.)
 
 ClientInspector uses several functions within the Powershell module, **AzLogDcIngestPS**, to handle source data adjustsments to **remove "noice" in data**, to **remove prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
+
+<br>
 
 # How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
 It is fuly supported by AzLogDcringestPS to automatically modify the schema, if it detects changes. It is managed by a variable (AzLogDcrTableCreateFromAnyMachine).
@@ -718,6 +728,9 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 ```
 </details>
 
+<br>
+<br>
+
 # How to enable verbose-mode & get more help ?
 
 <details>
@@ -931,6 +944,7 @@ RELATED LINKS
 ```
 </details>
 
+<br>
 
 # Function synopsis
 
