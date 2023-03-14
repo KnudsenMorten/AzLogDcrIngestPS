@@ -19,7 +19,7 @@ The 24 functions will help you with:
 * support/security (1 function)
 
 
-![ClientInspector](img/ClientInspector_300.jpg)
+![ClientInspector](img/ClientInspector_300.png)
 
 I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use this Powershell module, **AzLogDcrIngestPS**.
 
