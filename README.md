@@ -18,7 +18,7 @@ The 24 functions will help you with:
 * data upload using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
 * support/security (1 function)
 
-I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use this Powershell module, **AzLogDcrIngestPS**. 
+I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use this Powershell module, **AzLogDcrIngestPS**.
 
 ![ClientInspector](img/ClientInspector_300.jpg)
 
