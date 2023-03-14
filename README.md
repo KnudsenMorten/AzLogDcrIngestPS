@@ -13,7 +13,7 @@ Core features of **AzLogDcrIngestPS** are:
 * can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
 
 The 24 functions will help you with:
-* data manipulation before sending data in (7 functions)
+*  **data manipulation** before sending data in (7 functions)
 * table / dcr / schema management (12 functions)
 * data upload using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
 * support/security (1 function)
@@ -28,9 +28,9 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 ## Quick links for more information
 You can download latest version of AzLogDcrIngestPS or from Powershell Gallery:
 
-[AzLogDcringestPS (Github)](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1)
+[Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1)
 
-[AzLogDcringestPS (Powershell Gallery)](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
+[Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 [Function synopsis](#function-synopsis)
 
