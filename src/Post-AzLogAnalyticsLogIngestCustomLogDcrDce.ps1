@@ -161,7 +161,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
          )
 
     #--------------------------------------------------------------------------
-    # Data check
+    # Sending data
     #--------------------------------------------------------------------------
     
     # On a newly created DCR, sometimes we cannot retrieve the DCR info fast enough. So we skip trying to send in data !
