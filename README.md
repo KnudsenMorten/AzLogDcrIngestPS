@@ -22,7 +22,7 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 
 ![ClientInspector](img/ClientInspector_300.jpg)
 
-[ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) is a showcase of how you can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see i you ae in control with your clients - or something is drifting from desired state.
+[ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) is a showcase of how you can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
 You can download latest version of AzLogDcrIngestPS or from Powershell Gallery:
 
