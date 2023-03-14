@@ -20,6 +20,7 @@ The 24 functions will help you with:
 
 I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use this Powershell module, **AzLogDcrIngestPS**.
 
+
 ![ClientInspector](img/ClientInspector_300.jpg)
 
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) is a showcase of how you can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
