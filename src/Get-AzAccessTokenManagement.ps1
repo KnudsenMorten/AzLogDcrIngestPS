@@ -73,11 +73,11 @@ Function Get-AzAccessTokenManagement
             $AccessTokenUri = 'https://management.azure.com/'
             $oAuthUri       = "https://login.microsoftonline.com/$($TenantId)/oauth2/token"
             $authBody       = [Ordered] @{
-                                            resource = "$AccessTokenUri"
-                                            client_id = "$($AzAppId)"
-                                            client_secret = "$($AzAppSecret)"
+                                            resource = $AccessTokenUri
+                                            client_id = $AzAppId
+                                            client_secret = $AzAppSecret
                                             grant_type = 'client_credentials'
-                                            }
+                                         }
             $authResponse = Invoke-RestMethod -Method Post -Uri $oAuthUri -Body $authBody -ErrorAction Stop
             $token = $authResponse.access_token
 
