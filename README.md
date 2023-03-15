@@ -28,33 +28,20 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 ## Quick links for more information
 You can download latest version of AzLogDcrIngestPS or from Powershell Gallery:
 
-[Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1)
-
-[Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
-
-[Function synopsis](#function-synopsis)
-
-[Detailed - Data Manipulation](#category-data-manipulation)
-
-[Detailed - Table/DCR/Schema management](#category-tabledcrschema-management-1)
-
-[Detailed - Data Out (upload to Azure LogAnalytics)](#category-data-out-upload-to-azure-loganalytics-1)
-
-[Detailed - Support functions (security)](#category-support-functions-security-1)
-
-[Source data - what data can I use ?](#source-data---what-data-can-i-use-)
-
-[How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)
-
-[How to enable verbose-mode & get more help ?](#how-to-enable-verbose-mode--get-more-help-)
-
-[Background for building this Powershell module](#background-for-building-this-powershell-module)
-
-[Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)
-
-[Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)
-
-[Contact me](#contact)
+[Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1)  
+[Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)  
+[Function synopsis](#function-synopsis)  
+[Detailed - Data Manipulation](#category-data-manipulation)  
+[Detailed - Table/DCR/Schema management](#category-tabledcrschema-management-1)  
+[Detailed - Data Out (upload to Azure LogAnalytics)](#category-data-out-upload-to-azure-loganalytics-1) 
+[Detailed - Support functions (security)](#category-support-functions-security-1)  
+[Source data - what data can I use ?](#source-data---what-data-can-i-use-)  
+[How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)  
+[How to enable verbose-mode & get more help ?](#how-to-enable-verbose-mode--get-more-help-)  
+[Background for building this Powershell module](#background-for-building-this-powershell-module)  
+[Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)  
+[Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)  
+[Contact me](#contact)  
 
 ## Credits & Thank You
 
