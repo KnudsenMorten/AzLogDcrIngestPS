@@ -4516,7 +4516,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 1317-byte response of content type application/json; charset=utf-8
 
-      [ 1 / 1 ] - Posting data to LogAnalytics table [ InvClientComputerOSInfoTESTV2_CL ] .... Please Wait !
+      [ 1 / 1 ] - Posting data to Loganalytics table [ InvClientComputerOSInfoTESTV2_CL ] .... Please Wait !
     VERBOSE: POST with -1-byte payload
     VERBOSE: received -1-byte response of content type 
       SUCCESS - data uploaded to LogAnalytics
@@ -4588,7 +4588,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                         # calculate size of data (entries)
                         $TotalDataLines = ($Data | Measure-Object).count
-
+                        
                         # calculate number of entries to send during each transfer - log ingestion api limits to max 1 mb per transfer
                         If ( ($TotalDataLines -gt 1) -and (!($BatchAmount)) )
                             {
@@ -4631,7 +4631,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                                         write-Output ""
                                     
                                         # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
                                 ElseIf ($DataSendRemaining -eq 1)   # single record
                                     {
