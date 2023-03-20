@@ -25,14 +25,14 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
-[Video - Run of ClientInspector (normal mode)](https://youtu.be/BericD4pT0Q)  
-[Video - Automatic creation of 2 tables (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
-[Video - Automatic creation of 2 tables (normal mode)](https://youtu.be/khQMDcON6r8)  
-[Video - Schema DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
+[Video - Running ClientInspector using commandline (normal mode)](https://youtu.be/BericD4pT0Q)  
+[Video - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
+[Video - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
+[Video - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
 [Video - Data manipulation](https://youtu.be/OZWj7xZHLI8)  
-[Video - Kusto Query against data](https://youtu.be/_GlI0h7ZOsg)  
+[Video - Kusto queries against data](https://youtu.be/_GlI0h7ZOsg)  
 [Video - Dashboards](https://youtu.be/0MKPgzvDNRk)  
-[Video - Warranty lookup against Lenovo from data](https://youtu.be/Lzqh8NSPhdE)  
+[Video - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/Lzqh8NSPhdE)  
 [Video - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
 
 
