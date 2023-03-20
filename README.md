@@ -32,7 +32,7 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 [Video - Data manipulation](https://youtu.be/OZWj7xZHLI8)  
 [Video - Kusto queries against data](https://youtu.be/_GlI0h7ZOsg)  
 [Video - Dashboards](https://youtu.be/0MKPgzvDNRk)  
-[Video - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/Lzqh8NSPhdE)  
+[Video - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/3ZDyTwiLU0w)  
 [Video - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
 
 
