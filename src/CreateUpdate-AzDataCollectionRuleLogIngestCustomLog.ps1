@@ -7,6 +7,15 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     .DESCRIPTION
     Uses schema based on source object
 
+    .VERSION
+    1.0
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
 
@@ -24,6 +33,9 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     Variable $global:AzDceDetails can be build before calling this cmdlet using this syntax
     $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose -Verbose:$Verbose
  
+    .PARAMETER DcrResourceGroup
+    This is name of the resource group, where Data Collection Rules will be stored
+
     .PARAMETER DcrName
     This is name of the Data Collection Rule to use for the upload
     Function will automatically look check in a global variable ($global:AzDcrDetails) - or do a query using Azure Resource Graph to find DCR with name
@@ -57,9 +69,6 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
     .OUTPUTS
     Output of REST PUT command. Should be 200 for success
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
 
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
@@ -223,6 +232,8 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
             [Parameter(mandatory)]
                 [string]$DceName,
             [Parameter(mandatory)]
+                [string]$DcrResourceGroup,
+            [Parameter(mandatory)]
                 [string]$DcrName,
             [Parameter(mandatory)]
                 [string]$TableName,
@@ -333,7 +344,6 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
         $DcrSubscription                            = ($AzLogWorkspaceResourceId -split "/")[2]
         $DcrLogWorkspaceName                        = ($AzLogWorkspaceResourceId -split "/")[-1]
-        $DcrResourceGroup                           = "rg-dcr-" + $DcrLogWorkspaceName
         $DcrResourceId                              = "/subscriptions/$($DcrSubscription)/resourceGroups/$($DcrResourceGroup)/providers/microsoft.insights/dataCollectionRules/$($DcrName)"
 
     #--------------------------------------------------------------------------
