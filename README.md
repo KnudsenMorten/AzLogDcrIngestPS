@@ -31,9 +31,9 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 [Video - Schema DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
 [Video - Data manipulation](https://youtu.be/OZWj7xZHLI8)  
 [Video - Kusto Query against data](https://youtu.be/2vT7bq_stzQ)  
-[Video - Dashboards](https://youtu.be/3GjIJjyDHss) 
-[Video - Warranty lookup against Lenovo from data](https://youtu.be/Lzqh8NSPhdE) 
-[Video - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg)   
+[Video - Dashboards](https://youtu.be/3GjIJjyDHss)  
+[Video - Warranty lookup against Lenovo from data](https://youtu.be/Lzqh8NSPhdE)  
+[Video - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg)  
 
 
 ## Quick links for more information
