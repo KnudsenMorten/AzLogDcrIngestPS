@@ -148,7 +148,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
             $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
             $TableStatus = Try
                                 {
-                                    Invoke-RestMethod -Uri $TableUrl -Method GET -Headers $Headers
+                                    invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
                                 }
                            Catch
                                 {

@@ -161,13 +161,13 @@ Function Get-AzDcrDceDetails
                                     $ResponseData = @()
 
                                     $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                                    $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                    $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                     $ResponseData       += $ResponseRaw.content
                                     $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                                     While ($ResponseNextLink -ne $null)
                                         {
-                                            $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                            $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                             $ResponseData       += $ResponseRaw.content
                                             $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                                         }
@@ -191,13 +191,13 @@ Function Get-AzDcrDceDetails
                         $ResponseData = @()
 
                         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                         $ResponseData       += $ResponseRaw.content
                         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                         While ($ResponseNextLink -ne $null)
                             {
-                                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                 $ResponseData       += $ResponseRaw.content
                                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                             }
@@ -234,13 +234,13 @@ Function Get-AzDcrDceDetails
                                     $ResponseData = @()
 
                                     $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                                    $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                    $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                     $ResponseData       += $ResponseRaw.content
                                     $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                                     While ($ResponseNextLink -ne $null)
                                         {
-                                            $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                            $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                             $ResponseData       += $ResponseRaw.content
                                             $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                                         }
@@ -263,13 +263,13 @@ Function Get-AzDcrDceDetails
                         $ResponseData = @()
 
                         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                         $ResponseData       += $ResponseRaw.content
                         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                         While ($ResponseNextLink -ne $null)
                             {
-                                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                 $ResponseData       += $ResponseRaw.content
                                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                             }

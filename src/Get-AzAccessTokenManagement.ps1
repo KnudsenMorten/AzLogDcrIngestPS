@@ -20,7 +20,7 @@ Function Get-AzAccessTokenManagement
     None. You cannot pipe objects
 
     .OUTPUTS
-    JSON-header to use in invoke-webrequest / invoke-restmethod commands
+    JSON-header to use in invoke-webrequest -UseBasicParsing / invoke-restmethod -UseBasicParsing commands
 
     .LINK
     https://github.com/KnudsenMorten/AzLogDcrIngestPS
@@ -78,7 +78,7 @@ Function Get-AzAccessTokenManagement
                                             client_secret = $AzAppSecret
                                             grant_type = 'client_credentials'
                                          }
-            $authResponse = Invoke-RestMethod -Method Post -Uri $oAuthUri -Body $authBody -ErrorAction Stop
+            $authResponse = invoke-restmethod -UseBasicParsing -Method Post -Uri $oAuthUri -Body $authBody -ErrorAction Stop
             $token = $authResponse.access_token
 
             # Set the WebRequest headers

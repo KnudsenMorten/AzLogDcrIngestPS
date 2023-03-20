@@ -130,7 +130,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 1317-byte response of content type application/json; charset=utf-8
 
-      [ 1 / 1 ] - Posting data to Loganalytics table [ InvClientComputerOSInfoTESTV2_CL ] .... Please Wait !
+      [ 1 / 1 ] - Posting data to LogAnalytics table [ InvClientComputerOSInfoTESTV2_CL ] .... Please Wait !
     VERBOSE: POST with -1-byte payload
     VERBOSE: received -1-byte response of content type 
       SUCCESS - data uploaded to LogAnalytics
@@ -185,7 +185,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                         $headers     = @{"Content-Type"="application/x-www-form-urlencoded"};
                         $uri         = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token"
 
-                        $bearerToken = (Invoke-RestMethod -Uri $uri -Method "Post" -Body $bodytoken -Headers $headers).access_token
+                        $bearerToken = (invoke-restmethod -UseBasicParsing -Uri $uri -Method "Post" -Body $bodytoken -Headers $headers).access_token
 
                         $headers = @{
                                         "Authorization" = "Bearer $bearerToken";
@@ -245,12 +245,12 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                                         write-Output ""
                                     
                                         # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
                                 ElseIf ($DataSendRemaining -eq 1)   # single record
                                     {
                                         write-Output ""
-                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
 
                                 $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
@@ -258,7 +258,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                                 # set encoding to UTF8
                                 $JSON = [System.Text.Encoding]::UTF8.GetBytes($JSON)
 
-                                $Result = Invoke-WebRequest -Uri $uri -Method POST -Body $JSON -Headers $headers -ErrorAction SilentlyContinue
+                                $Result = invoke-webrequest -UseBasicParsing -Uri $uri -Method POST -Body $JSON -Headers $headers -ErrorAction SilentlyContinue
                                 $StatusCode = $Result.StatusCode
 
                                 If ($StatusCode -eq "204")

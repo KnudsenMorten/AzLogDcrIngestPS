@@ -95,7 +95,7 @@ Function Update-AzDataCollectionRuleTransformKql
     #--------------------------------------------------------------------------
 
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method GET -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method GET -Headers $Headers
 
     #--------------------------------------------------------------------------
     # update payload object
@@ -125,6 +125,6 @@ Function Update-AzDataCollectionRuleTransformKql
 
         # update changes to existing DCR
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
 
 }

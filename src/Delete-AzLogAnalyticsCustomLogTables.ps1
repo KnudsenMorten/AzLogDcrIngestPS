@@ -108,7 +108,7 @@ Function Delete-AzLogAnalyticsCustomLogTables
 
         # create/update table schema using REST
         $TableUrl   = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables?api-version=2021-12-01-preview"
-        $TablesRaw  = Invoke-RestMethod -Uri $TableUrl -Method GET -Headers $Headers
+        $TablesRaw  = invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
         $Tables     = $TablesRaw.value
 
 
@@ -147,7 +147,7 @@ Function Delete-AzLogAnalyticsCustomLogTables
                                                     Write-host "Deleting LogAnalytics table [ $($Table) ] ... Please Wait !"
 
                                                     $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
-                                                    Invoke-RestMethod -Uri $TableUrl -Method DELETE -Headers $Headers
+                                                    invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                                 }
                                         }
                                     1

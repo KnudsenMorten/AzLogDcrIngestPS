@@ -1456,13 +1456,13 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                         $ResponseData = @()
 
                         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                         $ResponseData       += $ResponseRaw.content
                         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                         While ($ResponseNextLink -ne $null)
                             {
-                                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                 $ResponseData       += $ResponseRaw.content
                                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                             }
@@ -1491,7 +1491,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     #------------------------------------------------------------------------------------------------
                 
         $LogWorkspaceUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "?api-version=2021-12-01-preview"
-        $LogWorkspaceId = (Invoke-RestMethod -Uri $LogWorkspaceUrl -Method GET -Headers $Headers).properties.customerId
+        $LogWorkspaceId = (invoke-restmethod -UseBasicParsing -Uri $LogWorkspaceUrl -Method GET -Headers $Headers).properties.customerId
         If ($LogWorkspaceId)
             {
                 Write-Verbose "Found required LogAnalytics info"
@@ -1528,7 +1528,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
         $Uri = "https://management.azure.com" + "/subscriptions/" + $DcrSubscription + "/resourcegroups/" + $DcrResourceGroup + "?api-version=2021-04-01"
 
-        $CheckRG = Invoke-WebRequest -Uri $Uri -Method GET -Headers $Headers
+        $CheckRG = invoke-webrequest -UseBasicParsing -Uri $Uri -Method GET -Headers $Headers
         If ($CheckRG -eq $null)
             {
                 $Body = @{
@@ -1537,7 +1537,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
                 Write-Verbose "Creating Resource group $($DcrResourceGroup) ... Please Wait !"
                 $Uri = "https://management.azure.com" + "/subscriptions/" + $DcrSubscription + "/resourcegroups/" + $DcrResourceGroup + "?api-version=2021-04-01"
-                $CreateRG = Invoke-WebRequest -Uri $Uri -Method PUT -Body $Body -Headers $Headers
+                $CreateRG = invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $Body -Headers $Headers
             }
 
     #--------------------------------------------------------------------------
@@ -1603,7 +1603,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
         $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
 
         $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
-        Invoke-WebRequest -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+        invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
         
         # sleeping to let API sync up before modifying
         Start-Sleep -s 5
@@ -1661,7 +1661,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
         $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
 
         $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
-        Invoke-WebRequest -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+        invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
 
     #--------------------------------------------------------------------------
     # sleep 10 sec to let Azure Resource Graph pick up the new DCR
@@ -1704,7 +1704,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
                 $result = try
                     {
-                        Invoke-RestMethod -Uri $roleUrl -Method PUT -Body $jsonRoleBody -headers $Headers -ErrorAction SilentlyContinue
+                        invoke-restmethod -UseBasicParsing -Uri $roleUrl -Method PUT -Body $jsonRoleBody -headers $Headers -ErrorAction SilentlyContinue
                     }
                 catch
                     {
@@ -1945,12 +1945,12 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                 Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
                 Write-Verbose $AzLogWorkspaceResourceId
 
-                Invoke-WebRequest -Uri $TableUrl -Method Patch -Headers $Headers -Body $TablebodyPatch
+                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method Patch -Headers $Headers -Body $TablebodyPatch
             }
         Catch
             {
 
-            $Result = Invoke-WebRequest -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+            $Result = invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
 
                 Try
                     {
@@ -1958,7 +1958,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                         Write-Verbose "LogAnalytics Table doesn't exist or problems detected .... creating table [ $($Table) ] in"
                         Write-Verbose $AzLogWorkspaceResourceId
 
-                        Invoke-WebRequest -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
                     }
                 catch
                     {
@@ -1972,11 +1972,11 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                         Write-Error "Something went wrong .... recreating table [ $($Table) ] in"
                         Write-Error $AzLogWorkspaceResourceId
 
-                        Invoke-WebRequest -Uri $TableUrl -Method DELETE -Headers $Headers
+                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                 
                         Start-Sleep -Seconds 10
                                 
-                        Invoke-WebRequest -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
                     }
             }
 
@@ -2261,7 +2261,7 @@ Function Delete-AzLogAnalyticsCustomLogTables
 
         # create/update table schema using REST
         $TableUrl   = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables?api-version=2021-12-01-preview"
-        $TablesRaw  = Invoke-RestMethod -Uri $TableUrl -Method GET -Headers $Headers
+        $TablesRaw  = invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
         $Tables     = $TablesRaw.value
 
 
@@ -2300,7 +2300,7 @@ Function Delete-AzLogAnalyticsCustomLogTables
                                                     Write-host "Deleting LogAnalytics table [ $($Table) ] ... Please Wait !"
 
                                                     $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
-                                                    Invoke-RestMethod -Uri $TableUrl -Method DELETE -Headers $Headers
+                                                    invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                                 }
                                         }
                                     1
@@ -2491,7 +2491,7 @@ Function Get-AzAccessTokenManagement
     None. You cannot pipe objects
 
     .OUTPUTS
-    JSON-header to use in invoke-webrequest / invoke-restmethod commands
+    JSON-header to use in invoke-webrequest -UseBasicParsing / invoke-restmethod -UseBasicParsing commands
 
     .LINK
     https://github.com/KnudsenMorten/AzLogDcrIngestPS
@@ -2549,7 +2549,7 @@ Function Get-AzAccessTokenManagement
                                             client_secret = $AzAppSecret
                                             grant_type = 'client_credentials'
                                          }
-            $authResponse = Invoke-RestMethod -Method Post -Uri $oAuthUri -Body $authBody -ErrorAction Stop
+            $authResponse = invoke-restmethod -UseBasicParsing -Method Post -Uri $oAuthUri -Body $authBody -ErrorAction Stop
             $token = $authResponse.access_token
 
             # Set the WebRequest headers
@@ -2669,13 +2669,13 @@ Function Get-AzDceListAll
         $ResponseData = @()
 
         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
         $ResponseData       += $ResponseRaw.content
         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
         While ($ResponseNextLink -ne $null)
             {
-                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                 $ResponseData       += $ResponseRaw.content
                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
             }
@@ -2849,13 +2849,13 @@ Function Get-AzDcrDceDetails
                                     $ResponseData = @()
 
                                     $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                                    $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                    $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                     $ResponseData       += $ResponseRaw.content
                                     $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                                     While ($ResponseNextLink -ne $null)
                                         {
-                                            $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                            $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                             $ResponseData       += $ResponseRaw.content
                                             $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                                         }
@@ -2879,13 +2879,13 @@ Function Get-AzDcrDceDetails
                         $ResponseData = @()
 
                         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                         $ResponseData       += $ResponseRaw.content
                         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                         While ($ResponseNextLink -ne $null)
                             {
-                                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                 $ResponseData       += $ResponseRaw.content
                                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                             }
@@ -2922,13 +2922,13 @@ Function Get-AzDcrDceDetails
                                     $ResponseData = @()
 
                                     $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                                    $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                    $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                     $ResponseData       += $ResponseRaw.content
                                     $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                                     While ($ResponseNextLink -ne $null)
                                         {
-                                            $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                            $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                             $ResponseData       += $ResponseRaw.content
                                             $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                                         }
@@ -2951,13 +2951,13 @@ Function Get-AzDcrDceDetails
                         $ResponseData = @()
 
                         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                         $ResponseData       += $ResponseRaw.content
                         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                         While ($ResponseNextLink -ne $null)
                             {
-                                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                 $ResponseData       += $ResponseRaw.content
                                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                             }
@@ -3153,13 +3153,13 @@ Function Get-AzDcrListAll
         $ResponseData = @()
 
         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
         $ResponseData       += $ResponseRaw.content
         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
         While ($ResponseNextLink -ne $null)
             {
-                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                 $ResponseData       += $ResponseRaw.content
                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
             }
@@ -3320,7 +3320,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
             $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
             $TableStatus = Try
                                 {
-                                    Invoke-RestMethod -Uri $TableUrl -Method GET -Headers $Headers
+                                    invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
                                 }
                            Catch
                                 {
@@ -4537,7 +4537,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
     VERBOSE: POST with -1-byte payload
     VERBOSE: received 1317-byte response of content type application/json; charset=utf-8
 
-      [ 1 / 1 ] - Posting data to Loganalytics table [ InvClientComputerOSInfoTESTV2_CL ] .... Please Wait !
+      [ 1 / 1 ] - Posting data to LogAnalytics table [ InvClientComputerOSInfoTESTV2_CL ] .... Please Wait !
     VERBOSE: POST with -1-byte payload
     VERBOSE: received -1-byte response of content type 
       SUCCESS - data uploaded to LogAnalytics
@@ -4592,7 +4592,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                         $headers     = @{"Content-Type"="application/x-www-form-urlencoded"};
                         $uri         = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token"
 
-                        $bearerToken = (Invoke-RestMethod -Uri $uri -Method "Post" -Body $bodytoken -Headers $headers).access_token
+                        $bearerToken = (invoke-restmethod -UseBasicParsing -Uri $uri -Method "Post" -Body $bodytoken -Headers $headers).access_token
 
                         $headers = @{
                                         "Authorization" = "Bearer $bearerToken";
@@ -4652,12 +4652,12 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                                         write-Output ""
                                     
                                         # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
                                 ElseIf ($DataSendRemaining -eq 1)   # single record
                                     {
                                         write-Output ""
-                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to Loganalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
 
                                 $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
@@ -4665,7 +4665,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                                 # set encoding to UTF8
                                 $JSON = [System.Text.Encoding]::UTF8.GetBytes($JSON)
 
-                                $Result = Invoke-WebRequest -Uri $uri -Method POST -Body $JSON -Headers $headers -ErrorAction SilentlyContinue
+                                $Result = invoke-webrequest -UseBasicParsing -Uri $uri -Method POST -Body $JSON -Headers $headers -ErrorAction SilentlyContinue
                                 $StatusCode = $Result.StatusCode
 
                                 If ($StatusCode -eq "204")
@@ -4812,7 +4812,7 @@ Function Update-AzDataCollectionRuleDceEndpoint
     #--------------------------------------------------------------------------
 
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method GET -Headers $headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method GET -Headers $headers
 
     #--------------------------------------------------------------------------
     # update payload object
@@ -4832,7 +4832,7 @@ Function Update-AzDataCollectionRuleDceEndpoint
 
         # update changes to existing DCR
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
 
 }
 
@@ -5009,7 +5009,7 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault
     #--------------------------------------------------------------------------
 
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method GET -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method GET -Headers $Headers
 
     #--------------------------------------------------------------------------
     # update payload object
@@ -5038,7 +5038,7 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault
 
         # update changes to existing DCR
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
 }
 
 
@@ -5139,7 +5139,7 @@ Function Update-AzDataCollectionRuleTransformKql
     #--------------------------------------------------------------------------
 
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method GET -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method GET -Headers $Headers
 
     #--------------------------------------------------------------------------
     # update payload object
@@ -5169,7 +5169,7 @@ Function Update-AzDataCollectionRuleTransformKql
 
         # update changes to existing DCR
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
 
 }
 

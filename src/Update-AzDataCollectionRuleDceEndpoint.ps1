@@ -116,7 +116,7 @@ Function Update-AzDataCollectionRuleDceEndpoint
     #--------------------------------------------------------------------------
 
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method GET -Headers $headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method GET -Headers $headers
 
     #--------------------------------------------------------------------------
     # update payload object
@@ -136,7 +136,7 @@ Function Update-AzDataCollectionRuleDceEndpoint
 
         # update changes to existing DCR
         $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
-        $DCR = Invoke-RestMethod -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method PUT -Body $DcrPayload -Headers $Headers
 
 }
 

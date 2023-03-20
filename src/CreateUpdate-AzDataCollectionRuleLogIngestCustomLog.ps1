@@ -280,13 +280,13 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                         $ResponseData = @()
 
                         $AzGraphUri          = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01"
-                        $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                        $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                         $ResponseData       += $ResponseRaw.content
                         $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
 
                         While ($ResponseNextLink -ne $null)
                             {
-                                $ResponseRaw         = Invoke-WebRequest -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
+                                $ResponseRaw         = invoke-webrequest -UseBasicParsing -Method POST -Uri $AzGraphUri -Headers $Headers -Body $AzGraphQuery
                                 $ResponseData       += $ResponseRaw.content
                                 $ResponseNextLink    = $ResponseRaw."@odata.nextLink"
                             }
@@ -315,7 +315,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     #------------------------------------------------------------------------------------------------
                 
         $LogWorkspaceUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "?api-version=2021-12-01-preview"
-        $LogWorkspaceId = (Invoke-RestMethod -Uri $LogWorkspaceUrl -Method GET -Headers $Headers).properties.customerId
+        $LogWorkspaceId = (invoke-restmethod -UseBasicParsing -Uri $LogWorkspaceUrl -Method GET -Headers $Headers).properties.customerId
         If ($LogWorkspaceId)
             {
                 Write-Verbose "Found required LogAnalytics info"
@@ -352,7 +352,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
         $Uri = "https://management.azure.com" + "/subscriptions/" + $DcrSubscription + "/resourcegroups/" + $DcrResourceGroup + "?api-version=2021-04-01"
 
-        $CheckRG = Invoke-WebRequest -Uri $Uri -Method GET -Headers $Headers
+        $CheckRG = invoke-webrequest -UseBasicParsing -Uri $Uri -Method GET -Headers $Headers
         If ($CheckRG -eq $null)
             {
                 $Body = @{
@@ -361,7 +361,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
                 Write-Verbose "Creating Resource group $($DcrResourceGroup) ... Please Wait !"
                 $Uri = "https://management.azure.com" + "/subscriptions/" + $DcrSubscription + "/resourcegroups/" + $DcrResourceGroup + "?api-version=2021-04-01"
-                $CreateRG = Invoke-WebRequest -Uri $Uri -Method PUT -Body $Body -Headers $Headers
+                $CreateRG = invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $Body -Headers $Headers
             }
 
     #--------------------------------------------------------------------------
@@ -427,7 +427,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
         $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
 
         $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
-        Invoke-WebRequest -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+        invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
         
         # sleeping to let API sync up before modifying
         Start-Sleep -s 5
@@ -485,7 +485,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
         $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
 
         $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
-        Invoke-WebRequest -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+        invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
 
     #--------------------------------------------------------------------------
     # sleep 10 sec to let Azure Resource Graph pick up the new DCR
@@ -528,7 +528,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
                 $result = try
                     {
-                        Invoke-RestMethod -Uri $roleUrl -Method PUT -Body $jsonRoleBody -headers $Headers -ErrorAction SilentlyContinue
+                        invoke-restmethod -UseBasicParsing -Uri $roleUrl -Method PUT -Body $jsonRoleBody -headers $Headers -ErrorAction SilentlyContinue
                     }
                 catch
                     {

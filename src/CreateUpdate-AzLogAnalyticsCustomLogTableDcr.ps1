@@ -210,12 +210,12 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                 Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
                 Write-Verbose $AzLogWorkspaceResourceId
 
-                Invoke-WebRequest -Uri $TableUrl -Method Patch -Headers $Headers -Body $TablebodyPatch
+                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method Patch -Headers $Headers -Body $TablebodyPatch
             }
         Catch
             {
 
-            $Result = Invoke-WebRequest -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+            $Result = invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
 
                 Try
                     {
@@ -223,7 +223,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                         Write-Verbose "LogAnalytics Table doesn't exist or problems detected .... creating table [ $($Table) ] in"
                         Write-Verbose $AzLogWorkspaceResourceId
 
-                        Invoke-WebRequest -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
                     }
                 catch
                     {
@@ -237,11 +237,11 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                         Write-Error "Something went wrong .... recreating table [ $($Table) ] in"
                         Write-Error $AzLogWorkspaceResourceId
 
-                        Invoke-WebRequest -Uri $TableUrl -Method DELETE -Headers $Headers
+                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                 
                         Start-Sleep -Seconds 10
                                 
-                        Invoke-WebRequest -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
                     }
             }
 
