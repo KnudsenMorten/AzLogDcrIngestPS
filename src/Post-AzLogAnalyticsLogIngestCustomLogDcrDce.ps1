@@ -242,15 +242,12 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                                 If ($DataSendRemaining -gt 1)    # batch
                                     {
-                                        write-Output ""
-                                    
                                         # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        $MessageSend = "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
                                 ElseIf ($DataSendRemaining -eq 1)   # single record
                                     {
-                                        write-Output ""
-                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        $MessageSend = "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
 
                                 $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
@@ -263,15 +260,15 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                                 If ($StatusCode -eq "204")
                                     {
-                                        Write-host "  SUCCESS - data uploaded to LogAnalytics"
+                                        $MessageStatus = "  SUCCESS - data uploaded to LogAnalytics"
                                     }
                                 ElseIf ($StatusCode -eq "RequestEntityTooLarge")
                                     {
-                                        Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
+                                        $MessageStatus = "  Error 513 - You are sending too large data - make the dataset smaller"
                                     }
                                 Else
                                     {
-                                        Write-Error $result
+                                        $MessageStatus = $result
                                     }
 
                                 # Set new Fom number, based on last record sent
@@ -279,7 +276,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                             }
                         Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
-              return $result,$StatusCode
+              return $MessageSend, $Result, $StatusCode, $MessageStatus
         }
             
             Write-host ""

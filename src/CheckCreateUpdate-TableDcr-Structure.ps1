@@ -10,9 +10,6 @@ Function CheckCreateUpdate-TableDcr-Structure
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
-    .VERSION
-    1.0
-
     .AUTHOR
     Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
 
@@ -336,18 +333,20 @@ Function CheckCreateUpdate-TableDcr-Structure
                                             # build schema to be used for LogAnalytics Table
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
-                                            CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                         -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
+                                            $ResultLA = CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
+                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
 
 
                                             # build schema to be used for DCR
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
 
-                                            CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
-                                                                                                -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
-                                                                                                -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
-                                                                                                -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                            $ResultDCR = CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
+                                                                                                             -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
+                                                                                                             -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
+                                                                                                             -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+
+                                            Return $ResultLA, $ResultDCR
                                         }
                                 }
                         } # create table/DCR

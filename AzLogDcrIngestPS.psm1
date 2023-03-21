@@ -555,9 +555,6 @@ Function CheckCreateUpdate-TableDcr-Structure
     CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
-    .VERSION
-    1.0
-
     .AUTHOR
     Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
 
@@ -881,18 +878,20 @@ Function CheckCreateUpdate-TableDcr-Structure
                                             # build schema to be used for LogAnalytics Table
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
-                                            CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                         -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
+                                            $ResultLA = CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
+                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
 
 
                                             # build schema to be used for DCR
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
 
-                                            CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
-                                                                                                -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
-                                                                                                -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
-                                                                                                -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                            $ResultDCR = CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
+                                                                                                             -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
+                                                                                                             -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
+                                                                                                             -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+
+                                            Return $ResultLA, $ResultDCR
                                         }
                                 }
                         } # create table/DCR
@@ -4411,11 +4410,12 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
                 $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
                                                        -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-                $Result = Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
-                                                                       -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
-                                                                       -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                $ResultPost = Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
+                                                                           -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
+                                                                           -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-			    Return $Result
+			    
+                Return $ResultPost
             }
 
         # log-hub support - endpoint sends log-data via log-hub (remote internal path). Then Log-hub forwards data to Azure
@@ -4695,15 +4695,12 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                                 If ($DataSendRemaining -gt 1)    # batch
                                     {
-                                        write-Output ""
-                                    
                                         # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                        Write-Output "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        $MessageSend = "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
                                 ElseIf ($DataSendRemaining -eq 1)   # single record
                                     {
-                                        write-Output ""
-                                        Write-Output "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        $MessageSend = "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
 
                                 $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
@@ -4716,15 +4713,15 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                                 If ($StatusCode -eq "204")
                                     {
-                                        Write-host "  SUCCESS - data uploaded to LogAnalytics"
+                                        $MessageStatus = "  SUCCESS - data uploaded to LogAnalytics"
                                     }
                                 ElseIf ($StatusCode -eq "RequestEntityTooLarge")
                                     {
-                                        Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
+                                        $MessageStatus = "  Error 513 - You are sending too large data - make the dataset smaller"
                                     }
                                 Else
                                     {
-                                        Write-Error $result
+                                        $MessageStatus = $result
                                     }
 
                                 # Set new Fom number, based on last record sent
@@ -4732,7 +4729,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                             }
                         Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
-              return $result,$StatusCode
+              return $MessageSend, $Result, $StatusCode, $MessageStatus
         }
             
             Write-host ""
