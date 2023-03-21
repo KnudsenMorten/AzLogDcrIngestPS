@@ -222,6 +222,10 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
             [Parameter()]
                 [string]$BatchAmount,
             [Parameter()]
+                [boolean]$EnableUploadViaLogHub = $false,
+            [Parameter()]
+                [string]$LogHubPath,
+            [Parameter()]
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
@@ -229,14 +233,46 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
                 [string]$TenantId
          )
 
+        # Endpoint sends data directly to Azure, either using public endpoint - or via private link
+        If ( ($EnableUploadViaLogHub -eq $false) -or ($EnableUploadViaLogHub -eq $null) )
+            {
 
-        $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
-                                               -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
+                                                       -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-        Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
-                                                     -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
-                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-        
+                Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
+                                                             -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
+                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+            }
+
+        # log-hub support - endpoint sends log-data via log-hub (remote internal path). Then Log-hub forwards data to Azure
+        ElseIf ( ( $EnableUploadViaLogHub -eq $true ) -and ($LogHubPath) )
+            {
+                If ($Data)
+                    {
+                        # Mandatory
+                        $LogHubData = New-Object PsCustomObject
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name Source -Value $Env:ComputerName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name UploadTime -Value (get-date -Format yyyy-MM-dd_HH-mm-ss)
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name TableName -Value $TableName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name DceName -Value $DceName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name DcrName $DcrName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name Data -Value @($Data)
+
+                        # optional
+                        If ($BatchAmount)
+                            {
+                                $LogHubData | Add-Member -MemberType NoteProperty -Name BatchAmount -Value $BatchAmount
+                            }
+                
+                        # Export to JSON format
+                        $LogHubFileName = $LogHubPath + "\" + $ENV:ComputerName + "-" + $TableName + "-" + (get-date -Format yyyy-MM-dd_HH-mm-ss) + ".json"
+
+                        $LogHubDataJson = $LogHubData | ConvertTo-Json -Depth 25
+                        $LogHubDataJson | Out-File -FilePath $LogHubFileName -Encoding utf8 -Force
+                    }
+            }
+
         # Write result to screen
         $DataVariable | Out-String | Write-Verbose 
 }

@@ -573,6 +573,9 @@ Function CheckCreateUpdate-TableDcr-Structure
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER EnableUploadViaLogHub
+    $false = send logs directly to Azure, $true = send via remote path (log-hub), where log-engine will process data and upload. Made for legacy OS with TLS 1.0/1.1, PSVersion < 5.1
+
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
 
@@ -835,6 +838,8 @@ Function CheckCreateUpdate-TableDcr-Structure
                 [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
             [Parameter(mandatory)]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
+            [Parameter()]
+                [boolean]$EnableUploadViaLogHub = $false,
             [Parameter(mandatory)]
                 [AllowEmptyCollection()]
                 [array]$AzLogDcrTableCreateFromReferenceMachine,
@@ -851,44 +856,47 @@ Function CheckCreateUpdate-TableDcr-Structure
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
 
-        If ( ($AzAppId) -and ($AzAppSecret) )
+        If ($EnableUploadViaLogHub -eq $false)
             {
-                #-----------------------------------------------------------------------------------------------
-                # Check if table and DCR exist - or schema must be updated due to source object schema changes
-                #-----------------------------------------------------------------------------------------------
+                If ( ($AzAppId) -and ($AzAppSecret) )
+                    {
+                        #-----------------------------------------------------------------------------------------------
+                        # Check if table and DCR exist - or schema must be updated due to source object schema changes
+                        #-----------------------------------------------------------------------------------------------
                     
-                    # Get insight about the schema structure
-                    $Schema = Get-ObjectSchemaAsArray -Data $Data
-                    $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
-                                                                                        -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                            # Get insight about the schema structure
+                            $Schema = Get-ObjectSchemaAsArray -Data $Data
+                            $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
+                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-                #-----------------------------------------------------------------------------------------------
-                # Structure check = $true -> Create/update table & DCR with necessary schema
-                #-----------------------------------------------------------------------------------------------
+                        #-----------------------------------------------------------------------------------------------
+                        # Structure check = $true -> Create/update table & DCR with necessary schema
+                        #-----------------------------------------------------------------------------------------------
 
-                    If ($StructureCheck -eq $true)
-                        {
-                            If ( ( $env:COMPUTERNAME -in $AzLogDcrTableCreateFromReferenceMachine) -or ($AzLogDcrTableCreateFromAnyMachine -eq $true) )    # manage table creations
+                            If ($StructureCheck -eq $true)
                                 {
+                                    If ( ( $env:COMPUTERNAME -in $AzLogDcrTableCreateFromReferenceMachine) -or ($AzLogDcrTableCreateFromAnyMachine -eq $true) )    # manage table creations
+                                        {
                                     
-                                    # build schema to be used for LogAnalytics Table
-                                    $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
+                                            # build schema to be used for LogAnalytics Table
+                                            $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
-                                    CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                 -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
+                                            CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
+                                                                                         -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
 
 
-                                    # build schema to be used for DCR
-                                    $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
+                                            # build schema to be used for DCR
+                                            $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
 
-                                    CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
-                                                                                        -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
-                                                                                        -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
-                                                                                        -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                                        -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                            CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
+                                                                                                -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
+                                                                                                -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
+                                                                                                -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                        }
                                 }
-                        }
-                } # create table/DCR
+                        } # create table/DCR
+            }
 }
 
 
@@ -4385,6 +4393,10 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
             [Parameter()]
                 [string]$BatchAmount,
             [Parameter()]
+                [boolean]$EnableUploadViaLogHub = $false,
+            [Parameter()]
+                [string]$LogHubPath,
+            [Parameter()]
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
@@ -4392,14 +4404,46 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
                 [string]$TenantId
          )
 
+        # Endpoint sends data directly to Azure, either using public endpoint - or via private link
+        If ( ($EnableUploadViaLogHub -eq $false) -or ($EnableUploadViaLogHub -eq $null) )
+            {
 
-        $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
-                                               -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
+                                                       -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-        Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
-                                                     -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
-                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-        
+                Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
+                                                             -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
+                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+            }
+
+        # log-hub support - endpoint sends log-data via log-hub (remote internal path). Then Log-hub forwards data to Azure
+        ElseIf ( ( $EnableUploadViaLogHub -eq $true ) -and ($LogHubPath) )
+            {
+                If ($Data)
+                    {
+                        # Mandatory
+                        $LogHubData = New-Object PsCustomObject
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name Source -Value $Env:ComputerName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name UploadTime -Value (get-date -Format yyyy-MM-dd_HH-mm-ss)
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name TableName -Value $TableName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name DceName -Value $DceName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name DcrName $DcrName
+                        $LogHubData | Add-Member -MemberType NoteProperty -Name Data -Value @($Data)
+
+                        # optional
+                        If ($BatchAmount)
+                            {
+                                $LogHubData | Add-Member -MemberType NoteProperty -Name BatchAmount -Value $BatchAmount
+                            }
+                
+                        # Export to JSON format
+                        $LogHubFileName = $LogHubPath + "\" + $ENV:ComputerName + "-" + $TableName + "-" + (get-date -Format yyyy-MM-dd_HH-mm-ss) + ".json"
+
+                        $LogHubDataJson = $LogHubData | ConvertTo-Json -Depth 25
+                        $LogHubDataJson | Out-File -FilePath $LogHubFileName -Encoding utf8 -Force
+                    }
+            }
+
         # Write result to screen
         $DataVariable | Out-String | Write-Verbose 
 }

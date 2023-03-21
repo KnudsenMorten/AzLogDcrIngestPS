@@ -28,6 +28,9 @@ Function CheckCreateUpdate-TableDcr-Structure
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER EnableUploadViaLogHub
+    $false = send logs directly to Azure, $true = send via remote path (log-hub), where log-engine will process data and upload. Made for legacy OS with TLS 1.0/1.1, PSVersion < 5.1
+
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
 
@@ -290,6 +293,8 @@ Function CheckCreateUpdate-TableDcr-Structure
                 [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
             [Parameter(mandatory)]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
+            [Parameter()]
+                [boolean]$EnableUploadViaLogHub = $false,
             [Parameter(mandatory)]
                 [AllowEmptyCollection()]
                 [array]$AzLogDcrTableCreateFromReferenceMachine,
@@ -306,42 +311,45 @@ Function CheckCreateUpdate-TableDcr-Structure
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
 
-        If ( ($AzAppId) -and ($AzAppSecret) )
+        If ($EnableUploadViaLogHub -eq $false)
             {
-                #-----------------------------------------------------------------------------------------------
-                # Check if table and DCR exist - or schema must be updated due to source object schema changes
-                #-----------------------------------------------------------------------------------------------
+                If ( ($AzAppId) -and ($AzAppSecret) )
+                    {
+                        #-----------------------------------------------------------------------------------------------
+                        # Check if table and DCR exist - or schema must be updated due to source object schema changes
+                        #-----------------------------------------------------------------------------------------------
                     
-                    # Get insight about the schema structure
-                    $Schema = Get-ObjectSchemaAsArray -Data $Data
-                    $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
-                                                                                        -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                            # Get insight about the schema structure
+                            $Schema = Get-ObjectSchemaAsArray -Data $Data
+                            $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
+                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-                #-----------------------------------------------------------------------------------------------
-                # Structure check = $true -> Create/update table & DCR with necessary schema
-                #-----------------------------------------------------------------------------------------------
+                        #-----------------------------------------------------------------------------------------------
+                        # Structure check = $true -> Create/update table & DCR with necessary schema
+                        #-----------------------------------------------------------------------------------------------
 
-                    If ($StructureCheck -eq $true)
-                        {
-                            If ( ( $env:COMPUTERNAME -in $AzLogDcrTableCreateFromReferenceMachine) -or ($AzLogDcrTableCreateFromAnyMachine -eq $true) )    # manage table creations
+                            If ($StructureCheck -eq $true)
                                 {
+                                    If ( ( $env:COMPUTERNAME -in $AzLogDcrTableCreateFromReferenceMachine) -or ($AzLogDcrTableCreateFromAnyMachine -eq $true) )    # manage table creations
+                                        {
                                     
-                                    # build schema to be used for LogAnalytics Table
-                                    $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
+                                            # build schema to be used for LogAnalytics Table
+                                            $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
-                                    CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                 -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
+                                            CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
+                                                                                         -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
 
 
-                                    # build schema to be used for DCR
-                                    $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
+                                            # build schema to be used for DCR
+                                            $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
 
-                                    CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
-                                                                                        -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
-                                                                                        -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
-                                                                                        -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                                        -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                            CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
+                                                                                                -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
+                                                                                                -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
+                                                                                                -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                        }
                                 }
-                        }
-                } # create table/DCR
+                        } # create table/DCR
+            }
 }
