@@ -4414,8 +4414,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
                                                                            -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
                                                                            -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-			    
-                Return $ResultPost
+			    Return $ResultPost
             }
 
         # log-hub support - endpoint sends log-data via log-hub (remote internal path). Then Log-hub forwards data to Azure
@@ -4696,11 +4695,11 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
                                 If ($DataSendRemaining -gt 1)    # batch
                                     {
                                         # we are showing as first record is 1, but actually is is in record 0 - but we change it for gui purpose
-                                        $MessageSend = "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-host "  [ $($indexLoopFrom + 1)..$($indexLoopTo + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
                                 ElseIf ($DataSendRemaining -eq 1)   # single record
                                     {
-                                        $MessageSend = "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
+                                        Write-host "  [ $($indexLoopFrom + 1) / $($TotalDataLines) ] - Posting data to LogAnalytics table [ $($TableName)_CL ] .... Please Wait !"
                                     }
 
                                 $uri = "$DceURI/dataCollectionRules/$DcrImmutableId/streams/$DcrStream"+"?api-version=2021-11-01-preview"
@@ -4713,15 +4712,15 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                                 If ($StatusCode -eq "204")
                                     {
-                                        $MessageStatus = "  SUCCESS - data uploaded to LogAnalytics"
+                                        Write-host "  SUCCESS - data uploaded to LogAnalytics"
                                     }
                                 ElseIf ($StatusCode -eq "RequestEntityTooLarge")
                                     {
-                                        $MessageStatus = "  Error 513 - You are sending too large data - make the dataset smaller"
+                                        Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
                                     }
                                 Else
                                     {
-                                        $MessageStatus = $result
+                                        Write-Error $result
                                     }
 
                                 # Set new Fom number, based on last record sent
@@ -4729,7 +4728,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                             }
                         Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
-              return $MessageSend, $Result, $StatusCode, $MessageStatus
+              return $Result
         }
             
             Write-host ""
