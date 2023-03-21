@@ -4410,11 +4410,10 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
                 $AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName -DceName $DceName `
                                                        -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-                $ResultPost = Post-AzLogAnalyticsLogIngestCustomLogDcrDce  -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
-                                                                           -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
-                                                                           -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                Post-AzLogAnalyticsLogIngestCustomLogDcrDce -DceUri $AzDcrDceDetails[2] -DcrImmutableId $AzDcrDceDetails[6] -TableName $TableName `
+                                                            -DcrStream $AzDcrDceDetails[7] -Data $Data -BatchAmount $BatchAmount `
+                                                            -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
-			    Return $ResultPost
             }
 
         # log-hub support - endpoint sends log-data via log-hub (remote internal path). Then Log-hub forwards data to Azure
