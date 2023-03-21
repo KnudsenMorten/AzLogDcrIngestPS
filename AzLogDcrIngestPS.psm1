@@ -4437,6 +4437,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output
                 
                         # Export to JSON format
                         $LogHubFileName = $LogHubPath + "\" + $ENV:ComputerName + "__" + $TableName + "__" + (get-date -Format yyyy-MM-dd_HH-mm-ss) + ".json"
+                        Write-host "Writing log-data to file $($LogHubFileName) (log-hub)"
 
                         $LogHubDataJson = $LogHubData | ConvertTo-Json -Depth 25
                         $LogHubDataJson | Out-File -FilePath $LogHubFileName -Encoding utf8 -Force
