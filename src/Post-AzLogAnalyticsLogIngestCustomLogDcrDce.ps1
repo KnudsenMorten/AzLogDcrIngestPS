@@ -279,7 +279,7 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                             }
                         Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
-              # return $result
+              return $result,$StatusCode
         }
             
             Write-host ""
