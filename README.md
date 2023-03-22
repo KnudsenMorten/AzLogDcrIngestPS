@@ -1,9 +1,9 @@
 # Introduction
 I am realy happy to announce my **Powershell module**, **AzLogDcrIngestPS**
 
-This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs** - using the cool features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. The module supports creation/update of DCRs and tables including schema, management of transformations, handles schema changes and includes lots of great data filtering capabilities.
+This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs** - using the new features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. 
 
-Core features of **AzLogDcrIngestPS** are:
+Cool features of **AzLogDcrIngestPS** are:
 * create/update the DCRs and tables automatically - based on the source object schema
 * validate the schema for naming convention issues. If exist found, it will mitigate the issues
 * update schema of DCRs and tables, if the structure of the source object changes
@@ -25,15 +25,16 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
-[Video - Running ClientInspector using commandline (normal mode)](https://youtu.be/BericD4pT0Q)  
-[Video - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
-[Video - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
-[Video - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
-[Video - Data manipulation](https://youtu.be/OZWj7xZHLI8)  
-[Video - Kusto queries against data](https://youtu.be/_GlI0h7ZOsg)  
-[Video - Dashboards](https://youtu.be/0MKPgzvDNRk)  
-[Video - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/3ZDyTwiLU0w)  
-[Video - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
+# Videos of ClientInspector and AzLogDcrIngestPS module in action
+[Video 3m 19s - Running ClientInspector using commandline (normal mode)](https://youtu.be/BericD4pT0Q)  
+[Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
+[Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
+[Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
+[Video 2m 19s - Data manipulation](https://youtu.be/OZWj7xZHLI8)  
+[Video 1m 58s - Kusto queries against data](https://youtu.be/_GlI0h7ZOsg)  
+[Video 3m 01s - Dashboards](https://youtu.be/0MKPgzvDNRk)  
+[Video 0m 48s - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/3ZDyTwiLU0w)  
+[Video 7m 25s - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
 
 
 ## Quick links for more information
@@ -102,7 +103,7 @@ If you are interested in learning more about Azure Data Collection Rules and the
 <details>
   <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
 
-## Understanding Data Collection Rules - step 1: Data-In (source data)
+## Understanding Data Collection Rules - Data-In (source data)
 As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
 
 <br>
@@ -129,7 +130,7 @@ Microsoft supports data from the following **sources (data-in)**:
 
 <br>
 
-## Understanding Data Collection Rules - step 2: Data-Transformation
+## Understanding Data Collection Rules - Data-Transformation
 Currently, Microsoft supports doing transformation using 3 methods:
 
 |Collection source|Transformation (where) |How|Purpose / limitatations |
@@ -953,6 +954,122 @@ RELATED LINKS
 </details>
 
 <br>
+
+# Easy integration of AzLogDcrIngest module in your scripts
+[You can see example of how to run your scripts and integrate AzLogDcrIngestPS by checking out ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2#running-clientinspectorps1---3-modes)
+
+You can also get inspired from below examples
+
+## Download-mode
+```
+$ScriptDirectory = $PSScriptRoot
+
+# force download using Github. This is needed for Intune remediations, since the functions library are large, and Intune only support 200 Kb at the moment
+Write-Output "Downloading latest version of module AzLogDcrIngestPS from https://github.com/KnudsenMorten/AzLogDcrIngestPS"
+Write-Output "into local path $($ScriptDirectory)"
+
+# delete existing file if found to download newest version
+If (Test-Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
+	{
+		Remove-Item -Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1"
+	}
+
+ # download newest version
+$Download = (New-Object System.Net.WebClient).DownloadFile("https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1", "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
+
+Start-Sleep -s 3
+
+# load file if found - otherwise terminate
+If (Test-Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
+	{
+		Import-module "$($ScriptDirectory)\AzLogDcrIngestPS.psm1" -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+	}
+Else
+	{
+		Write-Output "Powershell module AzLogDcrIngestPS was NOT found .... terminating !"
+		break
+	}
+
+```
+
+## PsGallery-mode
+```
+# check for AzLogDcrIngestPS
+$ModuleCheck = Get-Module -Name AzLogDcrIngestPS -ListAvailable -ErrorAction SilentlyContinue
+If (!($ModuleCheck))
+	{
+		# check for NuGet package provider
+		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+		Write-Output ""
+		Write-Output "Checking Powershell PackageProvider NuGet ... Please Wait !"
+			if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
+				{
+					Write-Host "OK - PackageProvider NuGet is installed"
+				} 
+			else 
+				{
+					try
+						{
+							Write-Host "Installing NuGet package provider .. Please Wait !"
+							Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
+						}
+					catch [Exception] {
+						$_.message 
+						exit
+					}
+				}
+
+		Write-Output "Powershell module AzLogDcrIngestPS was not found !"
+		Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+
+		Install-module -Name AzLogDcrIngestPS -Repository PSGallery -Force -Scope $Scope
+		import-module -Name AzLogDcrIngestPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+	}
+
+Elseif ($ModuleCheck)
+	{
+		# sort to get highest version, if more versions are installed
+		$ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
+		$ModuleCheck = $ModuleCheck[0]
+
+		Write-Output "Checking latest version at PsGallery for AzLogDcrIngestPS module"
+		$online = Find-Module -Name AzLogDcrIngestPS -Repository PSGallery
+
+		#compare versions
+		if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
+			{
+				Write-Output "Newer version ($($online.version)) detected"
+				Write-Output "Updating AzLogDcrIngestPS module .... Please Wait !"
+				Update-module -Name AzLogDcrIngestPS -Force
+				import-module -Name AzLogDcrIngestPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+			}
+		else
+			{
+				# No new version detected ... continuing !
+				Write-Output "OK - Running latest version"
+				$UpdateAvailable = $False
+			}
+	}
+
+```
+
+## LocalPath-mode
+```
+$ScriptDirectory = $PSScriptRoot
+
+If (Test-Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
+	{
+		Write-Output "Using AzLogDcrIngestPS module from local path $($ScriptDirectory)"
+		Import-module "$($ScriptDirectory)\AzLogDcrIngestPS.psm1" -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+	}
+Else
+	{
+		Write-Output "Required Powershell function was NOT found .... terminating !"
+		Exit
+	}
+
+```
 
 # Function synopsis
 
