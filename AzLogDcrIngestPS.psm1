@@ -1952,39 +1952,19 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                 Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
                 Write-Verbose $AzLogWorkspaceResourceId
 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method Patch -Headers $Headers -Body $TablebodyPatch
+                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method Patch -Headers $Headers -Body $TablebodyPut
             }
         Catch
             {
 
-            $Result = invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                Write-Verbose ""
+                Write-Verbose "Internal error 500 - recreating table"
 
-                Try
-                    {
-                        Write-Verbose ""
-                        Write-Verbose "LogAnalytics Table doesn't exist or problems detected .... creating table [ $($Table) ] in"
-                        Write-Verbose $AzLogWorkspaceResourceId
-
-                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
-                    }
-                catch
-                    {
-                        $FailureMessage = $_.Exception.Message
-                        $ErrorDetails = $_.ErrorDetails.Message
-                        Write-Error ""
-                        write-Error $FailureMessage
-                        Write-Error ""
-                        write-Error $ErrorDetails
-                        Write-Error ""
-                        Write-Error "Something went wrong .... recreating table [ $($Table) ] in"
-                        Write-Error $AzLogWorkspaceResourceId
-
-                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
+                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                 
-                        Start-Sleep -Seconds 10
+                Start-Sleep -Seconds 10
                                 
-                        invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
-                    }
+                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
             }
 
         
@@ -3355,7 +3335,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                             }
 
                     # Verify LogAnalytics table schema matches source object ($SchemaSourceObject) - otherwise set flag to update schema in LA/DCR
-<#
+
                         ForEach ($Entry in $SchemaSourceObject)
                             {
                                 $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) -and ($_.type -eq $Entry.type) }
@@ -3367,7 +3347,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                                         $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                                     }
                             }
-#>
+
                 }
 
         #--------------------------------------------------------------------------

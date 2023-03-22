@@ -176,7 +176,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                             }
 
                     # Verify LogAnalytics table schema matches source object ($SchemaSourceObject) - otherwise set flag to update schema in LA/DCR
-<#
+
                         ForEach ($Entry in $SchemaSourceObject)
                             {
                                 $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) -and ($_.type -eq $Entry.type) }
@@ -188,7 +188,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                                         $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                                     }
                             }
-#>
+
                 }
 
         #--------------------------------------------------------------------------
