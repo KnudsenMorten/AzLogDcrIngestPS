@@ -978,7 +978,6 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 </details>
 
 <br>
-<br>
 
 # How to enable verbose-mode & get more help ?
 
