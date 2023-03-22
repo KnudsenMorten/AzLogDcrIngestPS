@@ -25,7 +25,7 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
-# Videos
+## Videos
 [Video 3m 19s - Running ClientInspector using commandline (normal mode)](https://youtu.be/BericD4pT0Q)  
 [Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
 [Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
@@ -36,24 +36,28 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 [Video 0m 48s - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/3ZDyTwiLU0w)  
 [Video 7m 25s - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
 
-
-## Quick links for more information
+## Download latest version
 You can download latest version of AzLogDcrIngestPS here - or from Powershell Gallery:
 
 [Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1)  
 [Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
+## Quick links for more information
+
+[Background for building this Powershell module](#background-for-building-this-powershell-module)  
+[Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)  
+[Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)  
+[Archicture, Schema & Networking](#archicture-schema--networking)  
+[Source data - what data can I use ?](#source-data---what-data-can-i-use-)  
+[Example of how to use the functions](https://github.com/KnudsenMorten/AzLogDcrIngestPS#example-of-how-to-use-the-functions)  
+[How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)  
+[How to enable verbose-mode & get more help ?](#how-to-enable-verbose-mode--get-more-help-)  
+[Integration of AzLogDcrIngest in your scripts](https://github.com/KnudsenMorten/AzLogDcrIngestPS#integration-of-azlogdcringest-in-your-scripts)
 [Function synopsis](#function-synopsis)  
 [Detailed - Data Manipulation](#category-data-manipulation)  
 [Detailed - Table/DCR/Schema management](#category-tabledcrschema-management-1)  
 [Detailed - Data Out (upload to Azure LogAnalytics)](#category-data-out-upload-to-azure-loganalytics-1) 
 [Detailed - Support functions (security)](#category-support-functions-security-1)  
-[Source data - what data can I use ?](#source-data---what-data-can-i-use-)  
-[How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)  
-[How to enable verbose-mode & get more help ?](#how-to-enable-verbose-mode--get-more-help-)  
-[Background for building this Powershell module](#background-for-building-this-powershell-module)  
-[Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)  
-[Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)  
 [Contact me](#contact)  
 
 ## Credits & Thank You
