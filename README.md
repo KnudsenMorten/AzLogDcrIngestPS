@@ -368,7 +368,7 @@ I recommend to use the following function to understand the schema of the data s
 Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$verbose
 ```
 
-## Change of schema - internal error 500 mitigation
+## Internal error 500 mitigation (very rare !)
 In most cases, the changes of the schema of tables and DCRs will be done using a PUT (overwrite) command, which will add new properties to the table & DCR. 
 
 Right now, LogAnalytics will throw an error 'internal server error 500', if there is a change of the schema-type of an **existing property.**. This is very rare, but I have seen it happen for example a string-value was changed from TRUE to a boolean ($true)
