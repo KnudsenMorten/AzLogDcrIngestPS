@@ -955,10 +955,12 @@ RELATED LINKS
 
 <br>
 
-# Easy integration of AzLogDcrIngest module in your scripts
-[You can see example of how to run your scripts and integrate AzLogDcrIngestPS by checking out ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2#running-clientinspectorps1---3-modes)
+# Integration of AzLogDcrIngest in your scripts
+If you want your solution to stay updated, I'm supporting 3 modes: **Download, PsGallery and LocalPath**
 
-You can also get inspired from below examples
+[You can see more details here](https://github.com/KnudsenMorten/ClientInspectorV2#running-clientinspectorps1---3-modes)
+
+You can also get inspired from the examples below.
 
 ## Download-mode
 ```
