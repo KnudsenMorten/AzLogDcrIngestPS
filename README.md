@@ -333,8 +333,10 @@ I recommend schema changes to be managed by you - and not happen automatically.
 If your solution is running on many machines, I would recommend, that you control the process of making changes to the table/DCR schema.
 In my example with ClientInspector, I don't want 5000 clients to be able to change the schema - but I want to do this from a reference machine.
 
-You need to add 2 variables to your Powershell script (or what you prefer to call them): **$AzLogDcrTableCreateFromAnyMachine** and **$AzLogDcrTableCreateFromReferenceMachine**  
-You will use them as data-values, when you call the function **CheckCreateUpdate-TableDcr-Structure** using the parameters **AzLogDcrTableCreateFromReferenceMachine** and **AzLogDcrTableCreateFromAnyMachine**
+You need to add 2 variables to your Powershell script (or what you prefer to call them). You will use them as data-values, when you call the function **CheckCreateUpdate-TableDcr-Structure** using the parameters **AzLogDcrTableCreateFromReferenceMachine** and **AzLogDcrTableCreateFromAnyMachine**
+
+In ClientInspector, I use the variable-names **$AzLogDcrTableCreateFromAnyMachine** and **$AzLogDcrTableCreateFromReferenceMachine**  
+
 
 ```
 .PARAMETER AzLogDcrTableCreateFromReferenceMachine
