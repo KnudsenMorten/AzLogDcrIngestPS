@@ -316,6 +316,170 @@ ClientInspector uses all of the 24 functions within the Powershell module, **AzL
 
 <br>
 
+# Example of how to use the functions
+Each of the data-sets in ClientInspector (bios, applications, bitlocker, etc.) are built with the same 4-phased structure:
+
+## Phase 1/4 - Variables (naming - where to send the data)
+```
+#-------------------------------------------------------------------------------------------
+# Variables
+#-------------------------------------------------------------------------------------------
+	
+$TableName  = 'InvClientComputerInfoSystemV2'   # must not contain _CL
+$DcrName    = "dcr-" + $AzDcrPrefixClient + "-" + $TableName + "_CL"
+```
+
+
+## Phase 2/4 - Data Collection
+```
+#-------------------------------------------------------------------------------------------
+# Collecting data (in)
+#-------------------------------------------------------------------------------------------
+	
+Write-Output ""
+Write-Output "Collecting Computer system information ... Please Wait !"
+
+$DataVariable = Get-CimInstance -ClassName Win32_ComputerSystem
+```
+
+## Phase 3/4 - Data Manipulation (ensure data is in correct format and any "noice" is removed and relevant information is added)
+```
+#-------------------------------------------------------------------------------------------
+# Preparing data structure
+#-------------------------------------------------------------------------------------------
+
+# convert CIM array to PSCustomObject and remove CIM class information
+$DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
+
+# add CollectionTime to existing array
+$DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
+
+# add Computer & UserLoggedOn info to existing array
+$DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
+
+# Validating/fixing schema data structure of source data
+$DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
+
+# Aligning data structure with schema (requirement for DCR)
+$DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
+```
+
+## Phase 4/4 - Data Out (send to LogAnalytics) - combined functions
+```
+#-------------------------------------------------------------------------------------------
+# Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
+#-------------------------------------------------------------------------------------------
+
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
+                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose `
+                                     -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
+                                     -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                     -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                     -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                     -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
+
+#-----------------------------------------------------------------------------------------------
+# Upload data to LogAnalytics using DCR / DCE / Log Ingestion API
+#-----------------------------------------------------------------------------------------------
+
+Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
+                                                   -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+```
+
+<br>
+
+**TIP:  error 513 - entity is too large**  
+By default ClientInspector will send the data in batches depending on an calculated average size per record. In case your recordset is of different size, you might receive an error 513. 
+
+Cause is that you are hitting the limitation of 1 mb for each upload (Azure Pipeline limitation). Microsoft wants to receive many smaller chunks of data, as this is a shared environment. I have seen this issue when retrieving the list of all installed applications. Apparently the applications are storing information of very different degree of size.
+
+You can mitigate this issue, by adding the parameter **-BatchAmount <number of records to send per batch>** to the Post-command. If you want to be sure, set it to 1
+
+```
+Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                   -DcrName $DcrName `
+                                                   -Data $DataVariable `
+                                                   -TableName $TableName `
+                                                   -AzAppId $LogIngestAppId `
+                                                   -AzAppSecret $LogIngestAppSecret `
+                                                   -TenantId $TenantId `
+                                                   -BatchAmount 1 `
+												   -Verbose:$Verbose
+```
+
+
+## Phase 4/4 "under the hood" - Data Out (send to LogAnalytics)
+```
+#-----------------------------------------------------------------------------------------------
+# Check if table and DCR exist - or schema must be updated due to source object schema changes
+#-----------------------------------------------------------------------------------------------
+	
+# Get insight about the schema structure
+$Schema = Get-ObjectSchemaAsArray -Data $Data
+$StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId `
+                                                                    -TableName $TableName `
+                                                                    -DcrName $DcrName `
+                                                                    -SchemaSourceObject $Schema `
+                                                                    -AzAppId $AzAppId `
+                                                                    -AzAppSecret $AzAppSecret `
+                                                                    -TenantId $TenantId `
+                                                                    -Verbose:$Verbose
+
+#-----------------------------------------------------------------------------------------------
+# Structure check = $true -> Create/update table & DCR with necessary schema
+#-----------------------------------------------------------------------------------------------
+
+# build schema to be used for LogAnalytics Table
+$Schema = Get-ObjectSchemaAsHash -Data $Data `
+                                 -ReturnType Table `
+                                 -Verbose:$Verbose
+
+CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId `
+                                             -SchemaSourceObject $Schema `
+                                             -TableName $TableName `
+                                             -AzAppId $AzAppId `
+                                             -AzAppSecret $AzAppSecret `
+                                             -TenantId $TenantId `
+                                             -Verbose:$Verbose 
+
+
+# build schema to be used for DCR
+$Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
+
+CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId `
+                                                    -SchemaSourceObject $Schema `
+                                                    -DceName $DceName `
+                                                    -DcrName $DcrName `
+                                                    -TableName $TableName `
+                                                    -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
+                                                    -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                                    -AzAppId $AzAppId `
+                                                    -AzAppSecret $AzAppSecret `
+                                                    -TenantId $TenantId `
+                                                    -Verbose:$Verbose
+
+$AzDcrDceDetails = Get-AzDcrDceDetails -DcrName $DcrName `
+                                       -DceName $DceName `
+                                       -AzAppId $AzAppId `
+                                       -AzAppSecret $AzAppSecret `
+                                       -TenantId $TenantId `
+                                       -Verbose:$Verbose
+
+Post-AzLogAnalyticsLogIngestCustomLogDcrDce -DceUri $AzDcrDceDetails[2] `
+                                            -DcrImmutableId $AzDcrDceDetails[6] `
+                                            -TableName $TableName `
+                                            -DcrStream $AzDcrDceDetails[7] `
+                                            -Data $Data `
+                                            -BatchAmount $BatchAmount `
+                                            -AzAppId $AzAppId `
+                                            -AzAppSecret $AzAppSecret `
+                                            -TenantId $TenantId `
+                                            -Verbose:$Verbose
+```
+
+<br>
+
+
 # How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
 Both the DCR and LogAnalytics table has a schema, which needs to be matching the schema of the source object. This is handled by using functions in AzLogDcrIngestPS module.
 
@@ -335,15 +499,20 @@ In my example with ClientInspector, I don't want 5000 clients to be able to chan
 
 You need to add 2 variables to your Powershell script (or what you prefer to call them). You will use them as data-values, when you call the function **CheckCreateUpdate-TableDcr-Structure** using the parameters **AzLogDcrTableCreateFromReferenceMachine** and **AzLogDcrTableCreateFromAnyMachine**
 
-In ClientInspector, I use the variable-names **$AzLogDcrTableCreateFromAnyMachine** and **$AzLogDcrTableCreateFromReferenceMachine**  
-
+In ClientInspector, I use the variable-names **$AzLogDcrTableCreateFromAnyMachine** and **$AzLogDcrTableCreateFromReferenceMachine**  as shown below
 
 ```
-.PARAMETER AzLogDcrTableCreateFromReferenceMachine
-Array with list of computers, where schema management can be done
+#-------------------------------------------------------------------------------------------
+# Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
+#-------------------------------------------------------------------------------------------
 
-.PARAMETER AzLogDcrTableCreateFromAnyMachine
-True means schema changes can be made from any computer - FALSE means it can only happen from reference machine(s)
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
+                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose `
+                                     -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
+                                     -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                     -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                     -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                     -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
 
 ```
 
