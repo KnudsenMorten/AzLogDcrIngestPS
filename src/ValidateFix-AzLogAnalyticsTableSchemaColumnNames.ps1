@@ -304,6 +304,11 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
                                 $IssuesFound = $true
                                 Write-Verbose "  ISSUE - Column name must start with character [ $($ColumnName) ]"
                             }
+                        ElseIf ($ColumnName -like "*:*")   # includes : (semicolon)
+                            {
+                                $IssuesFound = $true
+                                Write-Verbose "  ISSUE - Column name include : (semicolon) - must be removed [ $($ColumnName) ]"
+                            }
                         ElseIf ($ColumnName -like "*.*")   # includes . (period)
                             {
                                 $IssuesFound = $true
@@ -346,6 +351,13 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
                                 {
                                     $UpdColumn  = $ColumnName + "_"
                                     $ColumnData = $_.$ColumnName
+                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
+                                    $_.PSObject.Properties.Remove($ColumnName)
+                                }
+                            ElseIf ($ColumnName -like "*:*")   # remove any : (semicolon)
+                                {
+                                    $UpdColumn = $ColumnName.Replace(":","")
+                                    $ColumnData = $Entry.$Column
                                     $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
                                     $_.PSObject.Properties.Remove($ColumnName)
                                 }
