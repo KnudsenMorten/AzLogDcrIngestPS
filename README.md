@@ -315,14 +315,21 @@ ClientInspector uses several functions within the Powershell module, **AzLogDcIn
 <br>
 
 # How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?
+Both the DCR and LogAnalytics table has a schema, which needs to be matching the schema of the source object. This is handled by using functions in AzLogDcrIngestPS module.
+
 It is fuly supported by AzLogDcringestPS to automatically modify the schema, if it detects changes. It is managed by a variable (AzLogDcrTableCreateFromAnyMachine).
-But I recommend to do this as a controlled step, when you detect that the source object layout/schema has changed. I will cover this in the next section.
+
+[Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
+[Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
+[Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs) 
+
+I recommend schema changes to be managed by you - and not happen automatically.
 
 <details>
   <summary><h2>How to disable so only you can make changes to the schema ?</h2></summary>
 
 If your solution is running on many machines, I would recommend, that you control the process of making changes to the table/DCR schema.
-In my example with ClientInspector, I don't want 5000 clients to be able to change the schema - but do this from a reference machine.
+In my example with ClientInspector, I don't want 5000 clients to be able to change the schema - but I want to do this from a reference machine.
 
 You need to add 2 variables to your Powershell script (or what you prefer to call them): **$AzLogDcrTableCreateFromAnyMachine** and **$AzLogDcrTableCreateFromReferenceMachine**
 You will use them as data-values, when you call the function **CheckCreateUpdate-TableDcr-Structure** using the parameters **AzLogDcrTableCreateFromReferenceMachine** and **AzLogDcrTableCreateFromAnyMachine**
@@ -350,6 +357,19 @@ $AzLogDcrTableCreateFromReferenceMachine         = @("mycomputername1","referenc
 I would also recommend that you manage these changes using a second Azure app, so you have 2 app's - one app for **log ingestion** and one for **table/scr/schema management**. [Azure RBAC Security adjustment, separation of permissions between log ingestion and table/DCR management](https://github.com/KnudsenMorten/ClientInspectorV2-DeploymentKit#azure-rbac-security-adjustment-separation-of-permissions-between-log-ingestion-and-tabledcr-management)
 
 </details>
+
+## Recommended function to understand schema
+I recommend to use the following function to understand the schema of the data source:
+```
+Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$verbose
+```
+
+## Change of schema - internal error 500 mitigation
+In most cases, the changes of the schema of tables and DCRs will be done using a PUT (overwrite) command, which will add new properties to the table & DCR. 
+
+Right now, LogAnalytics will throw an error 'internal server error 500'. The issue happens, if there is a change of the schema-type of an existing property. AzLogDcrIngestPS will fix this by deleting the table and re-creating it. You will not loose any data, as they are kept in the database - and you will see them again, when the table and properties are re-created.
+
+Problem has been escalated to the LogAnalytics team.
 
 <details>
   <summary><h2>Example of changing schema when source object changes</h2></summary>
