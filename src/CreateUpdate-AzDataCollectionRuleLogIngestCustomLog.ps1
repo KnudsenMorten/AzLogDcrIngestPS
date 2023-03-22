@@ -7,9 +7,6 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     .DESCRIPTION
     Uses schema based on source object
 
-    .VERSION
-    1.0
-
     .AUTHOR
     Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
 
@@ -346,23 +343,6 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
         $DcrLogWorkspaceName                        = ($AzLogWorkspaceResourceId -split "/")[-1]
         $DcrResourceId                              = "/subscriptions/$($DcrSubscription)/resourceGroups/$($DcrResourceGroup)/providers/microsoft.insights/dataCollectionRules/$($DcrName)"
 
-    #--------------------------------------------------------------------------
-    # Create resource group, if missing
-    #--------------------------------------------------------------------------
-
-        $Uri = "https://management.azure.com" + "/subscriptions/" + $DcrSubscription + "/resourcegroups/" + $DcrResourceGroup + "?api-version=2021-04-01"
-
-        $CheckRG = invoke-webrequest -UseBasicParsing -Uri $Uri -Method GET -Headers $Headers
-        If ($CheckRG -eq $null)
-            {
-                $Body = @{
-                            "location" = $DceLocation
-                         } | ConvertTo-Json -Depth 10
-
-                Write-Verbose "Creating Resource group $($DcrResourceGroup) ... Please Wait !"
-                $Uri = "https://management.azure.com" + "/subscriptions/" + $DcrSubscription + "/resourcegroups/" + $DcrResourceGroup + "?api-version=2021-04-01"
-                $CreateRG = invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $Body -Headers $Headers
-            }
 
     #--------------------------------------------------------------------------
     # build initial payload to create DCR for log ingest (api) to custom logs

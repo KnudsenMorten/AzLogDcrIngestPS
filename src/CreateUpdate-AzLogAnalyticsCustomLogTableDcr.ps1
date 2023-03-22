@@ -210,7 +210,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                 Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
                 Write-Verbose $AzLogWorkspaceResourceId
 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method Patch -Headers $Headers -Body $TablebodyPut
+                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
             }
         Catch
             {
