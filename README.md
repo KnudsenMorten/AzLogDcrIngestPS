@@ -177,7 +177,7 @@ Start by testing the query in Azure LogAnalytics. When the query is working, you
 |Event \| where ( (EventID != 10016 and EventLog == “Application”)  )|Remove events with EventID 10016, if source is Application log|source \| where ( (EventID != 10016 and EventLog == “Application”)  )|
 |Inventory_CL \| extend TimeGenerated = now()|Add new column TimeGenerated with the actual time (now), when data is coming in|source \| extend TimeGenerated = now()|
 
-Intersted in learning more - check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
+If you are interested in learning more, please check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
 
 ## Understanding Data Collection Rules - step 3 Data-Out (destinations)
 The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
