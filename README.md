@@ -371,7 +371,9 @@ Get-ObjectSchemaAsArray -Data $DataVariable -Verbose:$verbose
 ## Change of schema - internal error 500 mitigation
 In most cases, the changes of the schema of tables and DCRs will be done using a PUT (overwrite) command, which will add new properties to the table & DCR. 
 
-Right now, LogAnalytics will throw an error 'internal server error 500'. The issue happens, if there is a change of the schema-type of an existing property. AzLogDcrIngestPS will fix this by deleting the table and re-creating it. You will not loose any data, as they are kept in the database - and you will see them again, when the table and properties are re-created.
+Right now, LogAnalytics will throw an error 'internal server error 500', if there is a change of the schema-type of an **existing property.**. This is very rare, but I have seen it happen for example a string-value was changed from TRUE to a boolean ($true)
+
+AzLogDcrIngestPS will fix this by deleting the table and re-creating it. You will not loose any data, as they are kept in the database - and you will see them again, when the table and properties are re-created.
 
 Problem has been escalated to the LogAnalytics team.
 
