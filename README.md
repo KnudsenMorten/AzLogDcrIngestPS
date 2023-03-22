@@ -970,9 +970,9 @@ Write-Output "into local path $($ScriptDirectory)"
 
 # delete existing file if found to download newest version
 If (Test-Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
-	{
-		Remove-Item -Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1"
-	}
+{
+	Remove-Item -Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1"
+}
 
  # download newest version
 $Download = (New-Object System.Net.WebClient).DownloadFile("https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1", "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
@@ -981,14 +981,14 @@ Start-Sleep -s 3
 
 # load file if found - otherwise terminate
 If (Test-Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
-	{
-		Import-module "$($ScriptDirectory)\AzLogDcrIngestPS.psm1" -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-	}
+{
+	Import-module "$($ScriptDirectory)\AzLogDcrIngestPS.psm1" -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+}
 Else
-	{
-		Write-Output "Powershell module AzLogDcrIngestPS was NOT found .... terminating !"
-		break
-	}
+{
+	Write-Output "Powershell module AzLogDcrIngestPS was NOT found .... terminating !"
+	break
+}
 
 ```
 
@@ -997,60 +997,60 @@ Else
 # check for AzLogDcrIngestPS
 $ModuleCheck = Get-Module -Name AzLogDcrIngestPS -ListAvailable -ErrorAction SilentlyContinue
 If (!($ModuleCheck))
-	{
-		# check for NuGet package provider
-		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+{
+	# check for NuGet package provider
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-		Write-Output ""
-		Write-Output "Checking Powershell PackageProvider NuGet ... Please Wait !"
-			if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
-				{
-					Write-Host "OK - PackageProvider NuGet is installed"
-				} 
-			else 
-				{
-					try
-						{
-							Write-Host "Installing NuGet package provider .. Please Wait !"
-							Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
-						}
-					catch [Exception] {
-						$_.message 
-						exit
+	Write-Output ""
+	Write-Output "Checking Powershell PackageProvider NuGet ... Please Wait !"
+		if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
+			{
+				Write-Host "OK - PackageProvider NuGet is installed"
+			} 
+		else 
+			{
+				try
+					{
+						Write-Host "Installing NuGet package provider .. Please Wait !"
+						Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
 					}
+				catch [Exception] {
+					$_.message 
+					exit
 				}
+			}
 
-		Write-Output "Powershell module AzLogDcrIngestPS was not found !"
-		Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+	Write-Output "Powershell module AzLogDcrIngestPS was not found !"
+	Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
 
-		Install-module -Name AzLogDcrIngestPS -Repository PSGallery -Force -Scope $Scope
-		import-module -Name AzLogDcrIngestPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-	}
+	Install-module -Name AzLogDcrIngestPS -Repository PSGallery -Force -Scope $Scope
+	import-module -Name AzLogDcrIngestPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+}
 
 Elseif ($ModuleCheck)
-	{
-		# sort to get highest version, if more versions are installed
-		$ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
-		$ModuleCheck = $ModuleCheck[0]
+{
+	# sort to get highest version, if more versions are installed
+	$ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
+	$ModuleCheck = $ModuleCheck[0]
 
-		Write-Output "Checking latest version at PsGallery for AzLogDcrIngestPS module"
-		$online = Find-Module -Name AzLogDcrIngestPS -Repository PSGallery
+	Write-Output "Checking latest version at PsGallery for AzLogDcrIngestPS module"
+	$online = Find-Module -Name AzLogDcrIngestPS -Repository PSGallery
 
-		#compare versions
-		if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
-			{
-				Write-Output "Newer version ($($online.version)) detected"
-				Write-Output "Updating AzLogDcrIngestPS module .... Please Wait !"
-				Update-module -Name AzLogDcrIngestPS -Force
-				import-module -Name AzLogDcrIngestPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-			}
-		else
-			{
-				# No new version detected ... continuing !
-				Write-Output "OK - Running latest version"
-				$UpdateAvailable = $False
-			}
-	}
+	#compare versions
+	if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
+		{
+			Write-Output "Newer version ($($online.version)) detected"
+			Write-Output "Updating AzLogDcrIngestPS module .... Please Wait !"
+			Update-module -Name AzLogDcrIngestPS -Force
+			import-module -Name AzLogDcrIngestPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+		}
+	else
+		{
+			# No new version detected ... continuing !
+			Write-Output "OK - Running latest version"
+			$UpdateAvailable = $False
+		}
+}
 
 ```
 
@@ -1059,15 +1059,15 @@ Elseif ($ModuleCheck)
 $ScriptDirectory = $PSScriptRoot
 
 If (Test-Path "$($ScriptDirectory)\AzLogDcrIngestPS.psm1")
-	{
-		Write-Output "Using AzLogDcrIngestPS module from local path $($ScriptDirectory)"
-		Import-module "$($ScriptDirectory)\AzLogDcrIngestPS.psm1" -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-	}
+{
+	Write-Output "Using AzLogDcrIngestPS module from local path $($ScriptDirectory)"
+	Import-module "$($ScriptDirectory)\AzLogDcrIngestPS.psm1" -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+}
 Else
-	{
-		Write-Output "Required Powershell function was NOT found .... terminating !"
-		Exit
-	}
+{
+	Write-Output "Required Powershell function was NOT found .... terminating !"
+	Exit
+}
 
 ```
 
