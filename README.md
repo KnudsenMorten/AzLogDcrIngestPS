@@ -956,7 +956,7 @@ RELATED LINKS
 <br>
 
 # Integration of AzLogDcrIngest in your scripts
-If you want your solution to stay updated, I'm supporting 3 modes: **Download, PsGallery and LocalPath**
+If you want your solution to stay updated, I have provided details on 3 modes: **Download, PsGallery and LocalPath**
 
 [You can see more details here](https://github.com/KnudsenMorten/ClientInspectorV2#running-clientinspectorps1---3-modes)
 
