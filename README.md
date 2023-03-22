@@ -307,6 +307,46 @@ For sample data and an API call using the Logs Ingestion API
 
 <br>
 
+# Archicture, Schema & Networking
+Your REST endpoint will be uploading the collected data into **custom logs** in **Azure LogAnalytics workspace** - using **Log ingestion API**, **Azure Data Collection Rules (DCR)** and **Azure Data Collection Endpoints (DCE)**. 
+
+Example with ClientInspector powershell script.
+![Archicture](docs/ArchitectureV2.png)
+
+## Schema
+Both the DCR and LogAnalytics table has a schema, which needs to be matching the schema of the source object. This is handled by using functions in AzLogDcrIngestPS module.
+
+[Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
+[Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
+[Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
+
+## Networking
+You have 3 options for connectivity to Azure for data upload: 
+
+|Upload method|Connectivity Details|OS compliance|
+|:------------|:-------------------|:------------|
+|Public access|REST endpoint sends to DCE via public IP of DCE|Endpoint supports TLS 1.2|
+|Private access|REST endpoint sends to DCE via private link of DCE|Endpoint supports TLS 1.2|
+|Log-hub|REST endpoint sends data via [log-hub](https://github.com/KnudsenMorten/AzLogDcrIngestPSLogHub) - a concept I have built.|Endpoint doesn't support TLS 1.2.<br> Azure will not accept connectivity from these devices directly|
+
+### Internet-connected endpoints - OS-level compliance
+![Internet-connected endpoints - OS-level compliance](docs/Networking.png)
+
+You need to allow the following endpoints in your firewall:
+|Endpoint|Purpose|Port|Direction|Bypass HTTPS Inspection|
+|:-------|:------|:----|:-------|:----------------------|
+|global.handler.control.monitor.azure.com|Access control service|Port 443|Outbound|Yes|
+|dce logs ingestion uri<br><br>sample<br>https://dce-log-platform-management-client-demo-p-iur0.westeurope-1.ingest.monitor.azure.com|Ingest logs data|Port 443|Outbound|Yes|
+
+<br>
+
+### No Internet access or OS-level incompliance fx. running TLS 1.0/1.1
+[Check out the log-hub concept using this link](https://github.com/KnudsenMorten/AzLogDcrIngestPSLogHub)
+
+![No Internet access or OS-level incompliance fx. running TLS 1.0/1.1](docs/Loghub.png)
+
+<br>
+
 # Source data - what data can I use ?
 You can use **any source data** which can be retrieved into Powershell (wmi, cim, external data, rest api, xml-format, json-format, csv-format, etc.)
 
