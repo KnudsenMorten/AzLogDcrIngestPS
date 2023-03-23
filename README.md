@@ -26,7 +26,7 @@ I have built a cool showcase - [ClientInspector (v2)](https://github.com/Knudsen
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
 ## Videos
-[Video 3m 19s - Running ClientInspector using commandline (normal mode)](https://youtu.be/BericD4pT0Q)  
+[Video 3m 19s - Running ClientInspector using commandline (normal mode)](https://youtu.be/4kA4BE0zJ9g)  
 [Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
 [Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
 [Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
