@@ -347,7 +347,7 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
                             # get column name
                             $ColumnName = $Column.Name
 
-                            If ($ColumnName -in $ProhibitedColumnNames)   # phohibited column names
+                            If ($ColumnName -in $ProhibitedColumnNames)   # prohibited column names
                                 {
                                     $UpdColumn  = $ColumnName + "_"
                                     $ColumnData = $_.$ColumnName
