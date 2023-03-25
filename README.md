@@ -49,7 +49,7 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 [Background for building this Powershell module](#background-for-building-this-powershell-module)  
 [Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)  
 [Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)  
-[Archicture, Schema & Networking](#archicture-schema--networking)  
+[Architecture, Schema & Networking](#architecture-schema--networking)  
 [Source data - what data can I use ?](#source-data---what-data-can-i-use-)  
 [Example of how to use the functions](https://github.com/KnudsenMorten/AzLogDcrIngestPS#example-of-how-to-use-the-functions)  
 [How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)  
@@ -313,7 +313,7 @@ For sample data and an API call using the Logs Ingestion API
 
 <br>
 
-# Archicture, Schema & Networking
+# Architecture, Schema & Networking
 Your REST endpoint will be uploading the collected data into **custom logs** in **Azure LogAnalytics workspace** - using **Log ingestion API**, **Azure Data Collection Rules (DCR)** and **Azure Data Collection Endpoints (DCE)**. 
 
 Example with ClientInspector powershell script.
