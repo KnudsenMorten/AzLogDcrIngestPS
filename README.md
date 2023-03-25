@@ -185,7 +185,7 @@ Start by testing the query in Azure LogAnalytics. When the query is working, you
 
 If you are interested in learning more, please check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
 
-## Understanding Data Collection Rules - step 3 Data-Out (destinations)
+## Understanding Data Collection Rules - Data-Out LogAnalytics (destinations)
 The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
 
 Currently, DCRs support the following destinations:
