@@ -314,9 +314,7 @@ For sample data and an API call using the Logs Ingestion API
 <br>
 
 # Architecture, Schema & Networking
-Your REST endpoint will be uploading the collected data into **custom logs** in **Azure LogAnalytics workspace** - using **Log ingestion API**, **Azure Data Collection Rules (DCR)** and **Azure Data Collection Endpoints (DCE)**. 
-
-Example with ClientInspector powershell script.
+Your Powershell script will be uploading data into **custom logs (v2)** in **Azure LogAnalytics workspace** - using **Log ingestion API**, **Azure Data Collection Rules (DCR)** and **Azure Data Collection Endpoints (DCE)**. Script will be using the functions in AzLogDcrIngestPS.
 
 ![Archicture](docs/Architecture.png)
 
