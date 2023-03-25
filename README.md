@@ -1,7 +1,7 @@
 # Introduction
 I am really happy to announce my **Powershell module**, **AzLogDcrIngestPS**
 
-This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs** - using the new features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. 
+This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs (v2)** - using the new features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. 
 
 ![Overview](docs/Architecture-simpleoverview.png)
 
