@@ -318,7 +318,7 @@ Your REST endpoint will be uploading the collected data into **custom logs** in 
 
 Example with ClientInspector powershell script.
 
-![Archicture](docs/ArchitectureV2.png)
+![Archicture](docs/Architecture.png)
 
 ## Schema
 Both the DCR and LogAnalytics table has a schema, which needs to match the schema of the source object. This is handled by using functions in AzLogDcrIngestPS module.
