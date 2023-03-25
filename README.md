@@ -110,7 +110,7 @@ If you are interested in learning more about Azure Data Collection Rules and the
   <summary><h2>Deep-dive about Azure Data Collection Rules (DCRs)</h2></summary>
 
 ## Understanding Data Collection Rules - Data-In (source data)
-As shown on the picture, a core change is the new middletier, **Azure Data Collection ingestion pipeline** - or in short '**DCR-pipeline**'
+As shown on the picture, a core change is the new middletier, **Azure Data ingestion pipeline** - or in short '**Azure Pipeline**'
 
 <br>
 
@@ -185,7 +185,7 @@ Start by testing the query in Azure LogAnalytics. When the query is working, you
 
 If you are interested in learning more, please check out this topic on my blog - [How to do data transformation with Azure LogAnalytics – to enrich information, optimize cost, remove sensitive data?](https://mortenknudsen.net/?p=73)
 
-## Understanding Data Collection Rules - Data-Out LogAnalytics (destinations)
+## Understanding Data Collection Rules - Data-Out (destinations)
 The concept of Data Collection Rules also includes the ability to send the data to multiple destinations.
 
 Currently, DCRs support the following destinations:
@@ -349,6 +349,37 @@ You need to allow the following endpoints in your firewall:
 [Check out the log-hub concept using this link](https://github.com/KnudsenMorten/AzLogDcrIngestPSLogHub)
 
 ![No Internet access or OS-level incompliance fx. running TLS 1.0/1.1](docs/Loghub.png)
+
+<br>
+
+# Security
+You can choose to have one app for both log ingestion and table/DCR schema management, if you want to keep it . Alternative you can choose to have 2 Azure apps (recommended) to separate the log ingestion process with the table/DCR schema management process.
+
+## One Azure app for both log ingestion and table/schema management
+If you want to keep it simple, you can choose to go with a single Azure app that is used for both log ingestion and table/schema management.
+
+You need to set permissions according to these settings:
+
+| Target                                                  | Delegation To                    | Azure RBAC Permission        | Comment                                                                   | 
+|:-------------                                           |:-----                            |:-----                        |:-----                                                                     |
+| Azure Resource Group for Azure Data Collection Rules    | Azure app used for log ingestion | Monitoring Publisher Metrics | used to send in data                                                      |
+| Azure Resource Group for Azure Data Endpoint            | Azure app used for log ingestion | Reader                       | needed to retrieve information about DCE - used as part of uploading data |
+| Azure Resource Group for Azure Data Collection Rules    | Azure app used for log ingestion | Contributor                  | needed to send in data                                                    |
+| Azure Resource Group for Azure Data Collection Endpoint | Azure app used for log ingestion | Contributor                  | needed to create/update DCEs (if needed after deployment)                 |
+| Azure LogAnalytics Workspace                            | Azure app used for log ingestion | Contributor                  | needed to create/update Azure LogAnaltyics custom log tables              |
+
+## Two Azure apps to separate log ingestion and table/DCR schema management
+If you want to separate the log ingestion process with the table/DCR schema management process, you can do this by having one more Azure app, which is used for table/dcr/schema management.
+
+You need to set permissions according to these settings:
+
+| Target                                                  | Delegation To                           | Azure RBAC Permission        | Comment                                                                   | 
+|:-------------                                           |:-----                                   |:-----                        |:-----                                                                     |
+| Azure Resource Group for Azure Data Collection Rules    | Azure app used for log ingestion        | Monitoring Publisher Metrics | used to send in data                                                      |
+| Azure Resource Group for Azure Data Endpoint            | Azure app used for log ingestion        | Reader<br><br>When you run this script, it will configure the log ingestion account with Contributor permissions, if you run with default config. This configuration must be adjusted, so the logestion app will only need Reader permissions.| needed to retrieve information about DCE - used as part of uploading data |
+| Azure Resource Group for Azure Data Collection Rules    | Azure app used for table/DCR management | Contributor                  | needed to send in data                                                    |
+| Azure Resource Group for Azure Data Collection Endpoint | Azure app used for table/DCR management | Contributor                  | needed to create/update DCEs and also needed to create/update an DCR with referrences to a DCE |
+| Azure LogAnalytics Workspace                            | Azure app used for table/DCR management | Contributor                  | needed to create/update Azure LogAnaltyics custom log tables              |
 
 <br>
 
