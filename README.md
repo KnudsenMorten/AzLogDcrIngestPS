@@ -360,9 +360,10 @@ The AzLogDcrIngestPS module (AzLogDcrIngest.psm1) is signed with my code signing
 
 Please download the public key certificate and put it into your 'trusted publisher' container to trust the publisher (2LINKIT - my company).
 
-![Trusted Publisher](img/codesigning4.png)
-![Trusted Publisher](img/codesigning3.png)
-![Trusted Publisher](img/codesigning2.png)
+![Trusted Publisher](img/codesigning4.png)  
+![Trusted Publisher](img/codesigning3.png)  
+![Trusted Publisher](img/codesigning2.png)  
+
 
 ### Intune deployment doesn't require trusted publisher to be in place
 By default Intune will do a BYPASS when running a remediation scripts.
