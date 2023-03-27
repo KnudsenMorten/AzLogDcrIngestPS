@@ -356,6 +356,7 @@ You need to allow the following endpoints in your firewall:
 # Security
 ## Code signing
 The AzLogDcrIngestPS module (AzLogDcrIngest.psm1) is signed with my code signing certificate (2LINKIT - my company), so you can run it, if you require scripts to be signed.
+
 ![Signed](img/codesigning1.png)
 
 Please [download the public key certificate](https://github.com/KnudsenMorten/AzLogDcrIngestPS/raw/main/Trusted_Publisher_Certificate/2LINKIT-TrustedPublisher.cer) and put it into your 'trusted publisher' container to trust the publisher (2LINKIT - my company). You can deploy this using Intune or Group Policy.
