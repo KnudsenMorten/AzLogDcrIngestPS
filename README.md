@@ -55,7 +55,7 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 [Example of how to use the functions](https://github.com/KnudsenMorten/AzLogDcrIngestPS#example-of-how-to-use-the-functions)  
 [How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)  
 [How to enable verbose-mode & get more help ?](#how-to-enable-verbose-mode--get-more-help-)  
-[Integration of AzLogDcrIngest in your scripts](https://github.com/KnudsenMorten/AzLogDcrIngestPS#integration-of-azlogdcringest-in-your-scripts)
+[Integration of AzLogDcrIngest in your scripts](https://github.com/KnudsenMorten/AzLogDcrIngestPS#integration-of-azlogdcringest-in-your-scripts)  
 [Function synopsis](#function-synopsis)  
 [Detailed - Data Manipulation](#category-data-manipulation)  
 [Detailed - Table/DCR/Schema management](#category-tabledcrschema-management-1)  
@@ -354,6 +354,19 @@ You need to allow the following endpoints in your firewall:
 <br>
 
 # Security
+## Code signing
+The AzLogDcrIngestPS module (AzLogDcrIngest.psm1) is signed with my code signing certificate (2LINKIT - my company), so you can run it, if you require scripts to be signed.
+![Signed](img/codesigning1.png)
+
+Please download the public key certificate and put it into your 'trusted publisher' container to trust the publisher (2LINKIT - my company).
+![Trusted Publisher](img/codesigning4.png)
+![Trusted Publisher](img/codesigning3.png)
+![Trusted Publisher](img/codesigning2.png)
+
+### Intune deployment doesn't require trusted publisher to be in place
+By default Intune will do a BYPASS when running a remediation scripts.
+
+## Azure app for log ingestion & table/dcr schema management
 You can choose to have one app for both log ingestion and table/DCR schema management, if you want to keep it . Alternative you can choose to have 2 Azure apps (recommended) to separate the log ingestion process with the table/DCR schema management process.
 
 ## One Azure app for both log ingestion and table/schema management
