@@ -359,6 +359,7 @@ The AzLogDcrIngestPS module (AzLogDcrIngest.psm1) is signed with my code signing
 ![Signed](img/codesigning1.png)
 
 Please download the public key certificate and put it into your 'trusted publisher' container to trust the publisher (2LINKIT - my company).
+
 ![Trusted Publisher](img/codesigning4.png)
 ![Trusted Publisher](img/codesigning3.png)
 ![Trusted Publisher](img/codesigning2.png)
