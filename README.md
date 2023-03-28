@@ -355,7 +355,7 @@ You need to allow the following endpoints in your firewall:
 
 # Security
 ## Code signing
-The AzLogDcrIngestPS module (AzLogDcrIngest.psm1) is signed with my code signing certificate (2LINKIT - my company), so you can run it, if you require scripts to be signed.
+Both the **ClientInspector.ps1-file** and the **AzLogDcrIngestPS module (AzLogDcrIngest.psm1)** are signed with my code signing certificate (2LINKIT - my company). This way you can run it, if you require scripts to be signed. Of course you can also choose to sign it with your own internal code signing certificate.
 
 ![Signed](img/codesigning1.png)
 
