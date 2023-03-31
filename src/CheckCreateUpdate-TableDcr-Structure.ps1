@@ -25,6 +25,14 @@ Function CheckCreateUpdate-TableDcr-Structure
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
+
     .PARAMETER EnableUploadViaLogHub
     $false = send logs directly to Azure, $true = send via remote path (log-hub), where log-engine will process data and upload. Made for legacy OS with TLS 1.0/1.1, PSVersion < 5.1
 
@@ -291,6 +299,8 @@ Function CheckCreateUpdate-TableDcr-Structure
             [Parameter(mandatory)]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
             [Parameter()]
+                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
+            [Parameter()]
                 [boolean]$EnableUploadViaLogHub = $false,
             [Parameter(mandatory)]
                 [AllowEmptyCollection()]
@@ -334,7 +344,7 @@ Function CheckCreateUpdate-TableDcr-Structure
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
                                             $ResultLA = CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
+                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
 
 
                                             # build schema to be used for DCR
@@ -342,7 +352,7 @@ Function CheckCreateUpdate-TableDcr-Structure
 
                                             $ResultDCR = CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
                                                                                                              -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
-                                                                                                             -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
+                                                                                                             -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId -SchemaMode $SchemaMode `
                                                                                                              -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
                                                                                                              -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
@@ -356,8 +366,8 @@ Function CheckCreateUpdate-TableDcr-Structure
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUgogmaHeN4prRFHTwyHblXLXk
-# IVaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULHIgwJSf5IqXPuEf9iNRq89A
+# P5qggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -436,16 +446,16 @@ Function CheckCreateUpdate-TableDcr-Structure
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# cKlIJ6aHcBNmfJ3+C+d23+IIW2gwDQYJKoZIhvcNAQEBBQAEggIAXF5dXAgWu5jv
-# A2dU2b2t4icOcxmT3F/XMRgr+etUnGVaXpQZ4feSiuI+aU+Uj5lAF/3XK2shA9nf
-# nmm8hxGeqzPVpbU4ej410IHuKLS5+WlHZnJhxld6IEmnnfp/nRvaHy9tdo7xFFHt
-# 5AVpz0rB9cijhp+0Yfq0KfVPQ2XWKRn+yog0Eb88Ovgr6CaDvXEoHITJddwT7rEM
-# sZbYpBrRJeTTJpdtHQ0HvRzIvEf3FTmtxATAeBG+BHb6GdfjlVw8kD346uVlzTbS
-# mXF5Nb9xqDrGRwS9LgJQVlNhnPlP1VGRDggX5uBP+2h8Nj5CpUabqQHUfLqo8gw2
-# EVtF1+YzYz6mKV/K50ZBIIIgv5dXDhEQlJYMRz+BHisq33vC2kuVrPW668RlPxz3
-# pZSywNoEjxc3aElFCFJUclFpZIV+Ib90z+Thl12j3GP55+L2WaDiVW/sW1FoZUmP
-# qgECgP7aBT1ptPAXWZ824m+cHhLCZxDHNWG5rvwzsfLPn3Srg61AmK/KNFs2ss7U
-# gD/PB1hEMWTNs2a42H9zZkPa+kV+VDJBbQWw/u0LniJ9PUAf9oaJhuHOxp39y3Xn
-# 3eWmeik9/U/kNuSygsOoCj8NAJ0QQqXaMb7RgoyFr5nuCO8Eh3kbC/CwImKPddhi
-# JCquT6WaaYmTqvjn9QXUotsmY27sbb8=
+# wv75aRs9FLgYG0gPmfq131/DIPIwDQYJKoZIhvcNAQEBBQAEggIAVKvVBAh3FDpY
+# JyvAsofQPMafmQxSz1RUjgwPJIEUj4k9ksguTkkC6+zmP9YY3Ex9o9UG1BZlNfUb
+# 5PN3p/Qq0Gxf0Sa92NvPD8bDhNMfU8bclcn6u9jGfAzzh0E000fqd4IAYarXFWpD
+# qro0NZ9gI76EHLmlHgC1J54h+lr8sEDrzb7TSf5vwQeWOOwBxPbUkU3zCo7PQE+X
+# iEIQ3pz5OUPGhDj79eLVBP6x5/O8ZRezghpl1qMs0/6KyOU0PWATY/HdQ6SaNjgg
+# 1z4TUl7NAMHjeDlrpOdrs42ElzH2B0X8dO8W1NsIalHH0vPdnOu44YEoD5J346Da
+# ebwHyWDpCetN13hP4UYZ6TRn005DBSJ1kvlo34qVRTmXn72f3CmneZe6cB9TpK8L
+# LkZThyvTyamEvHFjnTeMIskyV6/pucWqWrEo3IX5Ai6mH8u8U5X2dQsG+iP71fi8
+# /+O2PyPvG4ova7dQ3grIX6c/13VNJ7BbGeAoj7yGcs+ys5smC1MySLCz2CdOJ8HC
+# IBCBkJPNIQCN0WPDZ3EzB61UXCpp6YnJHOiHZHfPue3eC14rDfLMca+DIADUrM0F
+# nKlg9tlwYzKeaGWvHNrlSz6qe1uAyG000l7cwSJ4FiDkmE6All19D7K4HcPuFElX
+# gYjDzIuVbMtWkglexeENlGiumbZAWb4=
 # SIG # End signature block

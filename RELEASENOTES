@@ -1,9 +1,15 @@
 RELEASE NOTES
-v1.0.7 - Minor updates
-v1.0.6 - Minor updates
-v1.0.5 - Minor updates
-v1.0.4 - Minor updates
-v1.0.3 - Minor updates
-v1.0.2 - Minor updates
-v1.0.1 - Minor updates
-v1.0.0 - Initial version
+v1.2.31  Added parameter SchemaMode = Merge/Overwrite for functions CheckCreateUpdate-TableDcr-Structure, CreateUpdate-AzLogAnalyticsCustomLogTableDcr, CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
+			SchemaMode = Merge (default)
+			It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+			SchemaMode = Overwrite
+			It will overwrite existing schema in DCR/table – based on source object schema
+			This parameter can be useful for separate overflow work
+
+		 Signing of PSM1 and PS1-files is changed from SHA1 to SHA256
+
+v1.2.30  Added new function Get-AzDataCollectionRuleTransformKql. 
+			Can be used to retrieve the current transforKql parameter
+
+v1.0.00  Initial version

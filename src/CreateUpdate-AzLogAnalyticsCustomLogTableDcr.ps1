@@ -14,6 +14,14 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
+
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
 
@@ -152,6 +160,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
             [Parameter(mandatory)]
                 [string]$AzLogWorkspaceResourceId,
             [Parameter()]
+                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
+            [Parameter()]
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
@@ -167,6 +177,33 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                                                -AzAppSecret $AzAppSecret `
                                                -TenantId $TenantId -Verbose:$Verbose
 
+
+    #--------------------------------------------------------------------------
+    # TableCheck
+    #--------------------------------------------------------------------------
+        $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
+        $TableStatus = Try
+                            {
+                                invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
+                            }
+                        Catch
+                            {
+                                If ($SchemaMode -eq "Merge")
+                                    {
+                                        # force SchemaMode to Overwrite (create/update)
+                                        $SchemaMode = "Overwrite"
+                                    }
+                            }
+
+    #--------------------------------------------------------------------------
+    # Compare schema between source object schema and Azure LogAnalytics Table
+    #--------------------------------------------------------------------------
+
+        If ($TableStatus)
+            {
+                $CurrentTableSchema = $TableStatus.properties.schema.columns
+            }
+
     #--------------------------------------------------------------------------
     # LogAnalytics Table check
     #--------------------------------------------------------------------------
@@ -178,62 +215,143 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                 Write-Error "ERROR - Reduce length of tablename, as it has a maximum of 45 characters (current length: $($Table.Length))"
             }
 
-    #--------------------------------------------------------------------------
-    # Creating/Updating LogAnalytics Table based upon data source schema
-    #--------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------
+    # SchemaMode = Overwrite - Creating/Updating LogAnalytics Table based upon data source schema
+    #-----------------------------------------------------------------------------------------------
+    If ($SchemaMode -eq "Overwrite")
+        {
+            $tableBodyPut   = @{
+                                    properties = @{
+                                                    schema = @{
+                                                                    name    = $Table
+                                                                    columns = @($SchemaSourceObject)
+                                                                }
+                                                }
+                                } | ConvertTo-Json -Depth 10
 
-		# automatic patching of 
-		$tableBodyPatch = @{
-								properties = @{
-												schema = @{
-																name    = $Table
-																columns = @($Changes)
-															}
-											}
-						   } | ConvertTo-Json -Depth 10
+            # create/update table schema using REST
+            $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
 
-        $tableBodyPut   = @{
-                                properties = @{
-                                                schema = @{
-                                                                name    = $Table
-                                                                columns = @($SchemaSourceObject)
+            Try
+                {
+                    Write-Verbose ""
+                    Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
+                    Write-Verbose $AzLogWorkspaceResourceId
+
+                    invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                }
+            Catch
+                {
+
+                    Write-Verbose ""
+                    Write-Verbose "Internal error 500 - recreating table"
+
+                    invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
+                                
+                    Start-Sleep -Seconds 10
+                                
+                    invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                }
+        }
+
+    #-----------------------------------------------------------------------------------------------
+    # SchemaMode = Merge - Merging new properties into existing schema
+    #-----------------------------------------------------------------------------------------------
+    If ($SchemaMode -eq "Merge")
+        {
+            # start by building new schema hash, based on existing schema in LogAnalytics custom log table
+                $SchemaArrayLogAnalyticsTableFormatHash = @()
+                ForEach ($Property in $CurrentTableSchema)
+                    {
+                        $Name = $Property.name
+                        $Type = $Property.type
+
+                        $SchemaArrayLogAnalyticsTableFormatHash += @{
+                                                                      name        = $name
+                                                                      type        = $type
+                                                                      description = ""
+                                                                   }
+                    }
+
+
+            # enum $SchemaSourceObject - and check if it exists in $SchemaArrayLogAnalyticsTableFormatHash
+            $UpdateTable = $False
+            ForEach ($PropertySource in $SchemaSourceObject)
+                {
+                    $PropertyFound = $false
+                    ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
+                        {
+                            If ($Property.name -eq $PropertySource.name)
+                                {
+                                    $PropertyFound = $true
+                                }
+
+                        }
+
+                    If ($PropertyFound -eq $true)
+                        {
+                            # Name already found ... skipping
+                        }
+                    Else
+                        {
+                            # table must be updated, changes detected in merge-mode
+                            $UpdateTable = $true
+
+                            Write-verbose "SchemaMode = Merge: Adding property $($PropertySource.name)"
+                            $SchemaArrayLogAnalyticsTableFormatHash += @{
+                                                                            name        = $PropertySource.name
+                                                                            type        = $PropertySource.type
+                                                                            description = ""
+                                                                        }
+                        }
+                }
+
+            If ($UpdateDCR -eq $true)
+                {            
+                    # new table structure with added properties (merging)
+                        $tableBodyPut   = @{
+                                                properties = @{
+                                                                schema = @{
+                                                                                name    = $Table
+                                                                                columns = @($SchemaArrayLogAnalyticsTableFormatHash)
+                                                                            }
                                                             }
-                                            }
-                           } | ConvertTo-Json -Depth 10
+                                           } | ConvertTo-Json -Depth 10
 
-        # create/update table schema using REST
-        $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
+                    # create/update table schema using REST
+                    $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
 
-        Try
-            {
-                Write-Verbose ""
-                Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
-                Write-Verbose $AzLogWorkspaceResourceId
+                    Try
+                        {
+                            Write-Verbose ""
+                            Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
+                            Write-Verbose $AzLogWorkspaceResourceId
 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
-            }
-        Catch
-            {
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        }
+                    Catch
+                        {
 
-                Write-Verbose ""
-                Write-Verbose "Internal error 500 - recreating table"
+                            Write-Verbose ""
+                            Write-Verbose "Internal error 500 - recreating table"
 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                 
-                Start-Sleep -Seconds 10
+                            Start-Sleep -Seconds 10
                                 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
-            }
-
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        }
+                }
+        }
         
-        return
+    return
 }
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUsYaOZmUq9JHMQvth15UobHuN
-# JS6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6tMz3VkZZOK4k0iVY9YZMWuv
+# j86ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -312,16 +430,16 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# mTS+/XadI2uuLXULVNlCtHzW6OMwDQYJKoZIhvcNAQEBBQAEggIAOQq0xyijW5yk
-# Dc+BXcOFYP9MzdqZikVLF9BfL6HTz2Q1Utgq6rvkMBQDtY47VE7BR8x4LuYSm888
-# 8eY8xnh9VYHhaP7R8QKCHok9SFmU6p7ad/pfjSHUqxC8tLv7FMIN+rapemvJxCDq
-# mif7nChb67OaKsiJrKRki/Tl45N7si7L/nRAjLrpKq43EMOjfLwEzdq5SsJ3xDZy
-# fwLqSAdpVlJH9FyKeqxOafb/CA/JOtqgjTr8U6cPne97A5kz+/Q2AabIBR/bvMbu
-# nwxZv+pdHFj266sEailggYsLgL+R7WFoRUHl+CksOvSQHFL+zdPPF+acp/bK0V6t
-# l3mKRqPB4l0ieEEys6ZcDeEBN58dFqj5tZPi91yVffEuYCjfz8O1Se6IGCH67QAf
-# bjAWxrQsOdXpNIRoYFhChTfSUbHTST2+2uTa30Wpohg99rkmdj+a56wBiDnTpASa
-# KGatTTtmJI7oYoA0ergP0ndconQOU+E0kE2R609kaMBS2jkpc3aXsZutVgmb5x7q
-# kEvOOHGKnLiKkyJqw/zd7cWMTUyfG7t1M2oL+e6SAMyQzTBe6jcxwna8mA0EHzX+
-# 148X1VfXyn0BdLhK6AGmTpcWjR1iaA3p2QpwC0KmlPgL8rByym2jEWfPLYBzJSvl
-# 6+cYAYSUVSw5vCt8v2BmTl90qr59N04=
+# GdPnp2X2p6+GXXPDTgqD7ajKDBAwDQYJKoZIhvcNAQEBBQAEggIAosSVsDQpgptq
+# oUIMgK8Xu4nyqsikviRHhpnMwYms17L5jhnfaWT5dXdjoQjYuC8bnKbOi02rTeZb
+# 1SHw4PC+tDLORK7jXnLrEf552KVwE2kwkSz5Xu3NKipXpEgPfO0pJn+l+74IuUyy
+# bxFIx1LZSSQY/BfGSAGMjcheKe+uiHcorrLnYpbv+zPJihpVd0fOvEOgUpOuWu23
+# DnLxoeNsdBL62sl91AD5ttpfWdHlmOHs95sdPm+qJAk0uxmwLxE0MP24ARt2GW71
+# Wh4goWcBp1hOeOmvtQeXES5wekPXpBzn9oHs4VxaJSuyq8IgYIetNl4kkx+cDp1b
+# hAoDCMn0z4tg85Q5lowgOaxNeMoiJa6JTrsiJZIvMy1+yX+dt2HZ/Yy9Afypqy4f
+# 6yCTcC8sKqkUBerin+45Nge1+DHQpo+xKOwet1qcuOGAvQYnbnj8JcNO6iVfcl/M
+# sMKiDea/qIRlzSsv7zl9NJM8c48yBo6CVqPhT1XsY+II9OfCzsLHM0/iwaQ4d6Bl
+# sQGuQbMw/eRfrFB53HJMpFanav0sUPBn1WDZIyUGbzWK5Vy2MARqIdFJ0fL9qX22
+# 5+UFLO/adhgxdC5LIiYHU0EtHq1iKwSC6dEHhG/vMiK9WY6A0KPvtJ3eTBITp5bM
+# c8vfK9hPOxp1Yt7oWnWlxoOeyPZDfpU=
 # SIG # End signature block

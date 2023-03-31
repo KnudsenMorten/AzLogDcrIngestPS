@@ -570,6 +570,14 @@ Function CheckCreateUpdate-TableDcr-Structure
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
+
     .PARAMETER EnableUploadViaLogHub
     $false = send logs directly to Azure, $true = send via remote path (log-hub), where log-engine will process data and upload. Made for legacy OS with TLS 1.0/1.1, PSVersion < 5.1
 
@@ -836,6 +844,8 @@ Function CheckCreateUpdate-TableDcr-Structure
             [Parameter(mandatory)]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
             [Parameter()]
+                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
+            [Parameter()]
                 [boolean]$EnableUploadViaLogHub = $false,
             [Parameter(mandatory)]
                 [AllowEmptyCollection()]
@@ -879,7 +889,7 @@ Function CheckCreateUpdate-TableDcr-Structure
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
                                             $ResultLA = CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose 
+                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
 
 
                                             # build schema to be used for DCR
@@ -887,7 +897,7 @@ Function CheckCreateUpdate-TableDcr-Structure
 
                                             $ResultDCR = CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema `
                                                                                                              -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
-                                                                                                             -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId `
+                                                                                                             -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId -SchemaMode $SchemaMode `
                                                                                                              -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
                                                                                                              -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
 
@@ -1202,6 +1212,14 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
+
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
 
@@ -1422,6 +1440,8 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
             [Parameter(mandatory)]
                 [string]$LogIngestServicePricipleObjectId,
             [Parameter()]
+                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
+            [Parameter()]
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
@@ -1528,195 +1548,344 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
 
     #--------------------------------------------------------------------------
-    # build initial payload to create DCR for log ingest (api) to custom logs
+    # Get existing DCR, if found
     #--------------------------------------------------------------------------
-
-        If ($SchemaSourceObject.count -gt 10)
-            {
-                $SchemaSourceObjectLimited = $SchemaSourceObject[0..10]
-            }
-        Else
-            {
-                $SchemaSourceObjectLimited = $SchemaSourceObject
-            }
-
-
-        $DcrObject = [pscustomobject][ordered]@{
-                        properties = @{
-                                        dataCollectionEndpointId = $DceResourceId
-                                        streamDeclarations = @{
-                                                                $StreamName = @{
-	  				                                                                columns = @(
-                                                                                                $SchemaSourceObjectLimited
-                                                                                               )
-                                                                               }
-                                                              }
-                                        destinations = @{
-                                                            logAnalytics = @(
-                                                                                @{ 
-                                                                                    workspaceResourceId = $AzLogWorkspaceResourceId
-                                                                                    workspaceId = $LogWorkspaceId
-                                                                                    name = $DcrLogWorkspaceName
-                                                                                 }
-                                                                            ) 
-
-                                                        }
-                                        dataFlows = @(
-                                                        @{
-                                                            streams = @(
-                                                                            $StreamName
-                                                                       )
-                                                            destinations = @(
-                                                                                $DcrLogWorkspaceName
-                                                                            )
-                                                            transformKql = $KustoDefault
-                                                            outputStream = $StreamName
-                                                         }
-                                                     )
-                                        }
-                        location = $DceLocation
-                        name = $DcrName
-                        type = "Microsoft.Insights/dataCollectionRules"
-                    }
-
-    #--------------------------------------------------------------------------
-    # create initial DCR using payload
-    #--------------------------------------------------------------------------
-
-        Write-Verbose ""
-        Write-Verbose "Creating/updating DCR [ $($DcrName) ] with limited payload"
-        Write-Verbose $DcrResourceId
-
-        $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
 
         $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
-        invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+        Try
+            {
+                $Dcr = invoke-webrequest -UseBasicParsing -Uri $Uri -Method GET -Headers $Headers
+            }
+        Catch
+            {
+            }
+
+
+    
+    #--------------------------------------------------------------------------
+    # DCR was NOT found (create) - or we do an Overwrite
+    #--------------------------------------------------------------------------
+        If ( (!($Dcr)) -or ($SchemaMode -eq "Overwrite") )
+            {
+                #--------------------------------------------------------------------------
+                # build initial payload to create DCR for log ingest (api) to custom logs
+                #--------------------------------------------------------------------------
+
+                    If ($SchemaSourceObject.count -gt 10)
+                        {
+                            $SchemaSourceObjectLimited = $SchemaSourceObject[0..10]
+                        }
+                    Else
+                        {
+                            $SchemaSourceObjectLimited = $SchemaSourceObject
+                        }
+
+
+                    $DcrObject = [pscustomobject][ordered]@{
+                                    properties = @{
+                                                    dataCollectionEndpointId = $DceResourceId
+                                                    streamDeclarations = @{
+                                                                            $StreamName = @{
+	  				                                                                            columns = @(
+                                                                                                            $SchemaSourceObjectLimited
+                                                                                                           )
+                                                                                           }
+                                                                          }
+                                                    destinations = @{
+                                                                        logAnalytics = @(
+                                                                                            @{ 
+                                                                                                workspaceResourceId = $AzLogWorkspaceResourceId
+                                                                                                workspaceId = $LogWorkspaceId
+                                                                                                name = $DcrLogWorkspaceName
+                                                                                             }
+                                                                                        ) 
+
+                                                                    }
+                                                    dataFlows = @(
+                                                                    @{
+                                                                        streams = @(
+                                                                                        $StreamName
+                                                                                   )
+                                                                        destinations = @(
+                                                                                            $DcrLogWorkspaceName
+                                                                                        )
+                                                                        transformKql = $KustoDefault
+                                                                        outputStream = $StreamName
+                                                                     }
+                                                                 )
+                                                    }
+                                    location = $DceLocation
+                                    name = $DcrName
+                                    type = "Microsoft.Insights/dataCollectionRules"
+                                }
+
+                #--------------------------------------------------------------------------
+                # create initial DCR using payload
+                #--------------------------------------------------------------------------
+
+                    Write-Verbose ""
+                    Write-Verbose "Creating/updating DCR [ $($DcrName) ] with limited payload"
+                    Write-Verbose $DcrResourceId
+
+                    $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
+
+                    $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
+                    invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
         
-        # sleeping to let API sync up before modifying
-        Start-Sleep -s 5
+                    # sleeping to let API sync up before modifying
+                    Start-Sleep -s 5
+
+                #--------------------------------------------------------------------------
+                # build full payload to create DCR for log ingest (api) to custom logs
+                #--------------------------------------------------------------------------
+                
+                    $DcrObject = [pscustomobject][ordered]@{
+                                    properties = @{
+                                                    dataCollectionEndpointId = $DceResourceId
+                                                    streamDeclarations = @{
+                                                                            $StreamName = @{
+	  				                                                                            columns = @(
+                                                                                                            $SchemaSourceObject
+                                                                                                           )
+                                                                                           }
+                                                                          }
+                                                    destinations = @{
+                                                                        logAnalytics = @(
+                                                                                            @{ 
+                                                                                                workspaceResourceId = $AzLogWorkspaceResourceId
+                                                                                                workspaceId = $LogWorkspaceId
+                                                                                                name = $DcrLogWorkspaceName
+                                                                                             }
+                                                                                        ) 
+
+                                                                    }
+                                                    dataFlows = @(
+                                                                    @{
+                                                                        streams = @(
+                                                                                        $StreamName
+                                                                                   )
+                                                                        destinations = @(
+                                                                                            $DcrLogWorkspaceName
+                                                                                        )
+                                                                        transformKql = $KustoDefault
+                                                                        outputStream = $StreamName
+                                                                     }
+                                                                 )
+                                                    }
+                                    location = $DceLocation
+                                    name = $DcrName
+                                    type = "Microsoft.Insights/dataCollectionRules"
+                                }
+
+                #--------------------------------------------------------------------------
+                # create DCR using payload
+                #--------------------------------------------------------------------------
+
+                    Write-Verbose ""
+                    Write-Verbose "Updating DCR [ $($DcrName) ] with full payload"
+                    Write-Verbose $DcrResourceId
+
+                    $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
+
+                    $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
+                    invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+
+
+                #--------------------------------------------------------------------------
+                # Continue - sleep 10 sec to let Azure Resource Graph pick up the new DCR
+                #--------------------------------------------------------------------------
+
+                    Write-Verbose ""
+                    Write-Verbose "Waiting 10 sec to let Azure sync up so DCR rule can be retrieved from Azure Resource Graph"
+                    Start-Sleep -Seconds 10
+
+                #--------------------------------------------------------------------------
+                # updating DCR list using Azure Resource Graph due to new DCR was created
+                #--------------------------------------------------------------------------
+
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+
+                #--------------------------------------------------------------------------
+                # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
+                #--------------------------------------------------------------------------
+
+                    If ($AzDcrSetLogIngestApiAppPermissionsDcrLevel -eq $true)
+                        {
+                            $DcrRule = $global:AzDcrDetails | where-Object { $_.name -eq $DcrName }
+                            $DcrRuleId = $DcrRule.id
+
+                            Write-Verbose ""
+                            Write-Verbose "Setting Monitor Metrics Publisher Role permissions on DCR [ $($DcrName) ]"
+
+                            $guid = (new-guid).guid
+                            $monitorMetricsPublisherRoleId = "3913510d-42f4-4e42-8a64-420c390055eb"
+                            $roleDefinitionId = "/subscriptions/$($DcrSubscription)/providers/Microsoft.Authorization/roleDefinitions/$($monitorMetricsPublisherRoleId)"
+                            $roleUrl = "https://management.azure.com" + $DcrRuleId + "/providers/Microsoft.Authorization/roleAssignments/$($Guid)?api-version=2018-07-01"
+                            $roleBody = @{
+                                properties = @{
+                                    roleDefinitionId = $roleDefinitionId
+                                    principalId      = $LogIngestServicePricipleObjectId
+                                    scope            = $DcrRuleId
+                                }
+                            }
+                            $jsonRoleBody = $roleBody | ConvertTo-Json -Depth 6
+
+                            $result = try
+                                {
+                                    invoke-restmethod -UseBasicParsing -Uri $roleUrl -Method PUT -Body $jsonRoleBody -headers $Headers -ErrorAction SilentlyContinue
+                                }
+                            catch
+                                {
+                                }
+
+                            $StatusCode = $result.StatusCode
+                            If ($StatusCode -eq "204")
+                                {
+                                    Write-host "  SUCCESS - data uploaded to LogAnalytics"
+                                }
+                            ElseIf ($StatusCode -eq "RequestEntityTooLarge")
+                                {
+                                    Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
+                                }
+                            Else
+                                {
+                                    Write-Error $result
+                                }
+
+                            # Sleep 10 sec to let Azure sync up
+                            Write-Verbose ""
+                            Write-Verbose "Waiting 10 sec to let Azure sync up for permissions to replicate"
+                            Start-Sleep -Seconds 10
+                            Write-Verbose ""
+                        }
+        }
 
     #--------------------------------------------------------------------------
-    # build full payload to create DCR for log ingest (api) to custom logs
+    # DCR was found - we will do either a MERGE or OVERWRITE
     #--------------------------------------------------------------------------
-
-        $DcrObject = [pscustomobject][ordered]@{
-                        properties = @{
-                                        dataCollectionEndpointId = $DceResourceId
-                                        streamDeclarations = @{
-                                                                $StreamName = @{
-	  				                                                                columns = @(
-                                                                                                $SchemaSourceObject
-                                                                                               )
-                                                                               }
-                                                              }
-                                        destinations = @{
-                                                            logAnalytics = @(
-                                                                                @{ 
-                                                                                    workspaceResourceId = $AzLogWorkspaceResourceId
-                                                                                    workspaceId = $LogWorkspaceId
-                                                                                    name = $DcrLogWorkspaceName
-                                                                                 }
-                                                                            ) 
-
-                                                        }
-                                        dataFlows = @(
-                                                        @{
-                                                            streams = @(
-                                                                            $StreamName
-                                                                       )
-                                                            destinations = @(
-                                                                                $DcrLogWorkspaceName
-                                                                            )
-                                                            transformKql = $KustoDefault
-                                                            outputStream = $StreamName
-                                                         }
-                                                     )
-                                        }
-                        location = $DceLocation
-                        name = $DcrName
-                        type = "Microsoft.Insights/dataCollectionRules"
-                    }
-
-    #--------------------------------------------------------------------------
-    # create DCR using payload
-    #--------------------------------------------------------------------------
-
-        Write-Verbose ""
-        Write-Verbose "Updating DCR [ $($DcrName) ] with full schema"
-        Write-Verbose $DcrResourceId
-
-        $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
-
-        $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
-        invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
-
-    #--------------------------------------------------------------------------
-    # sleep 10 sec to let Azure Resource Graph pick up the new DCR
-    #--------------------------------------------------------------------------
-
-        Write-Verbose ""
-        Write-Verbose "Waiting 10 sec to let Azure sync up so DCR rule can be retrieved from Azure Resource Graph"
-        Start-Sleep -Seconds 10
-
-    #--------------------------------------------------------------------------
-    # updating DCR list using Azure Resource Graph due to new DCR was created
-    #--------------------------------------------------------------------------
-
-        $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
-
-    #--------------------------------------------------------------------------
-    # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
-    #--------------------------------------------------------------------------
-
-        If ($AzDcrSetLogIngestApiAppPermissionsDcrLevel -eq $true)
+        ElseIf ( ($Dcr) -and ($SchemaMode -eq "Merge") )
             {
-                $DcrRule = $global:AzDcrDetails | where-Object { $_.name -eq $DcrName }
-                $DcrRuleId = $DcrRule.id
 
-                Write-Verbose ""
-                Write-Verbose "Setting Monitor Metrics Publisher Role permissions on DCR [ $($DcrName) ]"
+                $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
+                $TableStatus = Try
+                                    {
+                                        invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
+                                    }
+                               Catch
+                                    {
+                                    }
 
-                $guid = (new-guid).guid
-                $monitorMetricsPublisherRoleId = "3913510d-42f4-4e42-8a64-420c390055eb"
-                $roleDefinitionId = "/subscriptions/$($DcrSubscription)/providers/Microsoft.Authorization/roleDefinitions/$($monitorMetricsPublisherRoleId)"
-                $roleUrl = "https://management.azure.com" + $DcrRuleId + "/providers/Microsoft.Authorization/roleAssignments/$($Guid)?api-version=2018-07-01"
-                $roleBody = @{
-                    properties = @{
-                        roleDefinitionId = $roleDefinitionId
-                        principalId      = $LogIngestServicePricipleObjectId
-                        scope            = $DcrRuleId
-                    }
-                }
-                $jsonRoleBody = $roleBody | ConvertTo-Json -Depth 6
 
-                $result = try
+                If ($TableStatus)
                     {
-                        invoke-restmethod -UseBasicParsing -Uri $roleUrl -Method PUT -Body $jsonRoleBody -headers $Headers -ErrorAction SilentlyContinue
-                    }
-                catch
-                    {
+                        $CurrentTableSchema = $TableStatus.properties.schema.columns
                     }
 
-                $StatusCode = $result.StatusCode
-                If ($StatusCode -eq "204")
+                # start by building new schema hash, based on existing schema in LogAnalytics custom log table
+                    $SchemaArrayDCRFormatHash = @()
+                    ForEach ($Property in $CurrentTableSchema)
+                        {
+                            $Name = $Property.name
+                            $Type = $Property.type
+
+                            $SchemaArrayDCRFormatHash += @{
+                                                            name        = $name
+                                                            type        = $type
+                                                          }
+                        }
+
+                # enum $SchemaSourceObject - and check if it exists in $SchemaArrayLogAnalyticsTableFormatHash
+                $UpdateDCR = $False
+                ForEach ($PropertySource in $SchemaSourceObject)
                     {
-                        Write-host "  SUCCESS - data uploaded to LogAnalytics"
-                    }
-                ElseIf ($StatusCode -eq "RequestEntityTooLarge")
-                    {
-                        Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
-                    }
-                Else
-                    {
-                        Write-Error $result
+                        $PropertyFound = $false
+                        ForEach ($Property in $SchemaArrayDCRFormatHash)
+                            {
+                                If ($Property.name -eq $PropertySource.name)
+                                    {
+                                        $PropertyFound = $true
+                                    }
+
+                            }
+
+                        If ($PropertyFound -eq $true)
+                            {
+                                # Name already found ... skipping
+                            }
+                        Else
+                            {
+                                # DCR must be updated, changes was detected !
+                                $UpdateDCR = $true
+                                
+                                Write-verbose "SchemaMode = Merge: Adding property $($PropertySource.name)"
+                                $SchemaArrayDCRFormatHash += @{
+                                                                name        = $PropertySource.name
+                                                                type        = $PropertySource.type
+                                                              }
+                            }
                     }
 
-                # Sleep 10 sec to let Azure sync up
-                Write-Verbose ""
-                Write-Verbose "Waiting 10 sec to let Azure sync up for permissions to replicate"
-                Start-Sleep -Seconds 10
-                Write-Verbose ""
+
+
+                    #--------------------------------------------------------------------------
+                    # Merge: build full payload to create DCR for log ingest (api) to custom logs
+                    #--------------------------------------------------------------------------
+                        If ($UpdateDCR -eq $true)
+                            {
+                                $DcrObject = [pscustomobject][ordered]@{
+                                                properties = @{
+                                                                dataCollectionEndpointId = $DceResourceId
+                                                                streamDeclarations = @{
+                                                                                        $StreamName = @{
+	  				                                                                                        columns = @(
+                                                                                                                        $SchemaArrayDCRFormatHash
+                                                                                                                       )
+                                                                                                       }
+                                                                                      }
+                                                                destinations = @{
+                                                                                    logAnalytics = @(
+                                                                                                        @{ 
+                                                                                                            workspaceResourceId = $AzLogWorkspaceResourceId
+                                                                                                            workspaceId = $LogWorkspaceId
+                                                                                                            name = $DcrLogWorkspaceName
+                                                                                                         }
+                                                                                                    ) 
+
+                                                                                }
+                                                                dataFlows = @(
+                                                                                @{
+                                                                                    streams = @(
+                                                                                                    $StreamName
+                                                                                               )
+                                                                                    destinations = @(
+                                                                                                        $DcrLogWorkspaceName
+                                                                                                    )
+                                                                                    transformKql = $KustoDefault
+                                                                                    outputStream = $StreamName
+                                                                                 }
+                                                                             )
+                                                                }
+                                                location = $DceLocation
+                                                name = $DcrName
+                                                type = "Microsoft.Insights/dataCollectionRules"
+                                            }
+
+                            #--------------------------------------------------------------------------
+                            # Update DCR using merged payload
+                            #--------------------------------------------------------------------------
+
+                                Write-Verbose ""
+                                Write-Verbose "Merge: Updating DCR [ $($DcrName) ] with new properties in schema"
+                                Write-Verbose $DcrResourceId
+
+                                $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
+
+                                $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
+                                invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+                    }
             }
+
+            
 }
 
 
@@ -1735,6 +1904,14 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
+
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
 
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
@@ -1874,6 +2051,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
             [Parameter(mandatory)]
                 [string]$AzLogWorkspaceResourceId,
             [Parameter()]
+                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
+            [Parameter()]
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
@@ -1889,6 +2068,33 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                                                -AzAppSecret $AzAppSecret `
                                                -TenantId $TenantId -Verbose:$Verbose
 
+
+    #--------------------------------------------------------------------------
+    # TableCheck
+    #--------------------------------------------------------------------------
+        $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
+        $TableStatus = Try
+                            {
+                                invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
+                            }
+                        Catch
+                            {
+                                If ($SchemaMode -eq "Merge")
+                                    {
+                                        # force SchemaMode to Overwrite (create/update)
+                                        $SchemaMode = "Overwrite"
+                                    }
+                            }
+
+    #--------------------------------------------------------------------------
+    # Compare schema between source object schema and Azure LogAnalytics Table
+    #--------------------------------------------------------------------------
+
+        If ($TableStatus)
+            {
+                $CurrentTableSchema = $TableStatus.properties.schema.columns
+            }
+
     #--------------------------------------------------------------------------
     # LogAnalytics Table check
     #--------------------------------------------------------------------------
@@ -1900,55 +2106,136 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                 Write-Error "ERROR - Reduce length of tablename, as it has a maximum of 45 characters (current length: $($Table.Length))"
             }
 
-    #--------------------------------------------------------------------------
-    # Creating/Updating LogAnalytics Table based upon data source schema
-    #--------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------
+    # SchemaMode = Overwrite - Creating/Updating LogAnalytics Table based upon data source schema
+    #-----------------------------------------------------------------------------------------------
+    If ($SchemaMode -eq "Overwrite")
+        {
+            $tableBodyPut   = @{
+                                    properties = @{
+                                                    schema = @{
+                                                                    name    = $Table
+                                                                    columns = @($SchemaSourceObject)
+                                                                }
+                                                }
+                                } | ConvertTo-Json -Depth 10
 
-		# automatic patching of 
-		$tableBodyPatch = @{
-								properties = @{
-												schema = @{
-																name    = $Table
-																columns = @($Changes)
-															}
-											}
-						   } | ConvertTo-Json -Depth 10
+            # create/update table schema using REST
+            $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
 
-        $tableBodyPut   = @{
-                                properties = @{
-                                                schema = @{
-                                                                name    = $Table
-                                                                columns = @($SchemaSourceObject)
+            Try
+                {
+                    Write-Verbose ""
+                    Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
+                    Write-Verbose $AzLogWorkspaceResourceId
+
+                    invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                }
+            Catch
+                {
+
+                    Write-Verbose ""
+                    Write-Verbose "Internal error 500 - recreating table"
+
+                    invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
+                                
+                    Start-Sleep -Seconds 10
+                                
+                    invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                }
+        }
+
+    #-----------------------------------------------------------------------------------------------
+    # SchemaMode = Merge - Merging new properties into existing schema
+    #-----------------------------------------------------------------------------------------------
+    If ($SchemaMode -eq "Merge")
+        {
+            # start by building new schema hash, based on existing schema in LogAnalytics custom log table
+                $SchemaArrayLogAnalyticsTableFormatHash = @()
+                ForEach ($Property in $CurrentTableSchema)
+                    {
+                        $Name = $Property.name
+                        $Type = $Property.type
+
+                        $SchemaArrayLogAnalyticsTableFormatHash += @{
+                                                                      name        = $name
+                                                                      type        = $type
+                                                                      description = ""
+                                                                   }
+                    }
+
+
+            # enum $SchemaSourceObject - and check if it exists in $SchemaArrayLogAnalyticsTableFormatHash
+            $UpdateTable = $False
+            ForEach ($PropertySource in $SchemaSourceObject)
+                {
+                    $PropertyFound = $false
+                    ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
+                        {
+                            If ($Property.name -eq $PropertySource.name)
+                                {
+                                    $PropertyFound = $true
+                                }
+
+                        }
+
+                    If ($PropertyFound -eq $true)
+                        {
+                            # Name already found ... skipping
+                        }
+                    Else
+                        {
+                            # table must be updated, changes detected in merge-mode
+                            $UpdateTable = $true
+
+                            Write-verbose "SchemaMode = Merge: Adding property $($PropertySource.name)"
+                            $SchemaArrayLogAnalyticsTableFormatHash += @{
+                                                                            name        = $PropertySource.name
+                                                                            type        = $PropertySource.type
+                                                                            description = ""
+                                                                        }
+                        }
+                }
+
+            If ($UpdateDCR -eq $true)
+                {            
+                    # new table structure with added properties (merging)
+                        $tableBodyPut   = @{
+                                                properties = @{
+                                                                schema = @{
+                                                                                name    = $Table
+                                                                                columns = @($SchemaArrayLogAnalyticsTableFormatHash)
+                                                                            }
                                                             }
-                                            }
-                           } | ConvertTo-Json -Depth 10
+                                           } | ConvertTo-Json -Depth 10
 
-        # create/update table schema using REST
-        $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
+                    # create/update table schema using REST
+                    $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
 
-        Try
-            {
-                Write-Verbose ""
-                Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
-                Write-Verbose $AzLogWorkspaceResourceId
+                    Try
+                        {
+                            Write-Verbose ""
+                            Write-Verbose "Trying to update existing LogAnalytics table schema for table [ $($Table) ] in "
+                            Write-Verbose $AzLogWorkspaceResourceId
 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
-            }
-        Catch
-            {
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        }
+                    Catch
+                        {
 
-                Write-Verbose ""
-                Write-Verbose "Internal error 500 - recreating table"
+                            Write-Verbose ""
+                            Write-Verbose "Internal error 500 - recreating table"
 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                 
-                Start-Sleep -Seconds 10
+                            Start-Sleep -Seconds 10
                                 
-                invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
-            }
-
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                        }
+                }
+        }
         
-        return
+    return
 }
 
 
@@ -5669,98 +5956,128 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 
 
 # SIG # Begin signature block
-# MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUK39n2btBPiV3zvQXkAbtKkqS
-# ri6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
-# AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
-# MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
-# NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
-# ChMQR2xvYmFsU2lnbiBudi1zYTEvMC0GA1UEAxMmR2xvYmFsU2lnbiBHQ0MgUjQ1
-# IENvZGVTaWduaW5nIENBIDIwMjAwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIK
-# AoICAQDWQk3540/GI/RsHYGmMPdIPc/Q5Y3lICKWB0Q1XQbPDx1wYOYmVPpTI2AC
-# qF8CAveOyW49qXgFvY71TxkkmXzPERabH3tr0qN7aGV3q9ixLD/TcgYyXFusUGcs
-# JU1WBjb8wWJMfX2GFpWaXVS6UNCwf6JEGenWbmw+E8KfEdRfNFtRaDFjCvhb0N66
-# WV8xr4loOEA+COhTZ05jtiGO792NhUFVnhy8N9yVoMRxpx8bpUluCiBZfomjWBWX
-# ACVp397CalBlTlP7a6GfGB6KDl9UXr3gW8/yDATS3gihECb3svN6LsKOlsE/zqXa
-# 9FkojDdloTGWC46kdncVSYRmgiXnQwp3UrGZUUL/obLdnNLcGNnBhqlAHUGXYoa8
-# qP+ix2MXBv1mejaUASCJeB+Q9HupUk5qT1QGKoCvnsdQQvplCuMB9LFurA6o44EZ
-# qDjIngMohqR0p0eVfnJaKnsVahzEaeawvkAZmcvSfVVOIpwQ4KFbw7MueovE3vFL
-# H4woeTBFf2wTtj0s/y1KiirsKA8tytScmIpKbVo2LC/fusviQUoIdxiIrTVhlBLz
-# pHLr7jaep1EnkTz3ohrM/Ifll+FRh2npIsyDwLcPRWwH4UNP1IxKzs9jsbWkEHr5
-# DQwosGs0/iFoJ2/s+PomhFt1Qs2JJnlZnWurY3FikCUNCCDx/wIDAQABo4IBrjCC
-# AaowDgYDVR0PAQH/BAQDAgGGMBMGA1UdJQQMMAoGCCsGAQUFBwMDMBIGA1UdEwEB
-# /wQIMAYBAf8CAQAwHQYDVR0OBBYEFNqzjcAkkKNrd9MMoFndIWdkdgt4MB8GA1Ud
-# IwQYMBaAFB8Av0aACvx4ObeltEPZVlC7zpY7MIGTBggrBgEFBQcBAQSBhjCBgzA5
-# BggrBgEFBQcwAYYtaHR0cDovL29jc3AuZ2xvYmFsc2lnbi5jb20vY29kZXNpZ25p
-# bmdyb290cjQ1MEYGCCsGAQUFBzAChjpodHRwOi8vc2VjdXJlLmdsb2JhbHNpZ24u
-# Y29tL2NhY2VydC9jb2Rlc2lnbmluZ3Jvb3RyNDUuY3J0MEEGA1UdHwQ6MDgwNqA0
-# oDKGMGh0dHA6Ly9jcmwuZ2xvYmFsc2lnbi5jb20vY29kZXNpZ25pbmdyb290cjQ1
-# LmNybDBWBgNVHSAETzBNMEEGCSsGAQQBoDIBMjA0MDIGCCsGAQUFBwIBFiZodHRw
-# czovL3d3dy5nbG9iYWxzaWduLmNvbS9yZXBvc2l0b3J5LzAIBgZngQwBBAEwDQYJ
-# KoZIhvcNAQELBQADggIBAAiIcibGr/qsXwbAqoyQ2tCywKKX/24TMhZU/T70MBGf
-# j5j5m1Ld8qIW7tl4laaafGG4BLX468v0YREz9mUltxFCi9hpbsf/lbSBQ6l+rr+C
-# 1k3MEaODcWoQXhkFp+dsf1b0qFzDTgmtWWu4+X6lLrj83g7CoPuwBNQTG8cnqbmq
-# LTE7z0ZMnetM7LwunPGHo384aV9BQGf2U33qQe+OPfup1BE4Rt886/bNIr0TzfDh
-# 5uUzoL485HjVG8wg8jBzsCIc9oTWm1wAAuEoUkv/EktA6u6wGgYGnoTm5/DbhEb7
-# c9krQrbJVzTHFsCm6yG5qg73/tvK67wXy7hn6+M+T9uplIZkVckJCsDZBHFKEUta
-# ZMO8eHitTEcmZQeZ1c02YKEzU7P2eyrViUA8caWr+JlZ/eObkkvdBb0LDHgGK89T
-# 2L0SmlsnhoU/kb7geIBzVN+nHWcrarauTYmAJAhScFDzAf9Eri+a4OFJCOHhW9c4
-# 0Z4Kip2UJ5vKo7nb4jZq42+5WGLgNng2AfrBp4l6JlOjXLvSsuuKy2MIL/4e81Yp
-# 4jWb2P/ppb1tS1ksiSwvUru1KZDaQ0e8ct282b+Awdywq7RLHVg2N2Trm+GFF5op
-# ov3mCNKS/6D4fOHpp9Ewjl8mUCvHouKXd4rv2E0+JuuZQGDzPGcMtghyKTVTgTTc
-# MIIG9TCCBN2gAwIBAgIMeWPZY2rjO3HZBQJuMA0GCSqGSIb3DQEBCwUAMFkxCzAJ
-# BgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMS8wLQYDVQQDEyZH
-# bG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMDAeFw0yMzAzMjcx
-# MDIxMzRaFw0yNjAzMjMxNjE4MThaMGMxCzAJBgNVBAYTAkRLMRAwDgYDVQQHEwdL
-# b2xkaW5nMRAwDgYDVQQKEwcybGlua0lUMRAwDgYDVQQDEwcybGlua0lUMR4wHAYJ
-# KoZIhvcNAQkBFg9tb2tAMmxpbmtpdC5uZXQwggIiMA0GCSqGSIb3DQEBAQUAA4IC
-# DwAwggIKAoICAQDMpI1rTOoWOSET3lSFQfsl/t83DCUEdoI02fNS5xlURPeGZNhi
-# xQMKrhmFrdbIaEx01eY+hH9gF2AQ1ZDa7orCVSde1LDBnbFPLqcHWW5RWyzcy8Pq
-# gV1QvzlFbmvTNHLm+wn1DZJ/1qJ+A+4uNUMrg13WRTiH0YWd6pwmAiQkoGC6FFwE
-# usXotrT5JJNcPGlxBccm8su3kakI5B6iEuTeKh92EJM/km0pc/8o+pg+uR+f07Pp
-# WcV9sS//JYCSLaXWicfrWq6a7/7U/vp/Wtdz+d2DcwljpsoXd++vuwzF8cUs09uJ
-# KtdyrN8Z1DxqFlMdlD0ZyR401qAX4GO2XdzH363TtEBKAwvV+ReW6IeqGp5FUjnU
-# j0RZ7NPOSiPr5G7d23RutjCHlGzbUr+5mQV/IHGL9LM5aNHsu22ziVqImRU9nwfq
-# QVb8Q4aWD9P92hb3jNcH4bIWiQYccf9hgrMGGARx+wd/vI+AU/DfEtN9KuLJ8rNk
-# LfbXRSB70le5SMP8qK09VjNXK/i6qO+Hkfh4vfNnW9JOvKdgRnQjmNEIYWjasbn8
-# GyvoFVq0GOexiF/9XFKwbdGpDLJYttfcVZlBoSMPOWRe8HEKZYbJW1McjVIpWPnP
-# d6tW7CBY2jp4476OeoPpMiiApuc7BhUC0VWl1Ei2PovDUoh/H3euHrWqbQIDAQAB
-# o4IBsTCCAa0wDgYDVR0PAQH/BAQDAgeAMIGbBggrBgEFBQcBAQSBjjCBizBKBggr
-# BgEFBQcwAoY+aHR0cDovL3NlY3VyZS5nbG9iYWxzaWduLmNvbS9jYWNlcnQvZ3Nn
-# Y2NyNDVjb2Rlc2lnbmNhMjAyMC5jcnQwPQYIKwYBBQUHMAGGMWh0dHA6Ly9vY3Nw
-# Lmdsb2JhbHNpZ24uY29tL2dzZ2NjcjQ1Y29kZXNpZ25jYTIwMjAwVgYDVR0gBE8w
-# TTBBBgkrBgEEAaAyATIwNDAyBggrBgEFBQcCARYmaHR0cHM6Ly93d3cuZ2xvYmFs
-# c2lnbi5jb20vcmVwb3NpdG9yeS8wCAYGZ4EMAQQBMAkGA1UdEwQCMAAwRQYDVR0f
-# BD4wPDA6oDigNoY0aHR0cDovL2NybC5nbG9iYWxzaWduLmNvbS9nc2djY3I0NWNv
-# ZGVzaWduY2EyMDIwLmNybDATBgNVHSUEDDAKBggrBgEFBQcDAzAfBgNVHSMEGDAW
-# gBTas43AJJCja3fTDKBZ3SFnZHYLeDAdBgNVHQ4EFgQUMcaWNqucqymu1RTg02YU
-# 3zypsskwDQYJKoZIhvcNAQELBQADggIBAHt/DYGUeCFfbtuuP5/44lpR2wbvOO49
-# b6TenaL8TL3VEGe/NHh9yc3LxvH6PdbjtYgyGZLEooIgfnfEo+WL4fqF5X2BH34y
-# EAsHCJVjXIjs1mGc5fajx14HU52iLiQOXEfOOk3qUC1TF3NWG+9mezho5XZkSMRo
-# 0Ypg7Js2Pk3U7teZReCJFI9FSYa/BT2DnRFWVTlx7T5lIz6rKvTO1qQC2G3NKVGs
-# HMtBTjsF6s2gpOzt7zF3o+DsnJukQRn0R9yTzgrx9nXYiHz6ti3HuJ4U7i7ILpgS
-# RNrzmpVXXSH0wYxPT6TLm9eZR8qdZn1tGSb1zoIT70arnzE90oz0x7ej1fC8IUA/
-# AYhkmfa6feI7OMU5xnsUjhSiyzMVhD06+RD3t5JrbKRoCgqixGb7DGM+yZVjbmhw
-# cvr3UGVld9++pbsFeCB3xk/tcMXtBPdHTESPvUjSCpFbyldxVLU6GVIdzaeHAiBy
-# S0NXrJVxcyCWusK41bJ1jP9zsnnaUCRERjWF5VZsXYBhY62NSOlFiCNGNYmVt7fi
-# b4V6LFGoWvIv2EsWgx/uR/ypWndjmV6uBIN/UMZAhC25iZklNLFGDZ5dCUxLuoyW
-# PVCTBYpM3+bN6dmbincjG0YDeRjTVfPN5niP1+SlRwSQxtXqYoDHq+3xVzFWVBqC
-# NdoiM/4DqJUBMYIDCjCCAwYCAQEwaTBZMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQ
-# R2xvYmFsU2lnbiBudi1zYTEvMC0GA1UEAxMmR2xvYmFsU2lnbiBHQ0MgUjQ1IENv
-# ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
-# KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
-# BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# f/Yqlten286/BhqOqqu45uMdt30wDQYJKoZIhvcNAQEBBQAEggIAyA+EWVFo1nRL
-# C0Avd8Bp85GZAyBll6vVtAJ3YkVv9jxxGn+LEO+RKQwaWkT7CZwr/YM10LaVCURB
-# mQjThhqHRicim2FJgrlEcyacTOZ3f6loZQzx6Yh76cdzFdEaQ2UgSu2SXWoApgWc
-# 1rGsezQfKVzoVg7Q9wDbzaSgfQSdFZXogt4XhczD6O0gVJnx+V2jqhc0NZkHMNeA
-# FvpRDkYPHBYX49y/hhKnkmf73sHU7GEZxoFtt3fopNJWQa9Z9GMs3A9PEE/ZZRy0
-# YcxGk2RhSyBy8Cg2zAgXa8qGrg6LjnwHMoOZPrNowZCnUkulKPA72cn1br9NUSVs
-# hhSfErV3JRT3Nc0uHvyBLooINYzIFzcDw1TETg3MiY18NebvvYThHCRPQ+NchfmB
-# +4sILUyS6JTWxeanbqP0g2p3YCh+JgkwYEj36lOpeK/VKWj5bSEyn0A3THwabnjA
-# F1PRruPgAA57O04rrfLPKBCXaXQecEMQH20la4wG9+ObVId3iadgzEy1sgKA2wKT
-# 3uWccSMcpD7u8GG6tM3QXQAC7i/FMxVxdGSC7jlmXMGiMof8aAkzU1Vh5AN7Y6bd
-# xxsplKkfKbY+EZiXhzPq1Fw1gxwDJQhjaImu0ljlcd4k6t6Q4RBhmjac9S6ZbXsa
-# BTvgMmSJPALmNme2jg5+jGHqhEMaDe4=
+# MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCZblU5xS0KyXZl
+# RaVxy0thbgs63aDSesY8yUAVn5q1Z6CCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
+# ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
+# bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
+# CzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQD
+# EyBHbG9iYWxTaWduIENvZGUgU2lnbmluZyBSb290IFI0NTCCAiIwDQYJKoZIhvcN
+# AQEBBQADggIPADCCAgoCggIBALYtxTDdeuirkD0DcrA6S5kWYbLl/6VnHTcc5X7s
+# k4OqhPWjQ5uYRYq4Y1ddmwCIBCXp+GiSS4LYS8lKA/Oof2qPimEnvaFE0P31PyLC
+# o0+RjbMFsiiCkV37WYgFC5cGwpj4LKczJO5QOkHM8KCwex1N0qhYOJbp3/kbkbuL
+# ECzSx0Mdogl0oYCve+YzCgxZa4689Ktal3t/rlX7hPCA/oRM1+K6vcR1oW+9YRB0
+# RLKYB+J0q/9o3GwmPukf5eAEh60w0wyNA3xVuBZwXCR4ICXrZ2eIq7pONJhrcBHe
+# OMrUvqHAnOHfHgIB2DvhZ0OEts/8dLcvhKO/ugk3PWdssUVcGWGrQYP1rB3rdw1G
+# R3POv72Vle2dK4gQ/vpY6KdX4bPPqFrpByWbEsSegHI9k9yMlN87ROYmgPzSwwPw
+# jAzSRdYu54+YnuYE7kJuZ35CFnFi5wT5YMZkobacgSFOK8ZtaJSGxpl0c2cxepHy
+# 1Ix5bnymu35Gb03FhRIrz5oiRAiohTfOB2FXBhcSJMDEMXOhmDVXR34QOkXZLaRR
+# kJipoAc3xGUaqhxrFnf3p5fsPxkwmW8x++pAsufSxPrJ0PBQdnRZ+o1tFzK++Ol+
+# A/Tnh3Wa1EqRLIUDEwIrQoDyiWo2z8hMoM6e+MuNrRan097VmxinxpI68YJj8S4O
+# JGTfAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBhjAPBgNVHRMBAf8EBTADAQH/MB0G
+# A1UdDgQWBBQfAL9GgAr8eDm3pbRD2VZQu86WOzANBgkqhkiG9w0BAQwFAAOCAgEA
+# Xiu6dJc0RF92SChAhJPuAW7pobPWgCXme+S8CZE9D/x2rdfUMCC7j2DQkdYc8pzv
+# eBorlDICwSSWUlIC0PPR/PKbOW6Z4R+OQ0F9mh5byV2ahPwm5ofzdHImraQb2T07
+# alKgPAkeLx57szO0Rcf3rLGvk2Ctdq64shV464Nq6//bRqsk5e4C+pAfWcAvXda3
+# XaRcELdyU/hBTsz6eBolSsr+hWJDYcO0N6qB0vTWOg+9jVl+MEfeK2vnIVAzX9Rn
+# m9S4Z588J5kD/4VDjnMSyiDN6GHVsWbcF9Y5bQ/bzyM3oYKJThxrP9agzaoHnT5C
+# JqrXDO76R78aUn7RdYHTyYpiF21PiKAhoCY+r23ZYjAf6Zgorm6N1Y5McmaTgI0q
+# 41XHYGeQQlZcIlEPs9xOOe5N3dkdeBBUO27Ql28DtR6yI3PGErKaZND8lYUkqP/f
+# obDckUCu3wkzq7ndkrfxzJF0O2nrZ5cbkL/nx6BvcbtXv7ePWu16QGoWzYCELS/h
+# AtQklEOzFfwMKxv9cW/8y7x1Fzpeg9LJsy8b1ZyNf1T+fn7kVqOHp53hWVKUQY9t
+# W76GlZr/GnbdQNJRSnC0HzNjI3c/7CceWeQIh+00gkoPP/6gHcH1Z3NFhnj0qinp
+# J4fGGdvGExTDOUmHTaCX4GUT9Z13Vunas1jHOvLAzYIwggbmMIIEzqADAgECAhB3
+# vQ4DobcI+FSrBnIQ2QRHMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAkJFMRkw
+# FwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENv
+# ZGUgU2lnbmluZyBSb290IFI0NTAeFw0yMDA3MjgwMDAwMDBaFw0zMDA3MjgwMDAw
+# MDBaMFkxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMS8w
+# LQYDVQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMDCC
+# AiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANZCTfnjT8Yj9GwdgaYw90g9
+# z9DljeUgIpYHRDVdBs8PHXBg5iZU+lMjYAKoXwIC947Jbj2peAW9jvVPGSSZfM8R
+# Fpsfe2vSo3toZXer2LEsP9NyBjJcW6xQZywlTVYGNvzBYkx9fYYWlZpdVLpQ0LB/
+# okQZ6dZubD4Twp8R1F80W1FoMWMK+FvQ3rpZXzGviWg4QD4I6FNnTmO2IY7v3Y2F
+# QVWeHLw33JWgxHGnHxulSW4KIFl+iaNYFZcAJWnf3sJqUGVOU/troZ8YHooOX1Re
+# veBbz/IMBNLeCKEQJvey83ouwo6WwT/Opdr0WSiMN2WhMZYLjqR2dxVJhGaCJedD
+# CndSsZlRQv+hst2c0twY2cGGqUAdQZdihryo/6LHYxcG/WZ6NpQBIIl4H5D0e6lS
+# TmpPVAYqgK+ex1BC+mUK4wH0sW6sDqjjgRmoOMieAyiGpHSnR5V+cloqexVqHMRp
+# 5rC+QBmZy9J9VU4inBDgoVvDsy56i8Te8UsfjCh5MEV/bBO2PSz/LUqKKuwoDy3K
+# 1JyYikptWjYsL9+6y+JBSgh3GIitNWGUEvOkcuvuNp6nUSeRPPeiGsz8h+WX4VGH
+# aekizIPAtw9FbAfhQ0/UjErOz2OxtaQQevkNDCiwazT+IWgnb+z4+iaEW3VCzYkm
+# eVmda6tjcWKQJQ0IIPH/AgMBAAGjggGuMIIBqjAOBgNVHQ8BAf8EBAMCAYYwEwYD
+# VR0lBAwwCgYIKwYBBQUHAwMwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU
+# 2rONwCSQo2t30wygWd0hZ2R2C3gwHwYDVR0jBBgwFoAUHwC/RoAK/Hg5t6W0Q9lW
+# ULvOljswgZMGCCsGAQUFBwEBBIGGMIGDMDkGCCsGAQUFBzABhi1odHRwOi8vb2Nz
+# cC5nbG9iYWxzaWduLmNvbS9jb2Rlc2lnbmluZ3Jvb3RyNDUwRgYIKwYBBQUHMAKG
+# Omh0dHA6Ly9zZWN1cmUuZ2xvYmFsc2lnbi5jb20vY2FjZXJ0L2NvZGVzaWduaW5n
+# cm9vdHI0NS5jcnQwQQYDVR0fBDowODA2oDSgMoYwaHR0cDovL2NybC5nbG9iYWxz
+# aWduLmNvbS9jb2Rlc2lnbmluZ3Jvb3RyNDUuY3JsMFYGA1UdIARPME0wQQYJKwYB
+# BAGgMgEyMDQwMgYIKwYBBQUHAgEWJmh0dHBzOi8vd3d3Lmdsb2JhbHNpZ24uY29t
+# L3JlcG9zaXRvcnkvMAgGBmeBDAEEATANBgkqhkiG9w0BAQsFAAOCAgEACIhyJsav
+# +qxfBsCqjJDa0LLAopf/bhMyFlT9PvQwEZ+PmPmbUt3yohbu2XiVppp8YbgEtfjr
+# y/RhETP2ZSW3EUKL2Glux/+VtIFDqX6uv4LWTcwRo4NxahBeGQWn52x/VvSoXMNO
+# Ca1Za7j5fqUuuPzeDsKg+7AE1BMbxyepuaotMTvPRkyd60zsvC6c8YejfzhpX0FA
+# Z/ZTfepB7449+6nUEThG3zzr9s0ivRPN8OHm5TOgvjzkeNUbzCDyMHOwIhz2hNab
+# XAAC4ShSS/8SS0Dq7rAaBgaehObn8NuERvtz2StCtslXNMcWwKbrIbmqDvf+28rr
+# vBfLuGfr4z5P26mUhmRVyQkKwNkEcUoRS1pkw7x4eK1MRyZlB5nVzTZgoTNTs/Z7
+# KtWJQDxxpav4mVn945uSS90FvQsMeAYrz1PYvRKaWyeGhT+RvuB4gHNU36cdZytq
+# tq5NiYAkCFJwUPMB/0SuL5rg4UkI4eFb1zjRngqKnZQnm8qjudviNmrjb7lYYuA2
+# eDYB+sGniXomU6Ncu9Ky64rLYwgv/h7zViniNZvY/+mlvW1LWSyJLC9Su7UpkNpD
+# R7xy3bzZv4DB3LCrtEsdWDY3ZOub4YUXmimi/eYI0pL/oPh84emn0TCOXyZQK8ei
+# 4pd3iu/YTT4m65lAYPM8Zwy2CHIpNVOBNNwwggb1MIIE3aADAgECAgx5Y9ljauM7
+# cdkFAm4wDQYJKoZIhvcNAQELBQAwWTELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEds
+# b2JhbFNpZ24gbnYtc2ExLzAtBgNVBAMTJkdsb2JhbFNpZ24gR0NDIFI0NSBDb2Rl
+# U2lnbmluZyBDQSAyMDIwMB4XDTIzMDMyNzEwMjEzNFoXDTI2MDMyMzE2MTgxOFow
+# YzELMAkGA1UEBhMCREsxEDAOBgNVBAcTB0tvbGRpbmcxEDAOBgNVBAoTBzJsaW5r
+# SVQxEDAOBgNVBAMTBzJsaW5rSVQxHjAcBgkqhkiG9w0BCQEWD21va0AybGlua2l0
+# Lm5ldDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAMykjWtM6hY5IRPe
+# VIVB+yX+3zcMJQR2gjTZ81LnGVRE94Zk2GLFAwquGYWt1shoTHTV5j6Ef2AXYBDV
+# kNruisJVJ17UsMGdsU8upwdZblFbLNzLw+qBXVC/OUVua9M0cub7CfUNkn/Won4D
+# 7i41QyuDXdZFOIfRhZ3qnCYCJCSgYLoUXAS6xei2tPkkk1w8aXEFxybyy7eRqQjk
+# HqIS5N4qH3YQkz+SbSlz/yj6mD65H5/Ts+lZxX2xL/8lgJItpdaJx+tarprv/tT+
+# +n9a13P53YNzCWOmyhd376+7DMXxxSzT24kq13Ks3xnUPGoWUx2UPRnJHjTWoBfg
+# Y7Zd3MffrdO0QEoDC9X5F5boh6oankVSOdSPRFns085KI+vkbt3bdG62MIeUbNtS
+# v7mZBX8gcYv0szlo0ey7bbOJWoiZFT2fB+pBVvxDhpYP0/3aFveM1wfhshaJBhxx
+# /2GCswYYBHH7B3+8j4BT8N8S030q4snys2Qt9tdFIHvSV7lIw/yorT1WM1cr+Lqo
+# 74eR+Hi982db0k68p2BGdCOY0QhhaNqxufwbK+gVWrQY57GIX/1cUrBt0akMsli2
+# 19xVmUGhIw85ZF7wcQplhslbUxyNUilY+c93q1bsIFjaOnjjvo56g+kyKICm5zsG
+# FQLRVaXUSLY+i8NSiH8fd64etaptAgMBAAGjggGxMIIBrTAOBgNVHQ8BAf8EBAMC
+# B4AwgZsGCCsGAQUFBwEBBIGOMIGLMEoGCCsGAQUFBzAChj5odHRwOi8vc2VjdXJl
+# Lmdsb2JhbHNpZ24uY29tL2NhY2VydC9nc2djY3I0NWNvZGVzaWduY2EyMDIwLmNy
+# dDA9BggrBgEFBQcwAYYxaHR0cDovL29jc3AuZ2xvYmFsc2lnbi5jb20vZ3NnY2Ny
+# NDVjb2Rlc2lnbmNhMjAyMDBWBgNVHSAETzBNMEEGCSsGAQQBoDIBMjA0MDIGCCsG
+# AQUFBwIBFiZodHRwczovL3d3dy5nbG9iYWxzaWduLmNvbS9yZXBvc2l0b3J5LzAI
+# BgZngQwBBAEwCQYDVR0TBAIwADBFBgNVHR8EPjA8MDqgOKA2hjRodHRwOi8vY3Js
+# Lmdsb2JhbHNpZ24uY29tL2dzZ2NjcjQ1Y29kZXNpZ25jYTIwMjAuY3JsMBMGA1Ud
+# JQQMMAoGCCsGAQUFBwMDMB8GA1UdIwQYMBaAFNqzjcAkkKNrd9MMoFndIWdkdgt4
+# MB0GA1UdDgQWBBQxxpY2q5yrKa7VFODTZhTfPKmyyTANBgkqhkiG9w0BAQsFAAOC
+# AgEAe38NgZR4IV9u264/n/jiWlHbBu847j1vpN6dovxMvdUQZ780eH3JzcvG8fo9
+# 1uO1iDIZksSigiB+d8Sj5Yvh+oXlfYEffjIQCwcIlWNciOzWYZzl9qPHXgdTnaIu
+# JA5cR846TepQLVMXc1Yb72Z7OGjldmRIxGjRimDsmzY+TdTu15lF4IkUj0VJhr8F
+# PYOdEVZVOXHtPmUjPqsq9M7WpALYbc0pUawcy0FOOwXqzaCk7O3vMXej4Oycm6RB
+# GfRH3JPOCvH2ddiIfPq2Lce4nhTuLsgumBJE2vOalVddIfTBjE9PpMub15lHyp1m
+# fW0ZJvXOghPvRqufMT3SjPTHt6PV8LwhQD8BiGSZ9rp94js4xTnGexSOFKLLMxWE
+# PTr5EPe3kmtspGgKCqLEZvsMYz7JlWNuaHBy+vdQZWV3376luwV4IHfGT+1wxe0E
+# 90dMRI+9SNIKkVvKV3FUtToZUh3Np4cCIHJLQ1eslXFzIJa6wrjVsnWM/3OyedpQ
+# JERGNYXlVmxdgGFjrY1I6UWII0Y1iZW3t+JvhXosUaha8i/YSxaDH+5H/Klad2OZ
+# Xq4Eg39QxkCELbmJmSU0sUYNnl0JTEu6jJY9UJMFikzf5s3p2ZuKdyMbRgN5GNNV
+# 883meI/X5KVHBJDG1epigMer7fFXMVZUGoI12iIz/gOolQExggMbMIIDFwIBATBp
+# MFkxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMS8wLQYD
+# VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
+# Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
+# AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIPCKfT1OxyD5D/fqerciVEpf
+# wvW58UfiSOc6YwOtu0pVMA0GCSqGSIb3DQEBAQUABIICABrZl85sQzx2Tg1CajHR
+# ILw59OX6atTdK/sNm03gSNTrx19+F89l4mXb3Cflm8P1VzKNLA0vgmi5jS3yJVxz
+# P9yoDUrDtqv0EJRNtSyWvqNBjRII3bL3lNJ7edmrZR011SXqZkzeqiimuQrWBUOX
+# 7yXdOxVSfNE5qJFiE2Ob9sBhY6gqVPBgqX9RQ2MZLgUvXPzSByoumGgQvscG9nBe
+# htxc5khOd3Ny5a/msaVfrlXPWjW0AKXMrVpLrEbzqefvPtmGqgkFkL7FX/LF0rh7
+# 1vlYy7oBi3Pzt0C47rsY5Vex9+oH2S4uZgqWgSa9vhpdXiSOkhEKkeVXa9AEclgZ
+# jF78z7w1yKn51k1TfSJNN2IuxyGvhiDL3kIOdePvKJ4zt8/YU+eAU009aBUR5JFE
+# qUNDWon1vXvtn8jdLSbG4k3j5nqHU3fRQnFQBx5O6dnA1yKYGQe7r/7I7SnO2J/g
+# h6osl6DXcFwWIFk0oZp6qPWH5xoo1P+lVA0sQCugmYUEnHTOW26YcA/dnbr6TEeC
+# qoU6INSUjRyCCUk79QK1y9mC1hjlBQGk3hjM8tJky/8tT4OQ8V+kljVyhs6TYYqZ
+# NCh54VBU1L28jIpwnGlpbsVQxnM65gKoM7v31bwye+bwPZs2voRQEDP9cXoxubYI
+# P2zXBuvju/ZiabpFWncsq/vM
 # SIG # End signature block
