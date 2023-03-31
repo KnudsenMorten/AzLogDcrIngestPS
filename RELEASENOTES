@@ -1,4 +1,6 @@
 RELEASE NOTES
+v1.2.32  Bugfix - skip TimeGenerated in DCR table schema when doing a merge. TimeGenerated only exist in table, not DCR
+
 v1.2.31  Added parameter SchemaMode = Merge/Overwrite for functions CheckCreateUpdate-TableDcr-Structure, CreateUpdate-AzLogAnalyticsCustomLogTableDcr, CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 			SchemaMode = Merge (default)
 			It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
