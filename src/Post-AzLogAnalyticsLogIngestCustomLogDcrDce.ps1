@@ -276,8 +276,10 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                             }
                         Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
-              return $Result
-        }
+                    } #If ($DceURI -and $DcrImmutableId -and $DcrStream -and $Data)
+        
+            #return latest upload result
+            return $Result
             
             Write-host ""
         }
@@ -286,8 +288,8 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkcF5Hamd7ECDW9ieXJ4JMSVe
-# CNWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUtAf5nmL6FgtqIVH8OSB3Jol8
+# Z9qggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -366,16 +368,16 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# eNIRhlq7suksOd4avl9Pc+44IBAwDQYJKoZIhvcNAQEBBQAEggIADEWgqWinQK6+
-# qhDxqFjRy8Iy9gw9jwPiamREq1UCenI5rR7O7sFLRY6RByfnXg9DFIh6NpEPs8sV
-# 2vXERWUGeOgxQklVAndJZ0hU6GONU+zndeLqLt2NUmjnJ4UGh0O4pkthuesqoEGE
-# 0izqQznbiCptN3NeqrVOHVl0MeqsdDP7aIfLi/wCHwSaSNlE8HC+/rV+WErKN3jZ
-# KgVA9L8d1/z/kwGWMfPYxo55EzV+A4dnTqWwvM4UzVLDuwt3RbwXC+Y6MhvEuz3Y
-# +eJdHYBI8f+uGtPamC6vTvWK6tqnu/jAHp8q+cf3seS/uQwNsTkwBxSIwo3pRGsw
-# UFz+EWiRhg2lL023zySipAh+BU1Uk1utPfQSa7ANwIk3rBhGn4TDi3Tdj7zpbM1L
-# TSKS6BQ6SWFe4cFuDn8cJ9n+aBNmi6AgM9MhqoCI1luZAcqbn89XNBDgNeaiWWO5
-# crdXdI1LR/wkbQA1JjB0wfhNjDaq4tyw2GRk8KLCT1BndGwFv/yA2oNd2k+3iMXF
-# IL0IrsMJHoLqSqTCWqZtjs0cOtTRZOgCDH2IBWCT5QXRPH7qS/aALMnhVpSrqOV7
-# itnmSTNgjG85JZTYRV6wPQuye4uXNk8n78VmBUupVrFwMQPamaYyFl2BW1+qw6Vq
-# a1WU508A0BTxE2lcYyZbT5kRD90/5iw=
+# xu2Ob7T4yTyRtWPM/1g6yGDSDwEwDQYJKoZIhvcNAQEBBQAEggIAc4N4QxGu0QYM
+# mH2++qEZ/zQvFPpW6UauKI4cFUGvHZ8fQZUetYDkySatjUFCmYYGCqb2rcXsh2m5
+# upy+6lij8aK701aGS86UMmzamHQYngu+sHZRapAx5KXLVgmhi96tl+BKdO3Ihxiz
+# 47bwlRv/wY0uOKaoDWhuHhLSjwHOQ+kNDCdB7qnGG5Ya0vf3LGZ7V2zhTYo5NNmq
+# DTrDkQphYVrp/qJ4fx8F8rS3cxpLS4aBfE7S2yBhwehwqc62/Bh9MmBb36hXUNL0
+# uEWBKlJMqiDXRkHvGF0nXCKTQcMtx8c40netn1AQ17+EU8bP3HxqEdtIPovAMgqd
+# K4LdTB1wrZTjfyhGZNfeDH69cAoxFSNMO2P/LEUX59gBnZdieIGRGkvmiGJkHbAI
+# c1JIgmJ2zkmnCrJnoDAD/kaxYmSatrAvd2XAJ0K1lOArZZy1mH5zXAc+AKz9DyHU
+# 7Q5clsFNTb1e1bQsbKr4CwQ8X4E3UVumf8ln0QKu5SyxKYXo7Uh8CBEr8dOXiPMN
+# Q91Iepo4mnlsSw5ylUR3o8OapqrZaKKZugA2nJDWSnqFJidoEazCnF1vgjKxNbh7
+# Z/Rgfr9v9qboR+O7z50x/0SOjOqlRyqJavIghNh2xDoWfNaDFze25xvw2ELM9/h9
+# +2IKjRmPf0HD5ivztfnk5vD1Y1VlJbg=
 # SIG # End signature block

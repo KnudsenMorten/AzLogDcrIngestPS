@@ -2542,6 +2542,78 @@ Function Get-AzAccessTokenManagement
 }
 
 
+Function Get-AzDataCollectionRuleTransformKql
+{
+ <#
+    .SYNOPSIS
+    Gets the current tranformKql parameter on an existing DCR with the provided parameter
+
+    .DESCRIPTION
+    Used to see the current transformation on a data collection rule
+
+    .PARAMETER $DcrResourceId
+    This is the resource id of the data collection rule
+
+    .PARAMETER AzAppId
+    This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
+        
+    .PARAMETER AzAppSecret
+    This is the secret of the Azure app
+
+    .PARAMETER TenantId
+    This is the Azure AD tenant id
+
+    .INPUTS
+    None. You cannot pipe objects
+
+    .OUTPUTS
+    Output of REST GET command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
+    .EXAMPLE
+
+ #>
+
+    [CmdletBinding()]
+    param(
+            [Parameter(mandatory)]
+                [string]$DcrResourceId,
+            [Parameter()]
+                [string]$AzAppId,
+            [Parameter()]
+                [string]$AzAppSecret,
+            [Parameter()]
+                [string]$TenantId
+         )
+
+    #--------------------------------------------------------------------------
+    # Connection
+    #--------------------------------------------------------------------------
+
+        $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
+                                               -AzAppSecret $AzAppSecret `
+                                               -TenantId $TenantId -Verbose:$Verbose
+
+    #--------------------------------------------------------------------------
+    # get existing DCR
+    #--------------------------------------------------------------------------
+
+        $DcrUri = "https://management.azure.com" + $DcrResourceId + "?api-version=2022-06-01"
+        $DCR = invoke-restmethod -UseBasicParsing -Uri $DcrUri -Method GET -Headers $Headers
+
+    #--------------------------------------------------------------------------
+    # show object
+    #--------------------------------------------------------------------------
+
+        ForEach ($DataFlow in $DCR.properties.dataFlows)
+            {
+                Write-Output $DataFlow.transformKql
+            }
+}
+
+
 Function Get-AzDceListAll
 {
   <#
@@ -4687,8 +4759,10 @@ Function Post-AzLogAnalyticsLogIngestCustomLogDcrDce
 
                             }
                         Until ($IndexLoopTo -ge ($TotalDataLines - 1 ))
-              return $Result
-        }
+                    } #If ($DceURI -and $DcrImmutableId -and $DcrStream -and $Data)
+        
+            #return latest upload result
+            return $Result
             
             Write-host ""
         }
@@ -5597,8 +5671,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUzNH74+/LkBC5fH4XGmR9zgW/
-# aRuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUK39n2btBPiV3zvQXkAbtKkqS
+# ri6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -5677,16 +5751,16 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# GRj+uLmUWT5cEoAJKGKiyvm4YCkwDQYJKoZIhvcNAQEBBQAEggIAApq7G5Xl2c+U
-# oz7xq/fo2ORgYjCTPykb0nKPkxz8FK4SS/EaDQ227u5G4Pln9KPal3GCHSV8BrST
-# nrqocT6wyuwCOup3FNSy7NiGe+EFk9G/2WHEFzyRnz++o9qyLvOw/yLvFMc75/9X
-# qI4LAeComTbif/GhCkrpiyrbOxFPHB4BfKajGI5pUg0pUcHhT+ud3lLWBMJ9WOog
-# ZtBR1WcNKIP0MwhcSj25Kr0DUkJ2uCauydhaL10lj3AhfTnzpnUbUJnMRZSmPhPc
-# wctu56xCDvbY+/zrC44RtPVr0NqIHcfQ9X9SoD2oDKSOhQUxNjoAo7icsMYJemRT
-# r+styzzWy+1upQC7v20PvnNWqrPlYfKIbTuAeP1WGRVVf7Mz7ZVzxLsBE4hjlK+A
-# HFObx0tatdMhMl5grVELZPL7z7NMpS+lNrx48AL79b44Gl+n16LLEsOVkSRO/qU+
-# qdUzKdzcL35sqXFpb3o7GrrPhiV5rCnqEi6G2GH/hPk3IPS6Hb2Y4LQAR3wvQjqr
-# T30ZN0IBFALm+vBXU9gc1Mpz4MF5udQihw6yHwFguSFwqLGTPyLNWD2KfA6ZaofE
-# vSchgGKPd3L9KPH1CnA5YOmKb9yaOcPl+r5GYy3qOquFJD/Dda/F6luKtRGiDXPk
-# wa5p23jdqjEmwIjDTIDwuEhoDhqRZaE=
+# f/Yqlten286/BhqOqqu45uMdt30wDQYJKoZIhvcNAQEBBQAEggIAyA+EWVFo1nRL
+# C0Avd8Bp85GZAyBll6vVtAJ3YkVv9jxxGn+LEO+RKQwaWkT7CZwr/YM10LaVCURB
+# mQjThhqHRicim2FJgrlEcyacTOZ3f6loZQzx6Yh76cdzFdEaQ2UgSu2SXWoApgWc
+# 1rGsezQfKVzoVg7Q9wDbzaSgfQSdFZXogt4XhczD6O0gVJnx+V2jqhc0NZkHMNeA
+# FvpRDkYPHBYX49y/hhKnkmf73sHU7GEZxoFtt3fopNJWQa9Z9GMs3A9PEE/ZZRy0
+# YcxGk2RhSyBy8Cg2zAgXa8qGrg6LjnwHMoOZPrNowZCnUkulKPA72cn1br9NUSVs
+# hhSfErV3JRT3Nc0uHvyBLooINYzIFzcDw1TETg3MiY18NebvvYThHCRPQ+NchfmB
+# +4sILUyS6JTWxeanbqP0g2p3YCh+JgkwYEj36lOpeK/VKWj5bSEyn0A3THwabnjA
+# F1PRruPgAA57O04rrfLPKBCXaXQecEMQH20la4wG9+ObVId3iadgzEy1sgKA2wKT
+# 3uWccSMcpD7u8GG6tM3QXQAC7i/FMxVxdGSC7jlmXMGiMof8aAkzU1Vh5AN7Y6bd
+# xxsplKkfKbY+EZiXhzPq1Fw1gxwDJQhjaImu0ljlcd4k6t6Q4RBhmjac9S6ZbXsa
+# BTvgMmSJPALmNme2jg5+jGHqhEMaDe4=
 # SIG # End signature block
