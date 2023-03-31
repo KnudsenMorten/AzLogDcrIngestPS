@@ -595,10 +595,14 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                             $Name = $Property.name
                             $Type = $Property.type
 
-                            $SchemaArrayDCRFormatHash += @{
-                                                            name        = $name
-                                                            type        = $type
-                                                          }
+                            # Add all properties except TimeGenerated as it only exist in tables - not DCRs
+                            If ($Name -ne "TimeGenerated")
+                                {
+                                    $SchemaArrayDCRFormatHash += @{
+                                                                    name        = $name
+                                                                    type        = $type
+                                                                  }
+                                }
                         }
 
                 # enum $SchemaSourceObject - and check if it exists in $SchemaArrayLogAnalyticsTableFormatHash
