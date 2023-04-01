@@ -1,4 +1,6 @@
 RELEASE NOTES
+v1.2.33  Bugfix - signature was by mistake in source file (removed)
+
 v1.2.32  Bugfix - skip TimeGenerated in DCR table schema when doing a merge. TimeGenerated only exist in table, not DCR
 
 v1.2.31  Added parameter SchemaMode = Merge/Overwrite for functions CheckCreateUpdate-TableDcr-Structure, CreateUpdate-AzLogAnalyticsCustomLogTableDcr, CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
