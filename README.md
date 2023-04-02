@@ -333,7 +333,11 @@ AzLogDcrIngestPS supports 2 modes for managing the schema: **Merge** and **Overw
 ### SchemaMode = Merge  (default)
 If you set SchemaMode = Merge, then new properties from the source object will be added (merged) into the current schema of the log analytics. DCR will import the schema from log analytics table to ensure they are identically.
 
-Default mode is Merge, if you don't define the variable SchemaMode on the functions CheckCreateUpdate-TableDr-Structure, CreateUpdate-AzLogAnalyticsCustomLogTableDcr or CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
+Default mode is Merge, if you don't define the variable SchemaMode on the functions: 
+CheckCreateUpdate-TableDr-Structure
+CreateUpdate-AzLogAnalyticsCustomLogTableDcr
+CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
+
 
 ### SchemaMode = Overwrite
 If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
@@ -602,7 +606,10 @@ AzLogDcrIngestPS supports 2 modes for managing the schema: **Merge** and **Overw
 ## SchemaMode = Merge  (default)
 If you set SchemaMode = Merge, then new properties from the source object will be added (merged) into the current schema of the log analytics. DCR will import the schema from log analytics table to ensure they are identically.
 
-Default mode is Merge, if you don't define the variable SchemaMode on the functions CheckCreateUpdate-TableDr-Structure, CreateUpdate-AzLogAnalyticsCustomLogTableDcr or CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
+Default mode is Merge, if you don't define the variable SchemaMode on the functions: 
+CheckCreateUpdate-TableDr-Structure
+CreateUpdate-AzLogAnalyticsCustomLogTableDcr
+CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
 ## SchemaMode = Overwrite
 If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
