@@ -67,6 +67,7 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 
 [Big Thanks to the great people in Azure LogAnaytics/DCR/AMA/VMInsight/Workbooks product teams :smile:]|Name|Role|
 Lastly, I would like to give big credits to a few people, who I have worked together with on building AzLogDcrIngestPS Powershell module and my daily work with the Azure log & viewing capabilities:
+
 |:---|:---|
 |Ivan Varnitski|Program Manager - Azure Pipeline|
 |Evgeny Ternovsky|Program Manager - Azure Pipeline|
