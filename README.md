@@ -15,8 +15,8 @@ Cool features of **AzLogDcrIngestPS** are:
 * can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
 
 The 25 functions will help you with:
-*  **data manipulation** before sending data in (8 functions)
-*  **table / dcr / schema management** (12 functions)
+*  **data manipulation** before sending data in (7 functions)
+*  **table / dcr / schema / transformation management** (13 functions)
 *  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
 *  **support/security** (1 function)
 
@@ -58,7 +58,7 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 [Integration of AzLogDcrIngest in your scripts](https://github.com/KnudsenMorten/AzLogDcrIngestPS#integration-of-azlogdcringest-in-your-scripts)  
 [Function synopsis](#function-synopsis)  
 [Detailed - Data Manipulation](#category-data-manipulation)  
-[Detailed - Table/DCR/Schema management](#category-tabledcrschema-management-1)  
+[Detailed - Table/DCR/Schema/Transformation management](#category-tabledcrschematransformation-management-1)  
 [Detailed - Data Out (upload to Azure LogAnalytics)](#category-data-out-upload-to-azure-loganalytics-1) 
 [Detailed - Support functions (security)](#category-support-functions-security-1)  
 [Contact me](#contact)  
@@ -88,18 +88,18 @@ I have been using the API with my Powershell scripts to upload 'tons' of custom 
 Moving forward, Microsoft has introduced the concept of **Azure Data Collection Rules (DCRs)**, which I am a big fan of.
 
 The reasons for that are:
-* support for file based logs collection (txt, Windows Firewall)
-* advanced support for collection of performance data (fx. SQL performance performance counters)
-* support for SNMP traps logs collection
-* possibiity to remove data before being sent into LogAnalytics (remove "noice" data/cost optimization, GDPR/compliance)
-* possibility to add data before being sent into LogAnalytics (normalization)
-* possibility to merge data before being sent into LogAnalytics (normalization)
-* security is based on Azure AD RBAC
-* naming of data columns are prettier, as they contain the actual name - and not for example ComputerName_s indicating it is a string value
+* possibility to remove data before being sent into LogAnalytics (remove "noice" data/cost optimization, GDPR/compliance)
+* possibility to add data before being sent into LogAnalytics
+* possibility to merge data before being sent into LogAnalytics
 * data quality is better for array data, as array data is converted into dynamic - whereas the old MMA-method would convert array data into strings
-* future: support to send to other destinations (AMA only)
+* support to send to other destinations
+* support for file based logs collection (txt-logs, Windows Firewall logs)
+* advanced support for advanced collection of performance data (including new collection type like SQL performance counters)
+* support for SNMP traps logs collection
+* security is based on Azure AD RBAC
+* naming of data columns are prettier, as they contain the actual name - and not for example ComputerName_s indicating it is a string valu
 
-If I should mention some disadvantages, then they are:
+If I should mention some challenges, then they are:
 * complexity is higher, because you have 1-2 more "middle-tiers" involved (DCR, DCE)
 * table/DCR/schema must be defined before sending data (this is why I build the powershell function AzLogDcrIngestPS)
 
@@ -324,6 +324,17 @@ Your Powershell script will be uploading data into **custom logs (v2)** in **Azu
 ## Schema
 Both the DCR and LogAnalytics table has a schema, which needs to match the schema of the source object. This is handled by using functions in AzLogDcrIngestPS module.
 
+AzLogDcrIngestPS supports 2 modes for managing the schema: **Merge** and **Overwrite**
+
+### SchemaMode = Merge  (default)
+If you set SchemaMode = Merge, then new properties from the source object will be added (merged) into the current schema of the log analytics. DCR will import the schema from log analytics table to ensure they are identically.
+
+Default mode is Merge, if you don't define the variable SchemaMode on the functions CheckCreateUpdate-TableDr-Structure, CreateUpdate-AzLogAnalyticsCustomLogTableDcr or CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
+
+### SchemaMode = Overwrite
+If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
+
+
 [Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
 [Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
 [Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
@@ -407,7 +418,7 @@ You can use **any source data** which can be retrieved into Powershell (wmi, cim
 
 It is very important to understand, that the data typically needs to be manipulated before sending them - to ensure they are valid and any irrelevant data has been removed.
 
-ClientInspector uses all of the 24 functions within the Powershell module, **AzLogDcIngestPS**, to handle source data manipulation to **remove "noice" in data**, to **rename prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
+ClientInspector uses all of the 25 functions within the Powershell module, **AzLogDcIngestPS**, to handle source data manipulation to **remove "noice" in data**, to **rename prohibited colums in tables/DCR** - and support needs for **transparency** with extra insight like **UserLoggedOn**, **CollectionTime**, **Computer**:
 
 <br>
 
@@ -465,7 +476,7 @@ $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$V
 # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
 #-------------------------------------------------------------------------------------------
 
-CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaMode Merge `
                                      -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose `
                                      -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
                                      -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
