@@ -1100,6 +1100,7 @@ Function        Filter-ObjectExcludeProperty                       1.1.17     Az
 Function        Get-AzAccessTokenManagement                        1.1.17     AzLogDcrIngestPS                                                               
 Function        Get-AzDceListAll                                   1.1.17     AzLogDcrIngestPS                                                               
 Function        Get-AzDcrDceDetails                                1.1.17     AzLogDcrIngestPS                                                               
+Function        Get-AzDataCollectionRuleTransformKql               1.1.17     AzLogDcrIngestPS                                                               
 Function        Get-AzDcrListAll                                   1.1.17     AzLogDcrIngestPS                                                               
 Function        Get-AzLogAnalyticsTableAzDataCollectionRuleStatus  1.1.17     AzLogDcrIngestPS                                                               
 Function        Get-ObjectSchemaAsArray                            1.1.17     AzLogDcrIngestPS                                                               
@@ -2627,6 +2628,39 @@ Else
 
 <details>
   <summary><h3>Get-AzLogAnalyticsTableAzDataCollectionRuleStatus</h3></summary>
+
+    .SYNOPSIS
+    Gets the current tranformKql parameter on an existing DCR with the provided parameter
+
+    .DESCRIPTION
+    Used to see the current transformation on a data collection rule
+
+    .PARAMETER $DcrResourceId
+    This is the resource id of the data collection rule
+
+    .PARAMETER AzAppId
+    This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
+        
+    .PARAMETER AzAppSecret
+    This is the secret of the Azure app
+
+    .PARAMETER TenantId
+    This is the Azure AD tenant id
+
+    .INPUTS
+    None. You cannot pipe objects
+
+    .OUTPUTS
+    Output of REST GET command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
+    .EXAMPLE
+</details>
+
+<details>
+  <summary><h3>Get-AzDataCollectionRuleTransformKql</h3></summary>
 
     .SYNOPSIS
     Gets the current tranformKql parameter on an existing DCR with the provided parameter
