@@ -80,6 +80,7 @@ Lastly, I would like to give big credits to a few people, who I have worked toge
 |Jeff Wolford|Program Manager - Azure Monitor Agent|
 |Xema Pathak|Program Manager - Azure VMInsight (integration to Azure Monitor Agent)|
 
+
 ![MS-friends](img/MS-friends.JPG)
 
 <br>
