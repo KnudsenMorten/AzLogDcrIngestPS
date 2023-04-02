@@ -580,6 +580,16 @@ Both the DCR and LogAnalytics table has a schema, which needs to be matching the
 
 It is fuly supported by AzLogDcringestPS to automatically modify the schema, if it detects changes. It is managed by a variable (AzLogDcrTableCreateFromAnyMachine).
 
+AzLogDcrIngestPS supports 2 modes for managing the schema: **Merge** and **Overwrite**
+
+## SchemaMode = Merge  (default)
+If you set SchemaMode = Merge, then new properties from the source object will be added (merged) into the current schema of the log analytics. DCR will import the schema from log analytics table to ensure they are identically.
+
+Default mode is Merge, if you don't define the variable SchemaMode on the functions CheckCreateUpdate-TableDr-Structure, CreateUpdate-AzLogAnalyticsCustomLogTableDcr or CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
+
+## SchemaMode = Overwrite
+If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
+
 [Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
 [Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
 [Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs) 
@@ -601,7 +611,7 @@ In ClientInspector, I use the variable-names **$AzLogDcrTableCreateFromAnyMachin
 # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
 #-------------------------------------------------------------------------------------------
 
-CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaMode Merge `
                                      -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose `
                                      -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
                                      -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
@@ -1375,11 +1385,12 @@ Else
 |Filter-ObjectExcludeProperty|Removes columns from the object which is considered "noice" and shouldn't be send to logs|
 |ValidateFix-AzLogAnalyticsTableSchemaColumnNames|Validates the column names in the schema are valid according the requirement for LogAnalytics tables.<br>Fixes any issues by rebuild the source object|
 
-## Category: Table/DCR/Schema management
+## Category: Table/DCR/Schema/Transformation management
 |Function name|Synopsis|
 |:-------|:-------|
 |Get-AzLogAnalyticsTableAzDataCollectionRuleStatus|Get status about Azure Loganalytics tables and Data Collection Rule|
 |Get-AzDcrDceDetails|Retrieves information about data collection rules and data collection endpoints - using Azure Resource Graph|
+|Get-AzDataCollectionRuleTransformKql|Retrieves current data transformation in DCR (if found)|
 |CheckCreateUpdate-TableDcr-Structure|Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API (combined)|
 |CreateUpdate-AzDataCollectionRuleLogIngestCustomLog|Create or Update Azure Data Collection Rule (DCR) used for log ingestion to Azure LogAnalytics using Log Ingestion API|
 |CreateUpdate-AzLogAnalyticsCustomLogTableDcr|Create or Update Azure LogAnalytics Custom Log table - used together with Data Collection Rules (DCR) for Log Ingestion API upload to LogAnalytics|
@@ -2485,7 +2496,7 @@ Else
 
 <br>
 
-## Category: Table/DCR/Schema management
+## Category: Table/DCR/Schema/Transformation management
 
 <details>
   <summary><h3>Get-AzLogAnalyticsTableAzDataCollectionRuleStatus</h3></summary>
@@ -2594,6 +2605,39 @@ Else
     VERBOSE: received 7749-byte response of content type application/json; charset=utf-8
     VERBOSE:   Success - Schema & DCR structure is OK
     $False
+</details>
+
+<details>
+  <summary><h3>Get-AzLogAnalyticsTableAzDataCollectionRuleStatus</h3></summary>
+
+    .SYNOPSIS
+    Gets the current tranformKql parameter on an existing DCR with the provided parameter
+
+    .DESCRIPTION
+    Used to see the current transformation on a data collection rule
+
+    .PARAMETER $DcrResourceId
+    This is the resource id of the data collection rule
+
+    .PARAMETER AzAppId
+    This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
+        
+    .PARAMETER AzAppSecret
+    This is the secret of the Azure app
+
+    .PARAMETER TenantId
+    This is the Azure AD tenant id
+
+    .INPUTS
+    None. You cannot pipe objects
+
+    .OUTPUTS
+    Output of REST GET command. Should be 200 for success
+
+    .LINK
+    https://github.com/KnudsenMorten/AzLogDcrIngestPS
+
+    .EXAMPLE
 </details>
 
 <details>
