@@ -14,8 +14,8 @@ Cool features of **AzLogDcrIngestPS** are:
 * can convert source objects based on CIM or PS objects into PSCustomObjects/array
 * can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
 
-The 24 functions will help you with:
-*  **data manipulation** before sending data in (7 functions)
+The 25 functions will help you with:
+*  **data manipulation** before sending data in (8 functions)
 *  **table / dcr / schema management** (12 functions)
 *  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
 *  **support/security** (1 function)
@@ -66,6 +66,8 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 ## Credits & Thank You
 
 [Big Thanks to the great people in Azure LogAnaytics/DCR/AMA/VMInsight/Workbooks product teams - you deliver rock stars solution :smile:](#big-thanks-to-the-great-people-in-azure-loganayticsdcramavminsightworkbooks-product-teams---you-deliver-rock-stars-solution-smile)
+
+![MS-friends](img/MS-friends.jpg)
 
 <br>
 
