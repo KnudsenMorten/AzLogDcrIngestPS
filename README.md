@@ -324,6 +324,10 @@ Your Powershell script will be uploading data into **custom logs (v2)** in **Azu
 ## Schema
 Both the DCR and LogAnalytics table has a schema, which needs to match the schema of the source object. This is handled by using functions in AzLogDcrIngestPS module.
 
+[Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
+[Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
+[Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
+
 AzLogDcrIngestPS supports 2 modes for managing the schema: **Merge** and **Overwrite**
 
 ### SchemaMode = Merge  (default)
@@ -334,10 +338,6 @@ Default mode is Merge, if you don't define the variable SchemaMode on the functi
 ### SchemaMode = Overwrite
 If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
 
-
-[Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
-[Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
-[Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs)  
 
 ## Networking
 You have 3 options for connectivity to Azure for data upload: 
@@ -591,6 +591,12 @@ Both the DCR and LogAnalytics table has a schema, which needs to be matching the
 
 It is fuly supported by AzLogDcringestPS to automatically modify the schema, if it detects changes. It is managed by a variable (AzLogDcrTableCreateFromAnyMachine).
 
+[Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
+[Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
+[Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs) 
+
+I recommend schema changes to be managed by you - and not happen automatically.
+
 AzLogDcrIngestPS supports 2 modes for managing the schema: **Merge** and **Overwrite**
 
 ## SchemaMode = Merge  (default)
@@ -600,12 +606,6 @@ Default mode is Merge, if you don't define the variable SchemaMode on the functi
 
 ## SchemaMode = Overwrite
 If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
-
-[Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
-[Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
-[Video 1m 34s - See schema of DCR and table)](https://youtu.be/NDSNhvpa4Gs) 
-
-I recommend schema changes to be managed by you - and not happen automatically.
 
 <details>
   <summary><h2>How to disable so only you can make changes to the schema ?</h2></summary>
