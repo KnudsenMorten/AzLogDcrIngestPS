@@ -813,13 +813,13 @@ $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$v
 # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
 #-------------------------------------------------------------------------------------------
 
-CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
-                                    -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
-                                    -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
-                                    -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
-                                    -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                    -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
-                                    -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaMode Merge `
+                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
+                                     -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
+                                     -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                     -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                     -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                     -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
 
 
 ########### Simulation
@@ -921,13 +921,13 @@ $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$v
 # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
 #-------------------------------------------------------------------------------------------
 
-CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
-                                    -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
-                                    -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
-                                    -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
-                                    -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                    -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
-                                    -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
+CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  -SchemaMode Merge `
+                                     -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
+                                     -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
+                                     -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                     -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                     -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                     -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
         
 
 
