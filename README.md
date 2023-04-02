@@ -338,7 +338,6 @@ CheckCreateUpdate-TableDr-Structure
 CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
-
 ### SchemaMode = Overwrite
 If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
 
@@ -2626,39 +2625,6 @@ Else
     VERBOSE: received 7749-byte response of content type application/json; charset=utf-8
     VERBOSE:   Success - Schema & DCR structure is OK
     $False
-</details>
-
-<details>
-  <summary><h3>Get-AzLogAnalyticsTableAzDataCollectionRuleStatus</h3></summary>
-
-    .SYNOPSIS
-    Gets the current tranformKql parameter on an existing DCR with the provided parameter
-
-    .DESCRIPTION
-    Used to see the current transformation on a data collection rule
-
-    .PARAMETER $DcrResourceId
-    This is the resource id of the data collection rule
-
-    .PARAMETER AzAppId
-    This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
-        
-    .PARAMETER AzAppSecret
-    This is the secret of the Azure app
-
-    .PARAMETER TenantId
-    This is the Azure AD tenant id
-
-    .INPUTS
-    None. You cannot pipe objects
-
-    .OUTPUTS
-    Output of REST GET command. Should be 200 for success
-
-    .LINK
-    https://github.com/KnudsenMorten/AzLogDcrIngestPS
-
-    .EXAMPLE
 </details>
 
 <details>
