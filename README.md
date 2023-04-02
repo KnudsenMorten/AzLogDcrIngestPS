@@ -546,6 +546,7 @@ $Schema = Get-ObjectSchemaAsHash -Data $Data `
 
 CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId `
                                              -SchemaSourceObject $Schema `
+											 -SchemaMode $SchemaMode
                                              -TableName $TableName `
                                              -AzAppId $AzAppId `
                                              -AzAppSecret $AzAppSecret `
@@ -558,6 +559,7 @@ $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
 
 CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId `
                                                     -SchemaSourceObject $Schema `
+ 												    -SchemaMode $SchemaMode
                                                     -DceName $DceName `
                                                     -DcrName $DcrName `
                                                     -TableName $TableName `
@@ -2828,6 +2830,14 @@ Else
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
+
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
 
@@ -2939,13 +2949,13 @@ Else
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
 
-    CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  `
-                                            -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
-                                            -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
-                                            -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
-                                            -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                            -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
-                                            -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
+    CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId  -SchemaMode Merge `
+                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId `
+                                         -DceName $DceName -DcrName $DcrName -TableName $TableName -Data $DataVariable `
+                                         -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                         -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                         -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                         -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
 
     #-------------------------------------------------------------------------------------------
     # Output
@@ -3081,6 +3091,14 @@ Else
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
 
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
+
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
 
@@ -3202,7 +3220,7 @@ Else
     $Schema = Get-ObjectSchemaAsHash -Data $DataVariable -ReturnType DCR
 
     CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaSourceObject $Schema `
-                                                        -DceName $DceName -DcrName $DcrName -TableName $TableName `
+                                                        -DceName $DceName -DcrName $DcrName -TableName $TableName -SchemaMode Merge `
                                                         -LogIngestServicePricipleObjectId  $AzDcrLogIngestServicePrincipalObjectId `
                                                         -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
@@ -3294,6 +3312,14 @@ Else
 
     .PARAMETER SchemaSourceObject
     This is the schema in hash table format coming from the source object
+
+    .PARAMETER SchemaMode
+    SchemaMode = Merge (default)
+    It will do a merge/union of new properties and existing schema properties. DCR will import schema from table
+
+    SchemaMode = Overwrite
+    It will overwrite existing schema in DCR/table – based on source object schema
+    This parameter can be useful for separate overflow work
 
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
