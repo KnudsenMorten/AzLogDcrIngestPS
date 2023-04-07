@@ -409,12 +409,9 @@ You will need to define  variables in your script for the AppId, Secret and Tena
 # VARIABLES
 ##########################################
 
-
     $TenantId                                   = "xxxxxx" 
     $LogIngestAppId                             = "xxxxxx" 
     $LogIngestAppSecret                         = "xxxxx" 
-
-
 ```
 
 You need to set permissions according to these settings:
