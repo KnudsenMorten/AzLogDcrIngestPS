@@ -403,6 +403,20 @@ You can choose to have one app for both log ingestion and table/DCR schema manag
 ## One Azure app for both log ingestion and table/schema management
 If you want to keep it simple, you can choose to go with a single Azure app that is used for both log ingestion and table/schema management.
 
+You will need to define  variables in your script for the AppId, Secret and TenantId
+```
+##########################################
+# VARIABLES
+##########################################
+
+
+    $TenantId                                   = "xxxxxx" 
+    $LogIngestAppId                             = "xxxxxx" 
+    $LogIngestAppSecret                         = "xxxxx" 
+
+
+```
+
 You need to set permissions according to these settings:
 
 | Target                                                  | Delegation To                    | Azure RBAC Permission        | Comment                                                                   | 
