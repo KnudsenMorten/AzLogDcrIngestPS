@@ -1086,7 +1086,7 @@ Here is an example where the function is called in verbose-mode
 ```
 Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$true
 ```
-[You can see examples of normal-mode and verbose-mode output from all the functions here from my sample solution ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2#sample-output-of-clientinspector)
+
 </details>
 
 <details>
