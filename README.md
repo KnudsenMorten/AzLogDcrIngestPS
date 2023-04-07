@@ -1417,6 +1417,8 @@ Else
 |Filter-ObjectExcludeProperty|Removes columns from the object which is considered "noice" and shouldn't be send to logs|
 |ValidateFix-AzLogAnalyticsTableSchemaColumnNames|Validates the column names in the schema are valid according the requirement for LogAnalytics tables.<br>Fixes any issues by rebuild the source object|
 
+![Datamanipulation](docs/datamanipulation.png)
+
 ## Category: Table/DCR/Schema/Transformation management
 |Function name|Synopsis|
 |:-------|:-------|
