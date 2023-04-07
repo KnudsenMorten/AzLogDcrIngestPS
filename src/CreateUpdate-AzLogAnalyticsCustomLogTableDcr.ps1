@@ -306,7 +306,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                         }
                 }
 
-            If ($UpdateDCR -eq $true)
+            If ($UpdateTable -eq $true)
                 {            
                     # new table structure with added properties (merging)
                         $tableBodyPut   = @{
@@ -350,8 +350,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6tMz3VkZZOK4k0iVY9YZMWuv
-# j86ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUeGQnz2yd5gbV3vTFcuy/FRaj
+# ysaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -430,16 +430,16 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# GdPnp2X2p6+GXXPDTgqD7ajKDBAwDQYJKoZIhvcNAQEBBQAEggIAosSVsDQpgptq
-# oUIMgK8Xu4nyqsikviRHhpnMwYms17L5jhnfaWT5dXdjoQjYuC8bnKbOi02rTeZb
-# 1SHw4PC+tDLORK7jXnLrEf552KVwE2kwkSz5Xu3NKipXpEgPfO0pJn+l+74IuUyy
-# bxFIx1LZSSQY/BfGSAGMjcheKe+uiHcorrLnYpbv+zPJihpVd0fOvEOgUpOuWu23
-# DnLxoeNsdBL62sl91AD5ttpfWdHlmOHs95sdPm+qJAk0uxmwLxE0MP24ARt2GW71
-# Wh4goWcBp1hOeOmvtQeXES5wekPXpBzn9oHs4VxaJSuyq8IgYIetNl4kkx+cDp1b
-# hAoDCMn0z4tg85Q5lowgOaxNeMoiJa6JTrsiJZIvMy1+yX+dt2HZ/Yy9Afypqy4f
-# 6yCTcC8sKqkUBerin+45Nge1+DHQpo+xKOwet1qcuOGAvQYnbnj8JcNO6iVfcl/M
-# sMKiDea/qIRlzSsv7zl9NJM8c48yBo6CVqPhT1XsY+II9OfCzsLHM0/iwaQ4d6Bl
-# sQGuQbMw/eRfrFB53HJMpFanav0sUPBn1WDZIyUGbzWK5Vy2MARqIdFJ0fL9qX22
-# 5+UFLO/adhgxdC5LIiYHU0EtHq1iKwSC6dEHhG/vMiK9WY6A0KPvtJ3eTBITp5bM
-# c8vfK9hPOxp1Yt7oWnWlxoOeyPZDfpU=
+# wCDzcTmIICoROFj9qZ2T1BYuS0wwDQYJKoZIhvcNAQEBBQAEggIASmzNNClb1Y68
+# ExOEou6c4xUPYOjrp5Wm8D7UzSBfzqecwmNGDm2bMKTm9FpY7xtOnABFoeVNGYHn
+# BOWAT2ddK90eMBRWL2w05cq82WztQ0H0iRcPjxWK+pHfP0qfTDsQOEI7dYO2Rmgk
+# F6ETkbgJE63Uely/ud+t7IpkiT7rOy0+DvoFvJA3m6ltdDzoBoWj5+GXjXRWX+C0
+# TP4zIsz+5Cwt3Dv5r2LpIlCIXVo5hof4t4LYHb43OVCBM23vYMMsKt4z8zWLChW8
+# Dt7Fj6b6+Pa/PBorysf0tKc2nVAG+Mp3jD5BEkSbxnxlpeN0aONs9VHHeh+Fa2aC
+# s5x4jZmkVz8+dU613n1DhOzAqeYDiFKwvtC/5aSSlfrnYYnh8f6hjFwHmaAZrHim
+# +7dPnYZAvsGCE8CR2JNZvcM3BrKt1Ot1bxHh7rFoBF35624T+Xh3klhDpFD2bYP6
+# bakHs7Cyqd8U/30GKfg0gpWHy8MFl5VFPUcDhRdKH/+R/o/pL4YkhNQMEtu8K1Ks
+# D3pBvYgHvjqNEwhN8yYZYd+v8DzMSo28ZHWwdLrmKKFt3R94hsqwTiUALzR8ucez
+# zd+K9WwQ9c/myHgTahGQL40YHcXOC0jbENSrlk/6fH0wEmuW4TpdjgRz79nb/9rh
+# pds1xe9kfyI1sKmLXIeD7qt5Lpk0yCQ=
 # SIG # End signature block
