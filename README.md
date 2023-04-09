@@ -568,7 +568,7 @@ $Schema = Get-ObjectSchemaAsHash -Data $Data `
 
 CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId `
                                              -SchemaSourceObject $Schema `
-											 -SchemaMode $SchemaMode
+                                             -SchemaMode $SchemaMode `
                                              -TableName $TableName `
                                              -AzAppId $AzAppId `
                                              -AzAppSecret $AzAppSecret `
@@ -581,7 +581,7 @@ $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType DCR
 
 CreateUpdate-AzDataCollectionRuleLogIngestCustomLog -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId `
                                                     -SchemaSourceObject $Schema `
- 												    -SchemaMode $SchemaMode
+ 												    -SchemaMode $SchemaMode `
                                                     -DceName $DceName `
                                                     -DcrName $DcrName `
                                                     -TableName $TableName `
