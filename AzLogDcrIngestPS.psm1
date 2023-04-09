@@ -837,11 +837,13 @@ Function CheckCreateUpdate-TableDcr-Structure
                 [string]$DcrResourceGroup,
             [Parameter(mandatory)]
                 [string]$DceName,
-            [Parameter(mandatory)]
+            [Parameter()]
+                [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
-            [Parameter(mandatory)]
-                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
-            [Parameter(mandatory)]
+            [Parameter()]
+                [AllowEmptyCollection()]
+                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
+            [Parameter()]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
             [Parameter()]
                 [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
@@ -1435,9 +1437,11 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 [string]$DcrName,
             [Parameter(mandatory)]
                 [string]$TableName,
+            [Parameter()]
+                [AllowEmptyCollection()]
+                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
             [Parameter(mandatory)]
-                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
-            [Parameter(mandatory)]
+                [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
             [Parameter()]
                 [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
@@ -5962,8 +5966,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDI2hKA9bskWWLe
-# FmvCJD+eNJMSG1+HuFH/95qyMFy6BqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDIhHq6GQdbYKNk
+# zppKvYQQLANXRbMCl3Qr7DqPVcQhbaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6071,17 +6075,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIFJNT3xwe/8gCDO+fsiNils2
-# TLofOFss5o4sX9GmaP59MA0GCSqGSIb3DQEBAQUABIICAMCoGf6EfoXN0PGhrPt/
-# W2Xv280QDOPvun610UeUa+07Ot0uooQlbtKlgsx0doVroOnC0uzKHPDnQo3341VC
-# euroBvrGAcEdjwgkhL2AXdNX3/IrxzO0A7JDKICI73JQMR1yFxNqlEWIEhjxhJkE
-# HLTGyOayYaQ3c+Yw+7y9cN5E++77IpFBQftizK5i2d/6VFXMo5iDcD5/UqhRk/eT
-# E1H881jR01OdYNcYo/2XDuVqajuUESyRipAP3nWN2QQsXBb3kU/TzrV9ozzTISk5
-# BD/0e7XyPlqyojbuIhh1BqLTqyDNHoWkROp5mmIcHW8qdZl8OwEDY39lWHFgaohW
-# +CF9RPxZ+kyfShWRWcsoWkvU9bI6/w2GiwklPU8TL0L86EsyKDrri0xM/qJPw4rn
-# 7j3duNoIx1V8WrWDafO9QeOrvI9r1AvdzTD8g6ca/GYd+3ssIpBsf67M8o63QatP
-# gk9wwx6oeb0P+N0Bkq1PY8HPzfdQJ0IN/iCDszRvo2bUNMsoSpWjMmXogVbN2h2Q
-# zvc7NFZ+HDCd+B/91pJOv84W+q9/fVO4YOBVj8rlDTrffZcVrR1dWOrDwCXXPf8M
-# ced4QhofpjFbXotxdCZ4NPAo0YrKww18fae4W+87vCXUiqUSEuHOBYAiMULVkao4
-# 4yz43tDFKpV/wWyjBH3jmN7c
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIP8n2eAuYWa8O7GqU1la3jH7
+# NliFrcJYT0gq7sLSFTpoMA0GCSqGSIb3DQEBAQUABIICAJdb3rhGEYIx/RCzavyU
+# tQ3KAsiMkJXENecfnODqF4fglnevR+G7y1wTwelaGN+N9jrmrK6nP9zOY7rTRTAq
+# XN2z3g3EFhOzzLI/A96jP6+bv+FfdcNoIZAWah465Za0RGAjCUa31d2ksoVMGVrW
+# BlpHr45UycRP3yHIcB52WOh9c7D0w3vPN7E1y9e5feYIPcJc88ec0VIc+zT0cK0E
+# NxDioDvTC9pU2WtHe+Gq86lOvYhVCJmUM0u14wvkT5d+H0KuZEhyIbXRG2W5PfhR
+# uNxjO6hMf318HZiquV3CleseutrNvrB0iKcmi7BHBiOkZVH6aycW/SF7YFOE48Ip
+# AK7wHTbs9MsPQDF6qc91gqNYExteFP61mxCsLD+qDxtUJNgSq09MnaYAb++kr8Xx
+# ZRb1d/kULQ9kcF9ghCmcjvbSF53RytIgWuzBXDGsHFw4QoRgcaXIl+bbT0YXeNjJ
+# dL+QwlH4XUbxTmllDjuSeFtmLWxxTLae0zFzZSFcWJkSqfJoQooWnssyF6NEgC7G
+# 4fFtIgD4Vtn6pC61xVOXM98RD5TX7l622weZvfA0zMd1Kk8EWsLTMMgWZ2J2IsI5
+# 7cgKwITgznDJ1KfaDfA7q2KzhdVQC4QLdB22+oX40TnORx+DTURKXp4N9GaY6fXy
+# U2pn4hGs27+j6f129uoO9aoO
 # SIG # End signature block

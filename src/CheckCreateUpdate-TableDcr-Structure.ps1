@@ -292,11 +292,13 @@ Function CheckCreateUpdate-TableDcr-Structure
                 [string]$DcrResourceGroup,
             [Parameter(mandatory)]
                 [string]$DceName,
-            [Parameter(mandatory)]
+            [Parameter()]
+                [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
-            [Parameter(mandatory)]
-                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
-            [Parameter(mandatory)]
+            [Parameter()]
+                [AllowEmptyCollection()]
+                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
+            [Parameter()]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
             [Parameter()]
                 [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
@@ -366,8 +368,8 @@ Function CheckCreateUpdate-TableDcr-Structure
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULHIgwJSf5IqXPuEf9iNRq89A
-# P5qggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUH3eYZJO9nfW9JBIM+QgV1/nL
+# Qmqggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -446,16 +448,16 @@ Function CheckCreateUpdate-TableDcr-Structure
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# wv75aRs9FLgYG0gPmfq131/DIPIwDQYJKoZIhvcNAQEBBQAEggIAVKvVBAh3FDpY
-# JyvAsofQPMafmQxSz1RUjgwPJIEUj4k9ksguTkkC6+zmP9YY3Ex9o9UG1BZlNfUb
-# 5PN3p/Qq0Gxf0Sa92NvPD8bDhNMfU8bclcn6u9jGfAzzh0E000fqd4IAYarXFWpD
-# qro0NZ9gI76EHLmlHgC1J54h+lr8sEDrzb7TSf5vwQeWOOwBxPbUkU3zCo7PQE+X
-# iEIQ3pz5OUPGhDj79eLVBP6x5/O8ZRezghpl1qMs0/6KyOU0PWATY/HdQ6SaNjgg
-# 1z4TUl7NAMHjeDlrpOdrs42ElzH2B0X8dO8W1NsIalHH0vPdnOu44YEoD5J346Da
-# ebwHyWDpCetN13hP4UYZ6TRn005DBSJ1kvlo34qVRTmXn72f3CmneZe6cB9TpK8L
-# LkZThyvTyamEvHFjnTeMIskyV6/pucWqWrEo3IX5Ai6mH8u8U5X2dQsG+iP71fi8
-# /+O2PyPvG4ova7dQ3grIX6c/13VNJ7BbGeAoj7yGcs+ys5smC1MySLCz2CdOJ8HC
-# IBCBkJPNIQCN0WPDZ3EzB61UXCpp6YnJHOiHZHfPue3eC14rDfLMca+DIADUrM0F
-# nKlg9tlwYzKeaGWvHNrlSz6qe1uAyG000l7cwSJ4FiDkmE6All19D7K4HcPuFElX
-# gYjDzIuVbMtWkglexeENlGiumbZAWb4=
+# 8cJ36QhG2WMfX8rux7T6wYkE5ZQwDQYJKoZIhvcNAQEBBQAEggIAIuXe1t0yZ+63
+# oh8SnfmjdO4WddPCGsymesDQ/pO3kextGu9gM5wT32wtoSnJWYF27CBzQy7kPTae
+# 2cUUeTfjgHJzTshWqV2vxKHagjLbjO5XgnknIxDrEudf7WUj2fqLyGLTdAxUyDj9
+# aCJkTFndCl/3nBihD/0GYc0COIX2RE1oG9+bvtF4usXAL5FMtYrzzSH1gTvnhnzH
+# To/Hz+GPskVHxKzMktcR/ru1GJdkkh1RWWG1qP4nNtg58GX7y81LVIxXY1DrdiIM
+# LBHFN4XsdabrG0TC9Nc8prscVp2TsmuleOGXJ+SUh0/OmLB3mwuWoU3Eh+IM3ot8
+# B2S8YsOKwWHBblinsmGTjOGXK9neu4VcPJVtXId6L6gtmDdqlDHipGHH5/r5vvRg
+# nLJ2CXw09e3aSPhSXQUN3bnug+l0obKwMkaR8yT7yV7ZanEkxLEEwpth2uA1Vkcq
+# PsGQrEI4IL2w7dLAfFmYSR6vv/ADAL+ULUgpG/F6NovvEJOhx+zMf0e0erPwObRZ
+# Jit8ifSdsFqpxuyxMc6K6bL4H62gsb8gGyFMM+nuAnIDilkjxMe3OHKyJ2/OZ/up
+# XKe9sSW2WRbBvYH3md3Gz3y49QzXBgaM/qUwNmklV2ApG3d5fQr0uXX84z0y0abE
+# 8QyrDSr3Fc68lvMC8v5FCJyNVKmjvKw=
 # SIG # End signature block

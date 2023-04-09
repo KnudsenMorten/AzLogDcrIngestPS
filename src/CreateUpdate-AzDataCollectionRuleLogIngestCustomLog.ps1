@@ -242,9 +242,11 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 [string]$DcrName,
             [Parameter(mandatory)]
                 [string]$TableName,
+            [Parameter()]
+                [AllowEmptyCollection()]
+                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
             [Parameter(mandatory)]
-                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel,
-            [Parameter(mandatory)]
+                [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
             [Parameter()]
                 [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
@@ -702,8 +704,8 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUorQ8/ojAuUe83qGqN+oiF+Q+
-# e5+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU44SKt54B1B2IKYlWeIg3aurB
+# +ceggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -782,16 +784,16 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 60rutJYH56WssYjNDyFyvSMzkiYwDQYJKoZIhvcNAQEBBQAEggIAu6oWiS+KzruT
-# 1iwlaMmzOyFW6kxM9lpf0dJArgqfWKzKsy5TQSH+Nk8QuORPCcko6p19RHfBLW02
-# pcYN69Y6vy6vfUZyj/2n+GTQsvN/KyLkt52Mn4hqUlNnZZhOv+fEqlmLXpgETyfI
-# 3g34ZiL0o2G9rXlJ4boASmGC352UPlske5RI0P4f6dbInGdY5Xe/QGaJ+x/LUcOr
-# ppYag3hLPS7cxZGVdXMOJsa0gX/rHvmM8o+EyOtMoFW7HlMwoJXyXlNb+od0RSgc
-# JFcqqOX9LvVKttqtYqhIQ3i1CIRPiIwNffud30YM5La0w5VHmWh10FbRisswu/bm
-# nPrnNcsKw/oYZLg5c+9O8M1bse2GSLnkny/wWIWMWt6QEIWUXl4GYGbrWD3rSpof
-# AcF3AiKxzpdNnKmspe9vZl6lBoegXlHRRjzSPjLVQYj5cutJ6PsRAiWfIVu6mkBH
-# xLNnTZaJCjTkOm85cAjt0GKY5DrFVCD+LV2zJy00ySHYJ+oOed44HLt9hm7tWuOK
-# p5YO80YE54ZSuPIqzagSoEP8qCWB/RdW7OkAXb/WWqo7WNawZcTaE1sIFZI1LyUg
-# QZbnOFcNU8hFln5qcKhcXYcvKueIRfWVybLzgG7H9Kmlq385d1Pe5lI8NnSz5GGe
-# 9BlgsWjVYBBagHlN+yB/n01UvcRreZA=
+# NIXWOulGvjBDU5nYMJlAZghhzF4wDQYJKoZIhvcNAQEBBQAEggIAyl+k4wGzUHSy
+# GmVT67I1IqsEmST+SFsc4rq0TRBqDf1eTwui3RBWzCEa37COvrCJfCQeSqNohG7Z
+# SbVRGD4EFocoiQ1+P9TfyJwvpnI+h2L6L6IUUNCxVIPaKlI4XjETWLFK+cDEcUVE
+# IetH2bihDHFOADciy/E7FgrtuLB/RkBcu7dVwSbAUvosxvtCZAwm13aoiTHP/NEf
+# m4VgvvTASQrderwgvyze1teZU+ngF+n7IKZGq3Pq0IHIWi7n3N+DplyWC1PZBtmV
+# K+yzOF4rsr/TugfumHKNqk4P+w10bApqkAxVW0OEmFQYXXkmaLzht+DztXDTqoDj
+# sOOvA5ANG5K/cQ6rhDBPK5eseBV/RF15ohAa2x8N3UcNLRRmAakbMcy2v+un6moN
+# iZSHxhucqNNEFGUNudKNFfaYKaRqWy827zrLhElMENHOJ6g7g1i+g1sWpf76Hibw
+# zGUHxegFCN3VurlZlOU0996kuDAn0ybAZAse0kgXS60AsgO0jb23G5329OlrvKSR
+# 3NWSwgcm+WlLrxkRrREXvvmTqAUj2lv6H0RTMwDCFmA5wxa9MuEuynIiDNUy9a0k
+# v//VUAJM7ULNOPoN/cMOKpjCuan6raypVeM5T1D1N07D+Ob9TNjc/y2NcsYuEVOW
+# mYW7DI87mSW8sjeOxeMPD6GWTQ9ohAE=
 # SIG # End signature block
