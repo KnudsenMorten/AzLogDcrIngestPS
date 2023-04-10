@@ -49,7 +49,12 @@ I have [provided 4 demos](#how-to-get-started-) for you to try, but if you want 
 You can download latest version of AzLogDcrIngestPS here - or from Powershell Gallery:
 
 [Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1)  
-[Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
+[Install AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
+
+```
+install-module AzLogDcrIngestPS
+```
+
 
 ## Quick links for more information
 [How to get started in your own environment (demo)](#how-to-get-started-)  
