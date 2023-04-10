@@ -20,8 +20,8 @@ The 25 functions will help you with:
 *  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
 *  **support/security** (1 function)
 
-## See the functions in action
-You can also check out the section [how to get started](#how-to-get-started-)
+## See the Powershell module AzLogDcrIngestPS in action
+I have [provided 4 demos](#how-to-get-started-) for you to try. I have also provided [videos](#videos) for you to check out.
 
 Alternatively, I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use the funtions from the **AzLogDcrIngestPS** module.
 
@@ -49,7 +49,7 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 [Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 ## Quick links for more information
-[How to get started](#how-to-get-started-)  
+[How to get started in your own environment (demo)](#how-to-get-started-)  
 [Background for building this Powershell module](#background-for-building-this-powershell-module)  
 [Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)  
 [Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)  
