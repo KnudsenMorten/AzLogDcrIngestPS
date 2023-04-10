@@ -86,7 +86,11 @@ Lastly, I would like to give big credits to a few people, who I have worked toge
 # How to get started ?
 The 3 steps to get started with sending logs through Azure Pipeline using Log Ingestion API, Data Collection Rules and AzLogDcrIngestPS are:
 
-1. Get demo environment up and running. Download the Powershell script [Step1-Deployment-DemoEnvironment](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step1-Deployment-DemoEnvironment.ps1)
+1. Get demo environment up and running. 
+
+Download the Powershell script [Step1-Deployment-DemoEnvironment](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step1-Deployment-DemoEnvironment.ps1)
+
+Modify the SubscriptionId and TenantId in the header before running the deployment
 
 The deployment-script will setup the following tasks:
 * create Azure Resource Group for Azure LogAnalytics Workspace
@@ -100,8 +104,6 @@ The deployment-script will setup the following tasks:
 * delegate permissions for Azure App on LogAnalytics workspace
 * delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Rules (DCR)
 * delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Endpoints (DCE)
-
-NOTE: Modify the SubscriptionId and TenantId in the header before running the deployment
 
 ```
 $UseRandomNumber                       = $true
