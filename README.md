@@ -31,6 +31,7 @@ Alternatively, I have built a cool showcase - [ClientInspector (v2)](https://git
 
 ## Videos
 I have [provided 4 demos](#how-to-get-started-) for you to try, but if you want to see it first using video, check out these videos:
+
 [Video 3m 19s - Running ClientInspector using commandline (normal mode)](https://youtu.be/4kA4BE0zJ9g)  
 [Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
 [Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
