@@ -181,13 +181,13 @@ You can now run the different sections in the script and see the demos. The demo
 
 Start by running lines 1-275, which will load the initial header and build variables
 
-Demo1 will demonstrate data manipulation + show schema content
+Demo #1 will demonstrate data manipulation + show schema content
 
-Demo2 will demonstrate collection data + create LogAnalytics table + DCR + send data
+Demo #2 will demonstrate collection data + create LogAnalytics table + DCR + send data
 
-Demo3 will demonstrate collection of data, remove unnecessary data-properties, create schema with modified structure
+Demo #3 will demonstrate collection of data, remove unnecessary data-properties, create schema with modified structure
 
-Demo4 will demonstrate schema change of existing table
+Demo #4 will demonstrate schema change of existing table
 
 NOTE:
 
