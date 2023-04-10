@@ -88,7 +88,7 @@ Lastly, I would like to give big credits to a few people, who I have worked toge
 # How to get started ?
 The 3 steps to get started with sending logs through Azure Pipeline using Log Ingestion API, Data Collection Rules and AzLogDcrIngestPS are:
 
-1. Get demo environment up and running. 
+## Step 1 - Get demo environment up and running. 
 
 Download the Powershell script [Step1-Deployment-DemoEnvironment](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step1-Deployment-DemoEnvironment.ps1)
 
@@ -142,8 +142,10 @@ $AzDcrPrefix                           = "clt"
 $VerbosePreference                     = "SilentlyContinue"  # "Continue"
 
 ```
+## Step 2 - Adjust the demo-script with the needed variables (sample below). 
 
-2. Adjust the demo-script with the needed Variables (sample below). Demo-script can also be found [here](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step2-Collect_CreateSchema_Send_data.ps1)
+Demo-script can also be found [here](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step2-Collect_CreateSchema_Send_data.ps1)
+
 ```
 ##########################################
 # VARIABLES
@@ -173,7 +175,9 @@ $global:Verbose                               = $true   # can be removed from sc
 
 ```
 
-3. You can now run the different sections in the script and see the demos. The demos will use most functions in AzLogDcrIngestPS
+## Step 3 - Run demos
+ 
+You can now run the different sections in the script and see the demos. The demos will use most functions in AzLogDcrIngestPS
 
 Start by running lines 1-275, which will load the initial header and build variables
 
@@ -185,9 +189,11 @@ Demo3 will demonstrate collection of data, remove unnecessary data-properties, c
 
 Demo4 will demonstrate schema change of existing table
 
-NOTE
+NOTE:
 
-Have patience :-) Making schema changes + creating new pipelines will require 10-15 min delays right now. Data WILL come - have patience.
+Have patience :-) 
+Making schema changes + creating new pipelines will require 10-15 min delays right now. Data WILL come - have patience.
+
 When the DCR + table + schema is in place, normal upload of data will happen very fast afterwords. 
 
 I have outlined the things to notice during the demos - run the lines one by one (sample below)
