@@ -478,11 +478,11 @@ For sample data and an API call using the Logs Ingestion API
 <br>
 
 # Architecture, Schema & Networking
-Your Powershell script will be uploading data into **custom logs (v2)** in **Azure LogAnalytics workspace** - using **Log ingestion API**, **Azure Data Collection Rules (DCR)** and **Azure Data Collection Endpoints (DCE)**. Script will be using the functions in AzLogDcrIngestPS.
+Below you can see the flow of the data upload. Data will be uploaded into **custom logs (v2)** in **Azure LogAnalytics workspace** - using **Log ingestion API**, **Azure Data Collection Rules (DCR)** and **Azure Data Collection Endpoints (DCE)**.
 
 ![Archicture](docs/Architecture.png)
 
-## Schema
+# Schema
 Both the DCR and LogAnalytics table has a schema, which needs to match the schema of the source object. This is handled by using functions in AzLogDcrIngestPS module.
 
 [Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
@@ -491,7 +491,7 @@ Both the DCR and LogAnalytics table has a schema, which needs to match the schem
 
 AzLogDcrIngestPS supports 2 modes for managing the schema: **Merge** and **Overwrite**
 
-### SchemaMode = Merge  (default)
+## SchemaMode = Merge  (default)
 If you set SchemaMode = Merge, then new properties from the source object will be added (merged) into the current schema of the log analytics. DCR will import the schema from log analytics table to ensure they are identically.
 
 Default mode is Merge, if you don't define the variable SchemaMode on the functions: 
@@ -499,11 +499,11 @@ CheckCreateUpdate-TableDr-Structure
 CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
-### SchemaMode = Overwrite
+## SchemaMode = Overwrite
 If you set SchemaMode = Overwrite, then the schema in DCR and table will be overwritten (updated) - based on the source object schema. 
 
 
-## Networking
+# Networking
 You have 3 options for connectivity to Azure for data upload: 
 
 |Upload method|Connectivity Details|OS compliance|
@@ -512,7 +512,7 @@ You have 3 options for connectivity to Azure for data upload:
 |Private access|REST endpoint sends to DCE via private link of DCE|Endpoint supports TLS 1.2|
 |Log-hub|REST endpoint sends data via [log-hub](https://github.com/KnudsenMorten/AzLogDcrIngestPSLogHub) - a concept I have built.|Endpoint doesn't support TLS 1.2.<br> Azure will not accept connectivity from these devices directly|
 
-### Internet-connected endpoints - OS-level compliance
+## Internet-connected endpoints - OS-level compliance
 ![Internet-connected endpoints - OS-level compliance](docs/Networking.png)
 
 You need to allow the following endpoints in your firewall:
@@ -523,7 +523,7 @@ You need to allow the following endpoints in your firewall:
 
 <br>
 
-### No Internet access or OS-level incompliance fx. running TLS 1.0/1.1
+## No Internet access or OS-level incompliance fx. running TLS 1.0/1.1
 [Check out the log-hub concept using this link](https://github.com/KnudsenMorten/AzLogDcrIngestPSLogHub)
 
 ![No Internet access or OS-level incompliance fx. running TLS 1.0/1.1](docs/Loghub.png)
