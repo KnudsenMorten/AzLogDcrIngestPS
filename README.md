@@ -137,7 +137,7 @@ $VerbosePreference                     = "SilentlyContinue"  # "Continue"
 
 ```
 
-2. Adjust the demo-script with the needed Variables (sample below)
+2. Adjust the demo-script with the needed Variables (sample below). Demo-script can also be found [here](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step2-Collect_CreateSchema_Send_data.ps1)
 ```
 ##########################################
 # VARIABLES
