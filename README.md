@@ -21,7 +21,7 @@ The 25 functions will help you with:
 *  **support/security** (1 function)
 
 ## See the functions in action
-You can also check out the section [how to get started](#steps-to-get-started)
+You can also check out the section [how to get started](#how-to-get-started-)
 
 Alternatively, I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use the funtions from the **AzLogDcrIngestPS** module.
 
@@ -89,17 +89,17 @@ The 3 steps to get started with sending logs through Azure Pipeline using Log In
 1. Get demo environment up and running. Download the Powershell script [Step1-Deployment-DemoEnvironment](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step1-Deployment-DemoEnvironment.ps1)
 
 The deployment-script will setup the following tasks:
-(1)  create Azure Resource Group for Azure LogAnalytics Workspace
-(2)  create Azure LogAnalytics Workspace
-(3)  create Azure App registration used for upload of data by demo-upload script
-(4)  create Azure service principal on Azure App
-(5)  create needed secret on Azure app
-(6)  create the Azure Resource Group for Azure Data Collection Endpoint (DCE) in same region as Azure LogAnalytics Workspace
-(7)  create the Azure Resource Group for Azure Data Collection Rules (DCR) in same region as Azure LogAnalytics Workspace
-(8)  create Azure Data Collection Endpoint (DCE) in same region as Azure LogAnalytics Workspace
-(9)  delegate permissions for Azure App on LogAnalytics workspace
-(10) delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Rules (DCR)
-(11) delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Endpoints (DCE)
+* create Azure Resource Group for Azure LogAnalytics Workspace
+* create Azure LogAnalytics Workspace
+* create Azure App registration used for upload of data by demo-upload script
+* create Azure service principal on Azure App
+* create needed secret on Azure app
+* create the Azure Resource Group for Azure Data Collection Endpoint (DCE) in same region as Azure LogAnalytics Workspace
+* create the Azure Resource Group for Azure Data Collection Rules (DCR) in same region as Azure LogAnalytics Workspace
+* create Azure Data Collection Endpoint (DCE) in same region as Azure LogAnalytics Workspace
+* delegate permissions for Azure App on LogAnalytics workspace
+* delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Rules (DCR)
+* delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Endpoints (DCE)
 
 NOTE: Modify the SubscriptionId and TenantId in the header before running the deployment
 
