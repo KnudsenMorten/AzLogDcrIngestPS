@@ -189,6 +189,7 @@ Demo #3 will demonstrate collection of data, remove unnecessary data-properties,
 
 Demo #4 will demonstrate schema change of existing table
 
+
 NOTE:
 
 **Have patience :-)**
