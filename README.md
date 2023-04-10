@@ -81,6 +81,125 @@ Lastly, I would like to give big credits to a few people, who I have worked toge
 
 ![MS-friends](img/MS-friends.JPG)
 
+# Steps to get started
+The 3 steps to get started with sending logs through Azure Pipeline using Log Ingestion API, Data Collection Rules and AzLogDcrIngestPS are:
+
+1. Get demo environment up and running. Download the Powershell script [Step1-Deployment-DemoEnvironment](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step1-Deployment-DemoEnvironment.ps1)
+
+The deployment-script will setup the following tasks:
+(1)  create Azure Resource Group for Azure LogAnalytics Workspace
+(2)  create Azure LogAnalytics Workspace
+(3)  create Azure App registration used for upload of data by demo-upload script
+(4)  create Azure service principal on Azure App
+(5)  create needed secret on Azure app
+(6)  create the Azure Resource Group for Azure Data Collection Endpoint (DCE) in same region as Azure LogAnalytics Workspace
+(7)  create the Azure Resource Group for Azure Data Collection Rules (DCR) in same region as Azure LogAnalytics Workspace
+(8)  create Azure Data Collection Endpoint (DCE) in same region as Azure LogAnalytics Workspace
+(9)  delegate permissions for Azure App on LogAnalytics workspace
+(10) delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Rules (DCR)
+(11) delegate permissions for Azure App on Azure Resource Group for Azure Data Collection Endpoints (DCE)
+
+NOTE: Modify the SubscriptionId and TenantId in the header before running the deployment
+
+```
+$UseRandomNumber                       = $true
+If ($UseRandomNumber)
+	{
+		$Number                        = [string](Get-Random -Minimum 1000 -Maximum 10000)
+	}
+Else
+	{
+		$Number                        = "1"
+	}
+
+# Azure App
+$AzureAppName                          = "Demo" + $Number + " - Automation - Log-Ingestion"
+$AzAppSecretName                       = "Secret used for Log-Ingestion"
+
+# Azure Active Directory (AAD)
+$TenantId                              = "<xxxxxx>" # "<put in your Azure AD TenantId>"
+
+# Azure LogAnalytics
+$LogAnalyticsSubscription              = "<xxxxxx>" # "<put in the SubId of where to place environment>"
+$LogAnalyticsResourceGroup             = "rg-logworkspaces-client-demo" + $Number  + "-t"
+$LoganalyticsWorkspaceName             = "log-management-client-demo" + $Number + "-t"
+$LoganalyticsLocation                  = "westeurope"
+
+# Azure Data Collection Endpoint
+$AzDceName                             = "dce-" + $LoganalyticsWorkspaceName
+$AzDceResourceGroup                    = "rg-dce-" + $LoganalyticsWorkspaceName
+
+# Azure Data Collection Rules
+$AzDcrResourceGroup                    = "rg-dcr-" + $LoganalyticsWorkspaceName
+$AzDcrPrefix                           = "clt"
+
+$VerbosePreference                     = "SilentlyContinue"  # "Continue"
+
+```
+
+2. Adjust the demo-script with the needed Variables (sample below)
+```
+##########################################
+# VARIABLES
+##########################################
+
+<# ----- onboarding lines ----- BEGIN #>
+
+$TenantId                                     = "xxxxxxxxxxxxf63-9a77-ec94786b7c9e" 
+$LogIngestAppId                               = "xxxxxxxxxxxx-b45b-fe5e78392285" 
+$LogIngestAppSecret                           = "xxxxxxxxxxxx_NJFrBH_o-QdNR1Ga.T" 
+
+$LogAnalyticsWorkspaceResourceId              = "/subscriptions/xxxxxx/resourceGroups/rg-logworkspaces-client-demo1-t/providers/Microsoft.OperationalInsights/workspaces/log-management-client-demo1-t" 
+
+$DceName                                      = "dce-log-management-client-demo1-t" 
+$AzDcrResourceGroup                           = "rg-dcr-log-management-client-demo1-t"
+$AzDcrSetLogIngestApiAppPermissionsDcrLevel   = $false
+
+$AzDcrPrefix                                  = "clt" # used to make it easy to find the DCRs when searching afterwards
+
+# Used so schema changes will only happen on reference machines and not from other machines, if AzLogDcrIngestPS is used by many machines
+$AzLogDcrTableCreateFromReferenceMachine      = @()   # you will add your machine like @("MyDeviceName")
+$AzLogDcrTableCreateFromAnyMachine            = $true # should be $false when you are ready for production. It is OK with $true when testing
+
+$global:Verbose                               = $true   # can be removed from script and added as parameter (-verbose:$true) instead. Used for Powershell ISE testing
+
+<# ----- onboarding lines ----- END  #>
+
+```
+
+3. You can now run the different sections in the script and see the things happens. The demos will use most functions in AzLogDcrIngestPS
+
+I have outlined the things to notice (sample below)
+```
+#-----------------------------------------------------------------------------------------------
+# DEMO DEEP-DIVE !!!
+#-----------------------------------------------------------------------------------------------
+
+	#-----------------------------------------------------------------------------------------------
+	# Notice: Orignal data source doesn't contain ComputerFqdn, Computer, DataCollectionTime
+	# Notice: Object shows 5 data - but schema shows more properties
+	#-----------------------------------------------------------------------------------------------
+
+		# show content of $OrgVar (original data-array)
+		$OrgVar[0] | fl
+
+		# show schema of $OrgVar (original data-array)
+		Get-ObjectSchemaAsArray -Data $OrgVar[0]
+
+
+	#-----------------------------------------------------------------------------------------------
+	# Notice: modified object (uploaded) contains Computer, ComputerFqdn, DataCollectionTime
+	# Notice: modified object shows all data
+	#-----------------------------------------------------------------------------------------------
+
+		# show content of $DataVariable (modified data-array)
+		$DataVariable[0] | fl
+
+		# show schema of $DataVariable (modified data-array)
+		Get-ObjectSchemaAsArray -Data $DataVariable[0]
+```
+
+
 <br>
 
 <details>
