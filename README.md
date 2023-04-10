@@ -30,6 +30,7 @@ Alternatively, I have built a cool showcase - [ClientInspector (v2)](https://git
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
 ## Videos
+I have [provided 4 demos](#how-to-get-started-) for you to try, but if you want to see it first using video, check out these videos:
 [Video 3m 19s - Running ClientInspector using commandline (normal mode)](https://youtu.be/4kA4BE0zJ9g)  
 [Video 1m 40s - Automatic creation of 2 tables & DCRs (verbose mode)](https://youtu.be/rIUNs3yT-eI)  
 [Video 1m 37s - Automatic creation of 2 tables & DCRs (normal mode)](https://youtu.be/khQMDcON6r8)  
@@ -47,7 +48,7 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 [Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 ## Quick links for more information
-
+[how to get started](#how-to-get-started-)
 [Background for building this Powershell module](#background-for-building-this-powershell-module)  
 [Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)  
 [Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)  
