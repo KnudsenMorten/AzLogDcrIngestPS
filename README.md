@@ -5,6 +5,13 @@ This module can ease the steps, if you want to send any data to **Azure LogAnaly
 
 ![Overview](docs/Architecture-simpleoverview.png)
 
+
+The 25 functions will help you with:
+*  **data manipulation** before sending data in (7 functions)
+*  **table / dcr / schema / transformation management** (13 functions)
+*  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
+*  **support/security** (1 function)
+
 Cool features of **AzLogDcrIngestPS** are:
 * create/update the DCRs and tables automatically - based on the source object schema
 * validate the schema for naming convention issues. If exist found, it will mitigate the issues
@@ -13,12 +20,6 @@ Cool features of **AzLogDcrIngestPS** are:
 * can remove data from the source object, if there are colums of data you don't want to send
 * can convert source objects based on CIM or PS objects into PSCustomObjects/array
 * can add relevant information to each record like UserLoggedOn, Computer, CollectionTime
-
-The 25 functions will help you with:
-*  **data manipulation** before sending data in (7 functions)
-*  **table / dcr / schema / transformation management** (13 functions)
-*  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
-*  **support/security** (1 function)
 
 ## See the Powershell module AzLogDcrIngestPS in action
 I have [provided 4 demos](#how-to-get-started-) for you to try. I have also provided [videos](#videos) for you to check out.
