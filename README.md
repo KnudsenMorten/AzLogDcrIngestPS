@@ -171,9 +171,24 @@ $global:Verbose                               = $true   # can be removed from sc
 
 ```
 
-3. You can now run the different sections in the script and see the things happens. The demos will use most functions in AzLogDcrIngestPS
+3. You can now run the different sections in the script and see the demos. The demos will use most functions in AzLogDcrIngestPS
 
-I have outlined the things to notice (sample below)
+Start by running lines 1-275, which will load the initial header and build variables
+
+Demo1 will demonstrate data manipulation + show schema content
+
+Demo2 will demonstrate collection data + create LogAnalytics table + DCR + send data
+
+Demo3 will demonstrate collection of data, remove unnecessary data-properties, create schema with modified structure
+
+Demo4 will demonstrate schema change of existing table
+
+NOTE
+Have patience :-) Making schema changes + creating new pipelines will require 10-15 min delays right now. Data WILL come - have patience.
+When the DCR + table + schema is in place, normal upload of data will happen very fast afterwords. 
+
+I have outlined the things to notice during the demos - run the lines one by one (sample below)
+
 ```
 #-----------------------------------------------------------------------------------------------
 # DEMO DEEP-DIVE !!!
