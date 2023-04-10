@@ -49,7 +49,7 @@ You can download latest version of AzLogDcrIngestPS here - or from Powershell Ga
 [Download AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 ## Quick links for more information
-[how to get started](#how-to-get-started-)
+[How to get started](#how-to-get-started-)  
 [Background for building this Powershell module](#background-for-building-this-powershell-module)  
 [Deep-dive about Azure Data Collection Rules (DCRs)](#deep-dive-about-azure-data-collection-rules-dcrs)  
 [Deep-dive about Log Ingestion API](#deep-dive-about-log-ingestion-api)  
