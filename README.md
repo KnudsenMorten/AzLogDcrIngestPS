@@ -192,6 +192,7 @@ Demo #4 will demonstrate schema change of existing table
 NOTE:
 
 Have patience :-) 
+
 Making schema changes + creating new pipelines will require 10-15 min delays right now. Data WILL come - have patience.
 
 When the DCR + table + schema is in place, normal upload of data will happen very fast afterwords. 
