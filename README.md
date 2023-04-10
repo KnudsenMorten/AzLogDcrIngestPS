@@ -46,14 +46,16 @@ I have [provided 4 demos](#how-to-get-started-) for you to try, but if you want 
 [Video 7m 25s - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
 
 ## Download latest version
-You can download latest version of AzLogDcrIngestPS here - or from Powershell Gallery:
+You can download latest version of AzLogDcrIngestPS here - or install from Powershell Gallery:
 
-[Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1)  
 [Install AzLogDcringestPS from Powershell Gallery](https://www.powershellgallery.com/packages/AzLogDcrIngestPS)
 
 ```
 install-module AzLogDcrIngestPS
 ```
+
+[Download AzLogDcringestPS module from this Github repositry](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/AzLogDcrIngestPS.psm1) 
+ 
 
 
 ## Quick links for more information
