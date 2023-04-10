@@ -12,6 +12,7 @@ The 25 functions will help you with:
 *  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API (4 functions)
 *  **support/security** (1 function)
 
+<br>
 
 Cool features of **AzLogDcrIngestPS** are:
 * create/update the DCRs and tables automatically - based on the source object schema
