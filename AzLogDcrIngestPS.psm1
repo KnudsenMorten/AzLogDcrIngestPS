@@ -2178,7 +2178,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                     $PropertyFound = $false
                     ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
                         {
-                            If ($Property.name -eq $PropertySource.name)
+                            If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
                                 {
                                     $PropertyFound = $true
                                 }
@@ -2215,6 +2215,15 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                                                             }
                                            } | ConvertTo-Json -Depth 10
 
+                        $tableBodyPutFull   = @{
+                                                properties = @{
+                                                                schema = @{
+                                                                                name    = $Table
+                                                                                columns = @($SchemaSourceObject)
+                                                                            }
+                                                            }
+                                            } | ConvertTo-Json -Depth 10
+
                     # create/update table schema using REST
                     $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
 
@@ -2236,7 +2245,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                                 
                             Start-Sleep -Seconds 10
                                 
-                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPutFull
                         }
                 }
         }
@@ -5964,8 +5973,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD85wo6hq0yB7t0
-# ovH5YoAD1aWj4nlWKpEU2+86uK6YE6CCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCClmG71sdAo6XhM
+# htpqn+Fh3YWQDOJ2J5dG1lc9iRWrFqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6073,17 +6082,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIOVjDc3b9YNHMZKG3jj6ncJI
-# WjJBX4I6uxQU0LdraTpyMA0GCSqGSIb3DQEBAQUABIICAEMkrZAe7x6FdUJnpZvM
-# hWMcM2bo4m3S8ewKOuWuvmGrzdd8b/+Ko/KKdiYbrHD2kLdtV/tALJTrV2NWw/nk
-# pSYLwqnOE3I6AKNpV2thtDA2743P7ZErrraN8Iv84Biw264AYnIzWs9eIKe0B+xF
-# jwlNWIdxBNLAncRc9axQRInfE8M84xFtSMSk1iJ6Nkd5JWD4SBkVU8/DA/f2X2rz
-# 4uzgL/dNZy+R7FuECqjRKfXHVw0+gj2YID+cAZcQq199P9BnJenxC4EmM4SbcQVN
-# kh0b6M7z0YXGkHxuoRn+ohr+Hg42WtiSCpH482VnS5WiUMKPCk0FPDgEylAYkNg9
-# 8JEvq6PHiWMKxM7K1SlvDkGqm96Yswm+RHpGYsUOiOMoK8OIE7lIoMOnn8x59Gru
-# NAWcY2Xn7UHQ6s8Dq9XATeOUuyj2TpEBoWJkGNrZPj2JF0ZSh2MY8QG4g2mM0scC
-# vCVdFkQA4PLbN//lAmcWV3TVeezAJuHIRMS2hdAilOXpDCvCTI4lrXZHu92J2Ubf
-# vESTaYZHt2RwKOq5gjGi09E04fQJw5upBMle4+RyKqnEp+5+EV6CHRMRMsNLCYQJ
-# PQmZ1xChMaE6dkMLj8OpoUwQ3uqVxwVQ3ul100tcG51wtCS5ef/kKJgKvUPoPB/p
-# VxqvmqShsB1MdD5xG1+O3o/V
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIOYF9G62xOKn/0auN4JAM39H
+# fZC3r1xqQzjqx/OmD1t7MA0GCSqGSIb3DQEBAQUABIICAJb5vim3cRfoKwuiNPvr
+# zAuJTQTccc3O1MUaF9smvcFHiknpwKrxpmK2AmmRVvRMJ13AOb9SPfKHn5sdd+XF
+# qFTVse4VwNpuhSZGcZ1MJrDbLn/Y/S6PWuvVaRupJZUzZ7S6DfZotqhEU90jjV9B
+# Q8q/Tr95vAGebciGT+Co53/AJ8q50Tr1GyGpRevdXKHBes/Jh+41YUbnkqp7L/KH
+# +xS3CAbKnhVRjZeLtl0eoMaipCt5Psu5pbJEJxutwruAyihp/gN9FqRwrpBEsQCk
+# VnwS5O0/v3bGE3jJqmmSg9bsv+kvWCSeZI2wT+KV3uw0E3eGAsuD41FjyfPNJRX9
+# JTXdZ+QIdEHJxgfGbrkK6lsjyc5rMyLVHnFyGZVyjq1xGC33P7u/Tdof0iiWZIrs
+# K24awOZnDlSS/eSArBU/EjPN/OV74thuq3iARCEG9/hz5DZrptCcAP8EQhEMjWfy
+# H56OWeTpvzXncTzHV6v5WUYbtDZstHoJ74Vh5ELSiE98cok/+rcBj2/s2Jl4b2s/
+# /W3tDE634uh0QMwExBDE9ZOVNal0Kd9T/GqzeQiNEt3prAno8sB9y6HmNVZuXtix
+# 2IdNIHEkgdB8sWGF1D+2wVUSvh5iePo2pQy+9vQvKXuo9DFwT2DebVXo8WYGqBHQ
+# ZqMCCdVMKH9Yli5g1NI+N+ZB
 # SIG # End signature block

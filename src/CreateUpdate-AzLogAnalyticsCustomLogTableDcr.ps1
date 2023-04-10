@@ -281,7 +281,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                     $PropertyFound = $false
                     ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
                         {
-                            If ($Property.name -eq $PropertySource.name)
+                            If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
                                 {
                                     $PropertyFound = $true
                                 }
@@ -318,6 +318,15 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                                                             }
                                            } | ConvertTo-Json -Depth 10
 
+                        $tableBodyPutFull   = @{
+                                                properties = @{
+                                                                schema = @{
+                                                                                name    = $Table
+                                                                                columns = @($SchemaSourceObject)
+                                                                            }
+                                                            }
+                                            } | ConvertTo-Json -Depth 10
+
                     # create/update table schema using REST
                     $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($Table)?api-version=2021-12-01-preview"
 
@@ -339,7 +348,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                                 
                             Start-Sleep -Seconds 10
                                 
-                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPutFull
                         }
                 }
         }
@@ -350,8 +359,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUeGQnz2yd5gbV3vTFcuy/FRaj
-# ysaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVlcAoGfhmIYfSk7RQTjNfyc0
+# 6QGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -430,16 +439,16 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# wCDzcTmIICoROFj9qZ2T1BYuS0wwDQYJKoZIhvcNAQEBBQAEggIASmzNNClb1Y68
-# ExOEou6c4xUPYOjrp5Wm8D7UzSBfzqecwmNGDm2bMKTm9FpY7xtOnABFoeVNGYHn
-# BOWAT2ddK90eMBRWL2w05cq82WztQ0H0iRcPjxWK+pHfP0qfTDsQOEI7dYO2Rmgk
-# F6ETkbgJE63Uely/ud+t7IpkiT7rOy0+DvoFvJA3m6ltdDzoBoWj5+GXjXRWX+C0
-# TP4zIsz+5Cwt3Dv5r2LpIlCIXVo5hof4t4LYHb43OVCBM23vYMMsKt4z8zWLChW8
-# Dt7Fj6b6+Pa/PBorysf0tKc2nVAG+Mp3jD5BEkSbxnxlpeN0aONs9VHHeh+Fa2aC
-# s5x4jZmkVz8+dU613n1DhOzAqeYDiFKwvtC/5aSSlfrnYYnh8f6hjFwHmaAZrHim
-# +7dPnYZAvsGCE8CR2JNZvcM3BrKt1Ot1bxHh7rFoBF35624T+Xh3klhDpFD2bYP6
-# bakHs7Cyqd8U/30GKfg0gpWHy8MFl5VFPUcDhRdKH/+R/o/pL4YkhNQMEtu8K1Ks
-# D3pBvYgHvjqNEwhN8yYZYd+v8DzMSo28ZHWwdLrmKKFt3R94hsqwTiUALzR8ucez
-# zd+K9WwQ9c/myHgTahGQL40YHcXOC0jbENSrlk/6fH0wEmuW4TpdjgRz79nb/9rh
-# pds1xe9kfyI1sKmLXIeD7qt5Lpk0yCQ=
+# o202QfYTJIecFd/5UPO1SGHHtk8wDQYJKoZIhvcNAQEBBQAEggIALTHBOD8+087S
+# womMgPzjBKwfoDL2guwq6QZgpRDLaP+PPwQP/dY0fKDMsFWS7pmdfuryhs76AYOt
+# Z/sf3LuIU6iXGGeoacIuhcxFiMzTL/GXjvVJauWIqu3NDTOdSuwqHVlYTXPcFVTP
+# hduvBCJyLBFv9P9YQEfAje1sCmyqzQzHaKPWXPVWdSfDnI9ZLorJXEpwdYUf7LGx
+# umZg1TBZ47n6gGx0jaox9KrqsnixlDok6CXDD7FZXXHmSPylU7dp3LO1q6Kh0PU9
+# xQP7nhI+FzucC9IDzWuq2LsTc/Opt07GSXJcjjBYUNPTXCLSJAe/gvtO3Qwi719M
+# q7uCp3jIkPDFIigEG528EQEP6FpmA/8/jGV8jiu9LK8vO6YxocK+j6qtOifGPhdj
+# hn27kkFTUGQxeX9q2IRj+e0r5+7LQdK5+Ow3U7t+e7umYuy5YVYbGU73qNRMZ5CZ
+# 0ytdQvmdJRJNOSvBeudM9y/QjJkxzX53rEebAdFVYU6OvFWf4hy2/N5k7RjU6wGj
+# G+y2WRPbxzLKshn0GAWTm89vI93Kh/kZ0SjodHgcY+H+8nV1tVAmYe076e6fL8Xn
+# WlsWErL/8L4xxEn1+aiRWlqIuwfqpPhrGV7ECiV4KpNCdBc7fmwqYm501WNLtdEG
+# V4lP8VK/zZKYBLLB6IRoJjEDma94GA0=
 # SIG # End signature block

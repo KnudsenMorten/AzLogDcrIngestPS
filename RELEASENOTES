@@ -1,4 +1,10 @@
 RELEASE NOTES
+v1.2.37  Adding another check to SchemaMode = Merge, so it will support existing properties are changing type
+
+v1.2.36  Bugfix
+
+v1.2.35  Changing so $AzDcrLogIngestServicePrincipalObjectId is not a mandatory parameter
+
 v1.2.34  Bugfix - schemamode = merge wasn't updating table correctly
 
 v1.2.33  Bugfix - signature was by mistake in source file (removed)
