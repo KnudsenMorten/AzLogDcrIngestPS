@@ -21,9 +21,11 @@ The 25 functions will help you with:
 *  **support/security** (1 function)
 
 ## See the functions in action
-![ClientInspector](img/ClientInspector_300.png)
+You can also check out the section [how to get started](#steps-to-get-started)
 
-I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use the funtions from the **AzLogDcrIngestPS** module.
+Alternatively, I have built a cool showcase - [ClientInspector (v2)](https://github.com/KnudsenMorten/ClientInspectorV2), **free for the community**, where you can see how you can use the funtions from the **AzLogDcrIngestPS** module.
+
+![ClientInspector](img/ClientInspector_300.png)
 
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
@@ -81,7 +83,7 @@ Lastly, I would like to give big credits to a few people, who I have worked toge
 
 ![MS-friends](img/MS-friends.JPG)
 
-# Steps to get started
+# How to get started ?
 The 3 steps to get started with sending logs through Azure Pipeline using Log Ingestion API, Data Collection Rules and AzLogDcrIngestPS are:
 
 1. Get demo environment up and running. Download the Powershell script [Step1-Deployment-DemoEnvironment](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/demo/Step1-Deployment-DemoEnvironment.ps1)
