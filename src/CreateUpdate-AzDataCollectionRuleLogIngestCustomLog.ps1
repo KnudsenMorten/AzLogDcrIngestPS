@@ -242,10 +242,9 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 [string]$DcrName,
             [Parameter(mandatory)]
                 [string]$TableName,
-            [Parameter()]
-                [AllowEmptyCollection()]
-                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
             [Parameter(mandatory)]
+                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
+            [Parameter()]
                 [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
             [Parameter()]
@@ -704,8 +703,8 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU44SKt54B1B2IKYlWeIg3aurB
-# +ceggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvZeTK/iwIN/PyNmvT6BR86GR
+# PqWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -784,16 +783,16 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# NIXWOulGvjBDU5nYMJlAZghhzF4wDQYJKoZIhvcNAQEBBQAEggIAyl+k4wGzUHSy
-# GmVT67I1IqsEmST+SFsc4rq0TRBqDf1eTwui3RBWzCEa37COvrCJfCQeSqNohG7Z
-# SbVRGD4EFocoiQ1+P9TfyJwvpnI+h2L6L6IUUNCxVIPaKlI4XjETWLFK+cDEcUVE
-# IetH2bihDHFOADciy/E7FgrtuLB/RkBcu7dVwSbAUvosxvtCZAwm13aoiTHP/NEf
-# m4VgvvTASQrderwgvyze1teZU+ngF+n7IKZGq3Pq0IHIWi7n3N+DplyWC1PZBtmV
-# K+yzOF4rsr/TugfumHKNqk4P+w10bApqkAxVW0OEmFQYXXkmaLzht+DztXDTqoDj
-# sOOvA5ANG5K/cQ6rhDBPK5eseBV/RF15ohAa2x8N3UcNLRRmAakbMcy2v+un6moN
-# iZSHxhucqNNEFGUNudKNFfaYKaRqWy827zrLhElMENHOJ6g7g1i+g1sWpf76Hibw
-# zGUHxegFCN3VurlZlOU0996kuDAn0ybAZAse0kgXS60AsgO0jb23G5329OlrvKSR
-# 3NWSwgcm+WlLrxkRrREXvvmTqAUj2lv6H0RTMwDCFmA5wxa9MuEuynIiDNUy9a0k
-# v//VUAJM7ULNOPoN/cMOKpjCuan6raypVeM5T1D1N07D+Ob9TNjc/y2NcsYuEVOW
-# mYW7DI87mSW8sjeOxeMPD6GWTQ9ohAE=
+# UFdeyUY0W5V6YfTuxVF0pbvJOvIwDQYJKoZIhvcNAQEBBQAEggIAZuF9XnasWzmN
+# mOucnAyZVnAK5Vi6G0PGr/vPPdUbGiWk/8rQlrbrw4ilZFwG3YXsVp30zFWdYq+B
+# gznn/MGdlPC/VQaqoTm/PnxbpwIf7Oxly38kHeXLGE+F/dTZsb7+5W9zxBmqt93u
+# tg6JYmXlc4lQBmUMoRDyLHjsO4JHAuZnF8fPB3kmzbW///yO/kbMtofZjoKaafR8
+# 0dIokEiw40nld2lG6bN/FlOYs+T5hgjkL01XFlxCTYcPhk3MrhU+Bl3xLkXuVgFx
+# KggKW+6bJVGAmqzbUDZbDeCNnztcKpdx3xc3tRqnxAuz10LYYm5GOAGpD9HJ1LJy
+# BA8kNQ40PKKH6oMqOQbR7NBHXrTQ65Bqn84w/a71Bl/UPh8XvudPq+wyKBlI2crp
+# 4TL94wvHfAyDKVRnj1C5Qm5rMsXIcke8YdEiDukf5Jzp/MEB4q7mNDA4Am6KF4nT
+# 7OK0Fw8DRqoNPNDMUyIgjxTuWueitZHkF5NV4T7pLYqu45qNm57JoddhuAKJveP6
+# UJmxn5Lu/19MIn5i30GSNqh0pDd2X60ErlIV8HIh01/p+RKrWZBF56U7mnStjAGf
+# FNwj557F4AO/ExgRTsN89LEwB1I0fqc7AzC1i1j87Wr/GyGBtMrqFLmvT6Od3XrX
+# gEn+VwL78v5ontEiYwuis/Ertgi8jvw=
 # SIG # End signature block

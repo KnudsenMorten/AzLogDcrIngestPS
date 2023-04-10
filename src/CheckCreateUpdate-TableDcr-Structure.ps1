@@ -295,8 +295,7 @@ Function CheckCreateUpdate-TableDcr-Structure
             [Parameter()]
                 [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
-            [Parameter()]
-                [AllowEmptyCollection()]
+            [Parameter(mandatory)]
                 [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
             [Parameter()]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
@@ -368,8 +367,8 @@ Function CheckCreateUpdate-TableDcr-Structure
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUH3eYZJO9nfW9JBIM+QgV1/nL
-# Qmqggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGfjqYOLmO+Lpj9LzzE+1SrkF
+# yJ6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -448,16 +447,16 @@ Function CheckCreateUpdate-TableDcr-Structure
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 8cJ36QhG2WMfX8rux7T6wYkE5ZQwDQYJKoZIhvcNAQEBBQAEggIAIuXe1t0yZ+63
-# oh8SnfmjdO4WddPCGsymesDQ/pO3kextGu9gM5wT32wtoSnJWYF27CBzQy7kPTae
-# 2cUUeTfjgHJzTshWqV2vxKHagjLbjO5XgnknIxDrEudf7WUj2fqLyGLTdAxUyDj9
-# aCJkTFndCl/3nBihD/0GYc0COIX2RE1oG9+bvtF4usXAL5FMtYrzzSH1gTvnhnzH
-# To/Hz+GPskVHxKzMktcR/ru1GJdkkh1RWWG1qP4nNtg58GX7y81LVIxXY1DrdiIM
-# LBHFN4XsdabrG0TC9Nc8prscVp2TsmuleOGXJ+SUh0/OmLB3mwuWoU3Eh+IM3ot8
-# B2S8YsOKwWHBblinsmGTjOGXK9neu4VcPJVtXId6L6gtmDdqlDHipGHH5/r5vvRg
-# nLJ2CXw09e3aSPhSXQUN3bnug+l0obKwMkaR8yT7yV7ZanEkxLEEwpth2uA1Vkcq
-# PsGQrEI4IL2w7dLAfFmYSR6vv/ADAL+ULUgpG/F6NovvEJOhx+zMf0e0erPwObRZ
-# Jit8ifSdsFqpxuyxMc6K6bL4H62gsb8gGyFMM+nuAnIDilkjxMe3OHKyJ2/OZ/up
-# XKe9sSW2WRbBvYH3md3Gz3y49QzXBgaM/qUwNmklV2ApG3d5fQr0uXX84z0y0abE
-# 8QyrDSr3Fc68lvMC8v5FCJyNVKmjvKw=
+# HXNCQ0JDDFQyt0hcHaQXE0Ph770wDQYJKoZIhvcNAQEBBQAEggIADdPfLwfok6KL
+# nh7mbma2SSr0JtI5f4JEcFtF/uH2SL/r9ljA9Tp1hBq7HbMDnJf9MOlwqqdRbm0n
+# /X4tem9zd1LpXM6J5+snimBu+n3P/IhU3uAb0MCA2kY38WmEuoF4LjBz4wiGyvL2
+# KUxl2y/VCm/IjTdv1UnKCHUDrgidtwY23/Vfb1dc6LyaYJ+Xh6rgGnKhV5sRdqka
+# 3I5198H1Rf/Z8+Ns0FjfO1G7aj7zqXOi2pxK8OvpJuf7lVHPXNV0GadVAbfSL2Hs
+# DknkekG5aXbkdyQuH8HmajyNVw5YFn4Mldw5PVDYob12roTgHE6FYBsp2fmSmpeF
+# c0iLzigWjW0rg/Z34Jyu5QcgP6TPxm68FK0BoTxRKD+cH2vv0kW97uW6NUgASg8z
+# 1gq4/ORNKnaxf3ACe9OrreyqcpFc9tNC1CNTsfJnflR96LsBT+rHkc6+TPFJiTSZ
+# 647F4c0dJBM4X3aJLeWppQLLeTRebp6CakcFmBhOavvx0xJmtDZiaptZ+gWjppl7
+# nnSdzrHhukJhP6lIygnVFmHd6306gKugAGKk46d7hkA/qkA+zAvk7R00BVYbJ1tO
+# wtQPVQuKt4KdCtZvfWYyrP8jXC9aEifzsB+OkqxE02c/hO4s2IYOyDEx01b/fIT9
+# YveCA0olNMmctwOyZU3h0cg/K4cPIpU=
 # SIG # End signature block

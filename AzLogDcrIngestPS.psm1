@@ -840,8 +840,7 @@ Function CheckCreateUpdate-TableDcr-Structure
             [Parameter()]
                 [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
-            [Parameter()]
-                [AllowEmptyCollection()]
+            [Parameter(mandatory)]
                 [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
             [Parameter()]
                 [boolean]$AzLogDcrTableCreateFromAnyMachine,
@@ -1437,10 +1436,9 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 [string]$DcrName,
             [Parameter(mandatory)]
                 [string]$TableName,
-            [Parameter()]
-                [AllowEmptyCollection()]
-                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
             [Parameter(mandatory)]
+                [boolean]$AzDcrSetLogIngestApiAppPermissionsDcrLevel = $false,
+            [Parameter()]
                 [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
             [Parameter()]
@@ -5966,8 +5964,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDIhHq6GQdbYKNk
-# zppKvYQQLANXRbMCl3Qr7DqPVcQhbaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD85wo6hq0yB7t0
+# ovH5YoAD1aWj4nlWKpEU2+86uK6YE6CCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6075,17 +6073,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIP8n2eAuYWa8O7GqU1la3jH7
-# NliFrcJYT0gq7sLSFTpoMA0GCSqGSIb3DQEBAQUABIICAJdb3rhGEYIx/RCzavyU
-# tQ3KAsiMkJXENecfnODqF4fglnevR+G7y1wTwelaGN+N9jrmrK6nP9zOY7rTRTAq
-# XN2z3g3EFhOzzLI/A96jP6+bv+FfdcNoIZAWah465Za0RGAjCUa31d2ksoVMGVrW
-# BlpHr45UycRP3yHIcB52WOh9c7D0w3vPN7E1y9e5feYIPcJc88ec0VIc+zT0cK0E
-# NxDioDvTC9pU2WtHe+Gq86lOvYhVCJmUM0u14wvkT5d+H0KuZEhyIbXRG2W5PfhR
-# uNxjO6hMf318HZiquV3CleseutrNvrB0iKcmi7BHBiOkZVH6aycW/SF7YFOE48Ip
-# AK7wHTbs9MsPQDF6qc91gqNYExteFP61mxCsLD+qDxtUJNgSq09MnaYAb++kr8Xx
-# ZRb1d/kULQ9kcF9ghCmcjvbSF53RytIgWuzBXDGsHFw4QoRgcaXIl+bbT0YXeNjJ
-# dL+QwlH4XUbxTmllDjuSeFtmLWxxTLae0zFzZSFcWJkSqfJoQooWnssyF6NEgC7G
-# 4fFtIgD4Vtn6pC61xVOXM98RD5TX7l622weZvfA0zMd1Kk8EWsLTMMgWZ2J2IsI5
-# 7cgKwITgznDJ1KfaDfA7q2KzhdVQC4QLdB22+oX40TnORx+DTURKXp4N9GaY6fXy
-# U2pn4hGs27+j6f129uoO9aoO
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIOVjDc3b9YNHMZKG3jj6ncJI
+# WjJBX4I6uxQU0LdraTpyMA0GCSqGSIb3DQEBAQUABIICAEMkrZAe7x6FdUJnpZvM
+# hWMcM2bo4m3S8ewKOuWuvmGrzdd8b/+Ko/KKdiYbrHD2kLdtV/tALJTrV2NWw/nk
+# pSYLwqnOE3I6AKNpV2thtDA2743P7ZErrraN8Iv84Biw264AYnIzWs9eIKe0B+xF
+# jwlNWIdxBNLAncRc9axQRInfE8M84xFtSMSk1iJ6Nkd5JWD4SBkVU8/DA/f2X2rz
+# 4uzgL/dNZy+R7FuECqjRKfXHVw0+gj2YID+cAZcQq199P9BnJenxC4EmM4SbcQVN
+# kh0b6M7z0YXGkHxuoRn+ohr+Hg42WtiSCpH482VnS5WiUMKPCk0FPDgEylAYkNg9
+# 8JEvq6PHiWMKxM7K1SlvDkGqm96Yswm+RHpGYsUOiOMoK8OIE7lIoMOnn8x59Gru
+# NAWcY2Xn7UHQ6s8Dq9XATeOUuyj2TpEBoWJkGNrZPj2JF0ZSh2MY8QG4g2mM0scC
+# vCVdFkQA4PLbN//lAmcWV3TVeezAJuHIRMS2hdAilOXpDCvCTI4lrXZHu92J2Ubf
+# vESTaYZHt2RwKOq5gjGi09E04fQJw5upBMle4+RyKqnEp+5+EV6CHRMRMsNLCYQJ
+# PQmZ1xChMaE6dkMLj8OpoUwQ3uqVxwVQ3ul100tcG51wtCS5ef/kKJgKvUPoPB/p
+# VxqvmqShsB1MdD5xG1+O3o/V
 # SIG # End signature block
