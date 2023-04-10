@@ -191,7 +191,7 @@ Demo #4 will demonstrate schema change of existing table
 
 NOTE:
 
-Have patience :-) 
+**Have patience :-) **
 
 Making schema changes + creating new pipelines will require 10-15 min delays right now. Data WILL come - have patience.
 
