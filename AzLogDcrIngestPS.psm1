@@ -1554,6 +1554,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     #--------------------------------------------------------------------------
 
         $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
+        $Dcr = $null
         Try
             {
                 $Dcr = invoke-webrequest -UseBasicParsing -Uri $Uri -Method GET -Headers $Headers
@@ -1800,7 +1801,35 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                 }
                         }
 
-                # enum $SchemaSourceObject - and check if it exists in $SchemaArrayLogAnalyticsTableFormatHash
+                # get current DCR schema
+                $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+
+                $StreamDeclaration = 'Custom-' + $TableName + '_CL'
+                $CurrentDcrSchema = $DcrInfo.properties.streamDeclarations.$StreamDeclaration.columns
+
+                # enum $CurrentDcrSchema - and check if it exists in $SchemaArrayDCRFormatHash (coming from LogAnalytics)
+                $UpdateDCR = $False
+                ForEach ($Property in $CurrentTableSchema)
+                    {
+                        $Name = $Property.name
+                        $Type = $Property.type
+
+                        # Skip if name = TimeGenerated as it only exist in tables - not DCRs
+                        If ($Name -ne "TimeGenerated")
+                            {
+                                $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                    If (!($ChkDcrSchema))
+                                        {
+                                            # DCR must be updated, changes was detected !
+                                            $UpdateDCR = $true
+                                        }
+                             }
+                    }
+
+
+<#
+
+                # enum $SchemaSourceObject - and check if it exists in $SchemaArrayDCRFormatHash
                 $UpdateDCR = $False
                 ForEach ($PropertySource in $SchemaSourceObject)
                     {
@@ -1830,7 +1859,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                                               }
                             }
                     }
-
+#>
 
 
                     #--------------------------------------------------------------------------
@@ -1893,6 +1922,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
             
 }
+
 
 
 Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
@@ -3697,6 +3727,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                                 If ($ChkSchema -eq $null)
                                     {
                                         Write-Verbose "  Schema mismatch - property missing or different type (name: $($Entry.name), type: $($Entry.type))"
+
                                         # Set flag to update schema
                                         $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                                     }
@@ -3715,6 +3746,75 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                         Write-Verbose "  DCR was not found [ $($DcrName) ]"
                         # initial setup - force to auto-create structure
                         $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
+                    }
+
+        #--------------------------------------------------------------------------
+        # Compare DCR schema with Table schema
+        #--------------------------------------------------------------------------
+
+            # LogAnalytics table
+                $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
+                $TableStatus = Try
+                                    {
+                                        invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
+                                    }
+                                Catch
+                                    {
+                                    }
+
+
+                If ($TableStatus)
+                    {
+                        $CurrentTableSchema  = $TableStatus.properties.schema.columns
+                        $FilteredTableSchema = $CurrentTableSchema | Where-Object {$_.name -ne "TimeGenerated" }   # this is a mandatory which only exist in LA, not DCR
+                        $TableSchemaPropertyAmount = ($FilteredTableSchema | Measure-Object).count
+                    }
+
+            
+            # DCR
+                If ($DcrInfo)
+                    {
+                        $StreamDeclaration = 'Custom-' + $TableName + '_CL'
+                        $CurrentDcrSchema = $DcrInfo.properties.streamDeclarations.$StreamDeclaration.columns
+                        $DcrSchemaPropertyAmount = ($CurrentDcrSchema | Measure-Object).count
+                    }
+
+           
+           # Compare amounts
+                If ($DcrSchemaPropertyAmount -lt $TableSchemaPropertyAmount)
+                    {
+                        Write-Verbose "  Schema mismatch - property missing in DCR"
+
+                        # Set flag to update schema
+                        $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
+                    }
+                Else
+                    {
+                        # start by building new schema hash, based on existing schema in LogAnalytics custom log table
+                            $SchemaArrayDCRFormatHash = @()
+                            $ChangesDetected = $false
+                            ForEach ($Property in $CurrentTableSchema)
+                                {
+                                    $Name = $Property.name
+                                    $Type = $Property.type
+
+                                    # Add all properties except TimeGenerated as it only exist in tables - not DCRs
+                                    If ($Name -ne "TimeGenerated")
+                                        {
+                                            $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                                If (!($ChkDcrSchema))
+                                                    {
+                                                        $ChangesDetected = $true
+                                                    }
+                                        }
+                                }
+
+                            If ($ChangesDetected -eq $true)
+                                {
+                                    Write-Verbose "  Schema mismatch - property missing or different type in DCR"
+                                    # Set flag to update schema
+                                    $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
+                                }
                     }
 
             If ($AzDcrDceTableCustomLogCreateUpdate -eq $false)
@@ -5973,8 +6073,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCClmG71sdAo6XhM
-# htpqn+Fh3YWQDOJ2J5dG1lc9iRWrFqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCvt1O5KVxRURcW
+# WdRGQjKeR8VwJbIQKP65hDtPwXIEoaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6082,17 +6182,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIOYF9G62xOKn/0auN4JAM39H
-# fZC3r1xqQzjqx/OmD1t7MA0GCSqGSIb3DQEBAQUABIICAJb5vim3cRfoKwuiNPvr
-# zAuJTQTccc3O1MUaF9smvcFHiknpwKrxpmK2AmmRVvRMJ13AOb9SPfKHn5sdd+XF
-# qFTVse4VwNpuhSZGcZ1MJrDbLn/Y/S6PWuvVaRupJZUzZ7S6DfZotqhEU90jjV9B
-# Q8q/Tr95vAGebciGT+Co53/AJ8q50Tr1GyGpRevdXKHBes/Jh+41YUbnkqp7L/KH
-# +xS3CAbKnhVRjZeLtl0eoMaipCt5Psu5pbJEJxutwruAyihp/gN9FqRwrpBEsQCk
-# VnwS5O0/v3bGE3jJqmmSg9bsv+kvWCSeZI2wT+KV3uw0E3eGAsuD41FjyfPNJRX9
-# JTXdZ+QIdEHJxgfGbrkK6lsjyc5rMyLVHnFyGZVyjq1xGC33P7u/Tdof0iiWZIrs
-# K24awOZnDlSS/eSArBU/EjPN/OV74thuq3iARCEG9/hz5DZrptCcAP8EQhEMjWfy
-# H56OWeTpvzXncTzHV6v5WUYbtDZstHoJ74Vh5ELSiE98cok/+rcBj2/s2Jl4b2s/
-# /W3tDE634uh0QMwExBDE9ZOVNal0Kd9T/GqzeQiNEt3prAno8sB9y6HmNVZuXtix
-# 2IdNIHEkgdB8sWGF1D+2wVUSvh5iePo2pQy+9vQvKXuo9DFwT2DebVXo8WYGqBHQ
-# ZqMCCdVMKH9Yli5g1NI+N+ZB
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIAXxpJSN+F/aBVJMe0I5bnU1
+# T1UrhG9otraaeV6m6RrpMA0GCSqGSIb3DQEBAQUABIICAGzntc75MTzfJb3MJpWZ
+# gk+g6V7RTkbzWG4nq4RI0mwPVYyZJ8eh3EX+5e1mrlJwHyi0h7s5TKwCTLiljxT6
+# fFYWFSEFnVu8glpJLeSeHdeoFnqv6pYDwE8BA+WkuTz0KvbfOvTW+omWBp3HYe5c
+# 1+cIcn9j7vklmbBG7psDLdLFo4RsdfysEiz1+TCkruQTOlyblojX8R2Bz86kygRX
+# 73Rn8c9uFlgIPPd8CWphPeHd8F8/bVIPbqpAQUcKYFMP+guLXcUsPFgOzav+jjcc
+# S2vqwfbU4SPDpuy7OYsnkrc7qf3bzmrRDN9/s2c3ENwMYcAA5S2RBDcqZVp5oiK6
+# 8AvN0a7opGKzmjab5iTQdAFC/S4ezA87SZWaaeV8OK1AQhqUOpZyF+0Xf9iwQNDl
+# c1CAbSyc91TZR/ljxFAeKz+0KrekPnFIO0LWS4qRGvDWdXjP2c51xYOFbsmu2jOx
+# yKqNsI10BPzena+Mon8gyPT5EdBILTO06xp026VAiLZNTxXKgGulpgHKidj2U3ZS
+# lfXYvYaznJEE7rc500Mm0mG+jGm971q3qTQbfAyU8Lr0MbAly+eW2W02NMVuSYlK
+# 9a4i7lc3QW2clDDt+mOdXL+WskaCTP0AS7k5xgtfrkrEII710DxMFbcKnEb/g1/W
+# D/XbHSbp9yOnuurYryAOy+g+
 # SIG # End signature block

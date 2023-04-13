@@ -360,6 +360,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     #--------------------------------------------------------------------------
 
         $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
+        $Dcr = $null
         Try
             {
                 $Dcr = invoke-webrequest -UseBasicParsing -Uri $Uri -Method GET -Headers $Headers
@@ -606,7 +607,35 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                 }
                         }
 
-                # enum $SchemaSourceObject - and check if it exists in $SchemaArrayLogAnalyticsTableFormatHash
+                # get current DCR schema
+                $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+
+                $StreamDeclaration = 'Custom-' + $TableName + '_CL'
+                $CurrentDcrSchema = $DcrInfo.properties.streamDeclarations.$StreamDeclaration.columns
+
+                # enum $CurrentDcrSchema - and check if it exists in $SchemaArrayDCRFormatHash (coming from LogAnalytics)
+                $UpdateDCR = $False
+                ForEach ($Property in $CurrentTableSchema)
+                    {
+                        $Name = $Property.name
+                        $Type = $Property.type
+
+                        # Skip if name = TimeGenerated as it only exist in tables - not DCRs
+                        If ($Name -ne "TimeGenerated")
+                            {
+                                $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                    If (!($ChkDcrSchema))
+                                        {
+                                            # DCR must be updated, changes was detected !
+                                            $UpdateDCR = $true
+                                        }
+                             }
+                    }
+
+
+<#
+
+                # enum $SchemaSourceObject - and check if it exists in $SchemaArrayDCRFormatHash
                 $UpdateDCR = $False
                 ForEach ($PropertySource in $SchemaSourceObject)
                     {
@@ -636,7 +665,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                                               }
                             }
                     }
-
+#>
 
 
                     #--------------------------------------------------------------------------
@@ -700,11 +729,12 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
             
 }
 
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvZeTK/iwIN/PyNmvT6BR86GR
-# PqWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUR4GNctZ9rG2nSWAWlbQAgT6K
+# WOiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -783,16 +813,16 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# UFdeyUY0W5V6YfTuxVF0pbvJOvIwDQYJKoZIhvcNAQEBBQAEggIAZuF9XnasWzmN
-# mOucnAyZVnAK5Vi6G0PGr/vPPdUbGiWk/8rQlrbrw4ilZFwG3YXsVp30zFWdYq+B
-# gznn/MGdlPC/VQaqoTm/PnxbpwIf7Oxly38kHeXLGE+F/dTZsb7+5W9zxBmqt93u
-# tg6JYmXlc4lQBmUMoRDyLHjsO4JHAuZnF8fPB3kmzbW///yO/kbMtofZjoKaafR8
-# 0dIokEiw40nld2lG6bN/FlOYs+T5hgjkL01XFlxCTYcPhk3MrhU+Bl3xLkXuVgFx
-# KggKW+6bJVGAmqzbUDZbDeCNnztcKpdx3xc3tRqnxAuz10LYYm5GOAGpD9HJ1LJy
-# BA8kNQ40PKKH6oMqOQbR7NBHXrTQ65Bqn84w/a71Bl/UPh8XvudPq+wyKBlI2crp
-# 4TL94wvHfAyDKVRnj1C5Qm5rMsXIcke8YdEiDukf5Jzp/MEB4q7mNDA4Am6KF4nT
-# 7OK0Fw8DRqoNPNDMUyIgjxTuWueitZHkF5NV4T7pLYqu45qNm57JoddhuAKJveP6
-# UJmxn5Lu/19MIn5i30GSNqh0pDd2X60ErlIV8HIh01/p+RKrWZBF56U7mnStjAGf
-# FNwj557F4AO/ExgRTsN89LEwB1I0fqc7AzC1i1j87Wr/GyGBtMrqFLmvT6Od3XrX
-# gEn+VwL78v5ontEiYwuis/Ertgi8jvw=
+# qHuFe3Sn+kIJxv2fGRfZ/6jGH+UwDQYJKoZIhvcNAQEBBQAEggIAEPKJ/ZHtctLb
+# TFG+y0BHSZJ5gJSgNIKcQ8QRG3qj4AOo1Q8168wQ38s43Yf0G46pz/3AiFVIM0qS
+# X2Ur4e1yr+Pt5sjffYZIYhCr60Mkc7ZQ5BHX/2v3lesWET9hXOq7phJXg7Qrk2Bg
+# G7Izx++k/Nqfgg11MPWSnmKZKQepQeiriRRcS68cwYx0nCB7LuqRxP4hBMhRpLw2
+# ZDl+xlxpkwcfiJ/YUkr458TqTIGH4UduDqsvihnJdVmjfima0Yd0pmx7KWkN5oJ6
+# 6F2sVlcU5e3qx4J7XYUWdFlgJ9PdAUYygOkae6QF8H4qpXCCAiMeeyVt4Er1vNgx
+# tTxeGc6TGg3rerHiP6EjCNZIvV2KA5oTz9ZaU2Ho2WZ3Z9kLcp48LVDmC5Y8Ctvu
+# OpMbRA4fapZcXggdAm0Bxvt/b7OKfWuYAHOE6pTssF3Wfg9M8PihX1MFKd+AZ8l6
+# 1NQPE94iSjFp3dv9DAVhIK2ZEP/DTvpafSuDVHLzzEOZVqcCg8RnQDTfHolcsUj8
+# /NWLDKOvHLrPKxa3An/kXxzlXIYaeXvH0fDG3v8ceLzt7yLRrq9B75rrv5ZTML36
+# KtSkK0gun22Jf2f2pIWJrereOs87qWGrLmuSDhnQrNpERepJlSWVzEU+BOJZ+5jN
+# LJsVCTrYT94FU4uk1ZBosrBjGsAnGoQ=
 # SIG # End signature block

@@ -184,6 +184,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                                 If ($ChkSchema -eq $null)
                                     {
                                         Write-Verbose "  Schema mismatch - property missing or different type (name: $($Entry.name), type: $($Entry.type))"
+
                                         # Set flag to update schema
                                         $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                                     }
@@ -204,6 +205,75 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                         $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                     }
 
+        #--------------------------------------------------------------------------
+        # Compare DCR schema with Table schema
+        #--------------------------------------------------------------------------
+
+            # LogAnalytics table
+                $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
+                $TableStatus = Try
+                                    {
+                                        invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
+                                    }
+                                Catch
+                                    {
+                                    }
+
+
+                If ($TableStatus)
+                    {
+                        $CurrentTableSchema  = $TableStatus.properties.schema.columns
+                        $FilteredTableSchema = $CurrentTableSchema | Where-Object {$_.name -ne "TimeGenerated" }   # this is a mandatory which only exist in LA, not DCR
+                        $TableSchemaPropertyAmount = ($FilteredTableSchema | Measure-Object).count
+                    }
+
+            
+            # DCR
+                If ($DcrInfo)
+                    {
+                        $StreamDeclaration = 'Custom-' + $TableName + '_CL'
+                        $CurrentDcrSchema = $DcrInfo.properties.streamDeclarations.$StreamDeclaration.columns
+                        $DcrSchemaPropertyAmount = ($CurrentDcrSchema | Measure-Object).count
+                    }
+
+           
+           # Compare amounts
+                If ($DcrSchemaPropertyAmount -lt $TableSchemaPropertyAmount)
+                    {
+                        Write-Verbose "  Schema mismatch - property missing in DCR"
+
+                        # Set flag to update schema
+                        $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
+                    }
+                Else
+                    {
+                        # start by building new schema hash, based on existing schema in LogAnalytics custom log table
+                            $SchemaArrayDCRFormatHash = @()
+                            $ChangesDetected = $false
+                            ForEach ($Property in $CurrentTableSchema)
+                                {
+                                    $Name = $Property.name
+                                    $Type = $Property.type
+
+                                    # Add all properties except TimeGenerated as it only exist in tables - not DCRs
+                                    If ($Name -ne "TimeGenerated")
+                                        {
+                                            $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                                If (!($ChkDcrSchema))
+                                                    {
+                                                        $ChangesDetected = $true
+                                                    }
+                                        }
+                                }
+
+                            If ($ChangesDetected -eq $true)
+                                {
+                                    Write-Verbose "  Schema mismatch - property missing or different type in DCR"
+                                    # Set flag to update schema
+                                    $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
+                                }
+                    }
+
             If ($AzDcrDceTableCustomLogCreateUpdate -eq $false)
                 {
                     Write-Verbose "  Success - Schema & DCR structure is OK"
@@ -215,8 +285,8 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvzUkYYQxA9v+I0Uuq85wFKUv
-# gY2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+15RGk/9uaz0VToFfKUz8sA5
+# asaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -295,16 +365,16 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# /V4DqjbhKWAWra8Pr3UcRXou4iswDQYJKoZIhvcNAQEBBQAEggIAfo2nXMp6CDIJ
-# UuARY5uUOihkrIxV68sE3vF+1KvELPF/U7+yQySBCmo+DPdSGu0Ypley0MZW3Cts
-# LNBvQmyHynY42pnreqnKPX6yPEkPoPyIh8tmh2cI15A8pLfWFy0HIMe/v8lflN+l
-# 70l4KEKbSlq2FdkWWP9uv/ipdjs0ReKO8bF92LplWaQOB0eC05RWJtz7eP3y1Okx
-# rNHi3Eg1ZbPKKcOjF6ll5o0mBEZa1r+vpCAyMUWhrcp+yeormuAow/dq9+1rc60C
-# pUR61sJvv2+j1J7AhevFY+f+IfSNWcMy6S06+GaJmem4F61xEeKsbsLyIK+159tz
-# s4pCG7J8GePSFcpAmh9mawnylrn88umKM3t6otlXIvcGeTZdi5mKddC6EQvNqdcU
-# /bHvs4EjWzkyZa4w547YP9jvz7nfAYe2Q2UVA0LWh3bygYTpvvD/eSEWhzLNh3Rx
-# 23Q0iGKRmpEsgGWI/sRFtNqaLAf3Dxr52fiMc4AF4inHJUlqdPo918y9cKI1rP7c
-# nZsCeeUqJbT3oeHR8zK+W//sQEJ273cplcey+CInESU1ZwnIed0blg4jHxm0qRJA
-# L4w9/UvVtZu4O85xTlmGJYg2Dqrw/6/MTj3H+G/fOUNvXmmftbgQDPdphQ071YMd
-# rIyBd7Ftuh81YEU9vWzVM5bfPze2Jho=
+# oNMyWxExxMwIdaQH/YSl/XSbzWowDQYJKoZIhvcNAQEBBQAEggIAv0C2W7a0IJm3
+# wn/JB9wY708ce2Ek6qHuW5imvllp51RdoaJ842rzyvGFw+AHqb3Mc54pNXic+iov
+# R33sxWjpT68j1gnDIPHY47BgvXxNNiXaR8vz1S2Ck+LpPZNvWIf08yypSQ2v6FTy
+# G7/H95c7tXaTWFfrVSNtqJMtoDAQ9xXIyyRpTNaqxiwLQIFKIoOdosmUa69ymYc2
+# DHXMQ2HqgWwKjJd2Fd4eIlvkfpeh+5ovUGG1MKYwJX7oKmpX+CQyYTchG6jleOQr
+# wed1Gt13Hdy+kB5mym2irRWQN/eZAtY4+YOG6IdrB9LlkN+wX4clvilFYhtQOWNl
+# qLHuF81vyr2Kp2UbVP1LJGH50mwqM38T10tpbP3NdYxhlvPx/TBFLGEWN5LKJ9RG
+# pPUafvaTj/QIKKVsLp+/tIt4YAMVT54aC4E/Y5UU2p6qD6+Ezs1m05YZaC8FRcyA
+# 4e428Sa+lcMF2X65OZN+w3jkyWHI40Lhnz/M1aXf4vPleP2B1qZ4HqQ2revFmxYS
+# uRcu4ZYfhIcyx2V4YXdj1ezSAkmyzv5CtHR3Wr58A9fX2rqHmR8h9STh4Ti+6z/c
+# SxbD2c28l0w5QUj5HqnhJTiZ534GUrYDEGmpPc+PprdDQc2PAbQM97b1mhOUO9KK
+# tpfaZ6AfisW2yeTmpIJpMEZIuyOp+Fw=
 # SIG # End signature block
