@@ -42,13 +42,15 @@ param(
 
 
 
+$Verbose                                      = $true
+
 <# ----- onboarding lines ----- END  #>
 
 
 # default variables - don't remove !
 $DNSName                                      = (Get-CimInstance win32_computersystem).DNSHostName +"." + (Get-CimInstance win32_computersystem).Domain
 $ComputerName                                 = (Get-CimInstance win32_computersystem).DNSHostName
-[datetime]$CollectionTime                      = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
+[datetime]$CollectionTime                     = ( Get-date ([datetime]::Now.ToUniversalTime()) -format "yyyy-MM-ddTHH:mm:ssK" )
 
 ############################################################################################################################################
 # VERBOSE
@@ -259,6 +261,7 @@ Else
     $UserLoggedOn    = $UserLoggedOnRaw.UserName
 
 
+pause
 
 ###################################################################################################################
 # DEMO 1 - Data manipulation + show schema content
@@ -291,8 +294,8 @@ Else
         # add CollectionTime to existing array
         $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
 
-        # add Computer & UserLoggedOn info to existing array
-        $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName  -Column2Name UserLoggedOn -Column2Data $UserLoggedOn
+        # add Computer & ComputerFqdn & UserLoggedOn info to existing array
+        $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name ComputerFqdn -Column2Data $DnsName -Verbose:$Verbose
 
         # Validating/fixing schema data structure of source data
         $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
@@ -347,6 +350,15 @@ Else
             Get-ObjectSchemaAsArray -Data $DataVariable[0]
 
 
+        #-----------------------------------------------------------------------------------------------
+        # Where is data sent to ?
+        #-----------------------------------------------------------------------------------------------
+
+            $LogAnalyticsWorkspaceResourceId
+
+            $TableName + "_CL"
+
+            $DcrName
 
 ###################################################################################################################
 # DEMO 2 - Collection data -> Create LogAnalytics table + DCR + send data
@@ -377,7 +389,7 @@ Else
                 # convert CIM array to PSCustomObject and remove CIM class information
                 $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
 
-                # add Computer & ComputerFqdn info to existing array
+                # add Computer & ComputerFqdn & UserLoggedOn info to existing array
                 $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name ComputerFqdn -Column2Data $DnsName -Verbose:$Verbose
 
                 # Validating/fixing schema data structure of source data
@@ -432,7 +444,7 @@ Else
 
             $LogAnalyticsWorkspaceResourceId
 
-            $TableName
+            $TableName + "_CL"
 
             $DcrName
 
@@ -501,7 +513,7 @@ Else
                 # convert CIM array to PSCustomObject and remove CIM class information
                 $DataVariable = Convert-CimArrayToObjectFixStructure -data $DataVariable -Verbose:$Verbose
 
-                # add Computer & ComputerFqdn info to existing array
+                # add Computer & ComputerFqdn & UserLoggedOn info to existing array
                 $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name ComputerFqdn -Column2Data $DnsName -Verbose:$Verbose
 
                 # Validating/fixing schema data structure of source data
@@ -568,8 +580,13 @@ Else
 
 
         #-----------------------------------------------------------------------------------------------
-        # Notice: DCR object + table is created with modified schema
+        # Notice: DCR has now been created - with schema shown above
+
+        # Notice: Azure LogAnalytics DCR table has been created - with schema shown above
+        
+        # Notice: Data will be coming into LogAnalytics table .... it should take approx 10-15 minutes for the Azure Pipeline to kick-in initially !
         #-----------------------------------------------------------------------------------------------
+
             $LogAnalyticsWorkspaceResourceId
 
             $TableName + "_CL"
@@ -675,6 +692,7 @@ Else
 
             $TableName + "_CL"
 
+            $DcrName
 
         #-------------------------------------------------------------------------------------------
         # Notice: schema is +1 in LogAnalytics table (=18) because of new property TimeGenerated as part of transformKql
@@ -685,10 +703,8 @@ Else
 
             $Dcr = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
 
-            Get-AzDataCollectionRuleTransformKql -DcrResourceId $Dcr.id
-
+            Get-AzDataCollectionRuleTransformKql -DcrResourceId $Dcr.id -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId
 
         #-------------------------------------------------------------------------------------------
         # Notice: After approx 10-12 min. we will see the data with the modified schema
         #-------------------------------------------------------------------------------------------
-
