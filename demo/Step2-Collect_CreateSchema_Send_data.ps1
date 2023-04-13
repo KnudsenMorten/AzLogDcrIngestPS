@@ -453,6 +453,12 @@ pause
 # DEMO 3 - Collection of data, remove unnecessary data-properties, create schema with modified structure
 ###################################################################################################################
 
+    # building global variable with all DCEs, which can be viewed by Log Ingestion app
+    $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+    
+    # building global variable with all DCRs, which can be viewed by Log Ingestion app
+    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+
     #-------------------------------------------------------------------------------------------
     # Variables
     #-------------------------------------------------------------------------------------------
@@ -547,6 +553,13 @@ pause
         $ResultPost = Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
                                                                          -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
 
+    #-----------------------------------------------------------------------------------------------
+    # Upload data to LogAnalytics using DCR / DCE / Log Ingestion API
+    #-----------------------------------------------------------------------------------------------
+
+        $ResultPost = Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
+                                                                         -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+
 
     #-----------------------------------------------------------------------------------------------
     # DEMO DEEP-DIVE !!!
@@ -599,6 +612,12 @@ pause
 
 # We will re-use data-set from demo 3
 ###################################################################################################################
+
+    # building global variable with all DCEs, which can be viewed by Log Ingestion app
+    $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+    
+    # building global variable with all DCRs, which can be viewed by Log Ingestion app
+    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
 
 
     #-------------------------------------------------------------------------------------------
@@ -669,7 +688,7 @@ pause
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
 
-        $ResultMgmt = CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
+        $ResultMgmt = CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaMode Merge `
                                                            -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose `
                                                            -DceName $DceName -DcrName $DcrName -DcrResourceGroup $AzDcrResourceGroup -TableName $TableName -Data $DataVariable `
                                                            -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
@@ -698,6 +717,8 @@ pause
         # Notice: schema is +1 in LogAnalytics table (=18) because of new property TimeGenerated as part of transformKql
         #-------------------------------------------------------------------------------------------
 
+            Start-Sleep -s 10
+
             # building global variable with all DCRs, which can be viewed by Log Ingestion app
             $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
 
@@ -708,3 +729,4 @@ pause
         #-------------------------------------------------------------------------------------------
         # Notice: After approx 10-12 min. we will see the data with the modified schema
         #-------------------------------------------------------------------------------------------
+
