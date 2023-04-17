@@ -1,7 +1,19 @@
 # Introduction
-I am really happy to announce my **Powershell module**, **AzLogDcrIngestPS**
+If you are sending data using HTTP Data Collector API (REST) today, you should continue reading, as this API will be deprecated, as part of the transition to Log ingestion API using Azure Data Collection Rules, Azure Pipeline, Azure LogAnalytics custom tables (v2).
 
-This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs (v2)** - using the new features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. 
+As you can see from the illustrations above more components (DCR, DCR, Pipeline, Schema) are added, which also increases the complexity and challenges to take into account:
+
+*Creation of DCR + tables before sending data*
+*Dependencies to DCE, which must exist
+*Timing / delays when doing automations
+*Schema for data must be defined in both DCR and custom table (v2)
+*Naming conventions & limitations / Prohibited names
+*Deal with new properties – support both merge and overwrite
+*Upload changes (32 mb -> 1 mb) per JSON (batches, calculations)
+*Data manipulations of source data (filtering, remove)
+
+## new new helper, AzLgoDcrIngestPS
+I am really happy to announce my new Powershell module, **AzLogDcrIngestPS**. This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs (v2)** - using the new features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. 
 
 Think of this module as an **"AnyConnector"**, which can be used to send data from any 3rd party source using PS script (intermediate) or use as part of a script collecting data from endpoint. It can be used in Powershell scripts, Azure Function, Azure Automation, etc.
 
