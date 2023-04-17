@@ -10,14 +10,13 @@ Think of this module as an "AnyConnector", which can be used to send data from a
 
 ![AnyConnector1](docs/AnyConnector1.png)
 
-
-![AnyConnector1](docs/AnyConnector2.png)
-
 The 25 functions will help you with:
 *  **data manipulation** before sending data in
 *  **table / dcr / schema / transformation management**
 *  **data upload** using Azure Log Ingestion Pipeline / Log Ingestion API
 *  **support/security**
+
+![AnyConnector1](docs/AnyConnector2.png)
 
 <br>
 
