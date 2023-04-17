@@ -1,6 +1,8 @@
 # Introduction
 If you are sending data using HTTP Data Collector API (REST) today, you should continue reading, as this API will be deprecated, as part of the transition to Log ingestion API using Azure Data Collection Rules, Azure Pipeline, Azure LogAnalytics custom tables (v2).
 
+![Overview](docs/Old_New.png)
+
 As you can see from the illustrations above more components (DCR, DCR, Pipeline, Schema) are added, which also increases the complexity and challenges to take into account:
 
 *Creation of DCR + tables before sending data*
