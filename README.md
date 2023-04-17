@@ -18,6 +18,8 @@ The 25 functions will help you with:
 
 ![AnyConnector1](docs/AnyConnector2.png)
 
+![AnyConnector1](docs/AnyConnector3.png)
+
 <br>
 
 Cool features of **AzLogDcrIngestPS** are:
