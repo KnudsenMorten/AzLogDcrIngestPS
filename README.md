@@ -5,14 +5,14 @@ If you are sending data using HTTP Data Collector API (REST) today, you should c
 
 As you can see from the illustrations above more components (DCR, DCR, Pipeline, Schema) are added, which also increases the complexity and challenges to take into account:
 
-..* Creation of DCR + tables before sending data  
-..* Dependencies to DCE, which must exist  
-..* Timing / delays when doing automations  
-..* Schema for data must be defined in both DCR and custom table (v2)  
-..* Naming conventions & limitations / Prohibited names  
-..* Deal with new properties – support both merge and overwrite  
-..* Upload changes (32 mb -> 1 mb) per JSON (batches, calculations)  
-..* Data manipulations of source data (filtering, remove)  
+* Creation of DCR + tables before sending data  
+* Dependencies to DCE, which must exist  
+* Timing / delays when doing automations  
+* Schema for data must be defined in both DCR and custom table (v2)  
+* Naming conventions & limitations / Prohibited names  
+* Deal with new properties – support both merge and overwrite  
+* Upload changes (32 mb -> 1 mb) per JSON (batches, calculations)  
+* Data manipulations of source data (filtering, remove)  
 
 ## Your new helper, AzLogDcrIngestPS
 I am really happy to announce my new Powershell module, **AzLogDcrIngestPS**. This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs (v2)** - using the new features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. 
