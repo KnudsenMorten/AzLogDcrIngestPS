@@ -3,7 +3,7 @@ I am really happy to announce my **Powershell module**, **AzLogDcrIngestPS**
 
 This module can ease the steps, if you want to send any data to **Azure LogAnalytics custom logs (v2)** - using the new features of **Azure Log Ingestion Pipeline**, **Azure Data Colection Rules & Log Ingestion API**. 
 
-Think of this module as an "AnyConnector", which can be used to send data from any 3rd party source using PS script (intermediate) or use as part of a script collecting data from endpoint. It can be used in Powershell scripts, Azure Function, Azure Automation, etc.
+Think of this module as an **"AnyConnector"**, which can be used to send data from any 3rd party source using PS script (intermediate) or use as part of a script collecting data from endpoint. It can be used in Powershell scripts, Azure Function, Azure Automation, etc.
 
 ![Overview](docs/Architecture-simpleoverview.png)
 
