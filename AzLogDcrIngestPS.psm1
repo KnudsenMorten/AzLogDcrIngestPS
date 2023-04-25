@@ -1817,7 +1817,10 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                         # Skip if name = TimeGenerated as it only exist in tables - not DCRs
                         If ($Name -ne "TimeGenerated")
                             {
-                                $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
+                                # $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+
+                                $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) }
                                     If (!($ChkDcrSchema))
                                         {
                                             # DCR must be updated, changes was detected !
@@ -1919,10 +1922,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                 invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
                     }
             }
-
-            
 }
-
 
 
 Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
@@ -2208,7 +2208,11 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                     $PropertyFound = $false
                     ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
                         {
-                            If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
+
+                            # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
+                            # If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
+                            
+                            If ($Property.name -eq $PropertySource.name)
                                 {
                                     $PropertyFound = $true
                                 }
@@ -3722,11 +3726,14 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 
                         ForEach ($Entry in $SchemaSourceObject)
                             {
-                                $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) -and ($_.type -eq $Entry.type) }
+                                # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
+                                # $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) -and ($_.type -eq $Entry.type) }
+                                
+                                $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) }
 
                                 If ($ChkSchema -eq $null)
                                     {
-                                        Write-Verbose "  Schema mismatch - property missing or different type (name: $($Entry.name), type: $($Entry.type))"
+                                        Write-Verbose "  Schema mismatch - property missing (name: $($Entry.name), type: $($Entry.type))"
 
                                         # Set flag to update schema
                                         $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
@@ -3801,7 +3808,10 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                                     # Add all properties except TimeGenerated as it only exist in tables - not DCRs
                                     If ($Name -ne "TimeGenerated")
                                         {
-                                            $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                            # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
+                                            # $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                            
+                                            $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) }
                                                 If (!($ChkDcrSchema))
                                                     {
                                                         $ChangesDetected = $true
@@ -3811,7 +3821,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 
                             If ($ChangesDetected -eq $true)
                                 {
-                                    Write-Verbose "  Schema mismatch - property missing or different type in DCR"
+                                    Write-Verbose "  Schema mismatch - property missing in DCR"
                                     # Set flag to update schema
                                     $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                                 }
@@ -6073,8 +6083,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCvt1O5KVxRURcW
-# WdRGQjKeR8VwJbIQKP65hDtPwXIEoaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDKlYx5tEKYv9LM
+# IlpTN0ZU2jwXWJW2uxBIRQd4ts5sKqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6182,17 +6192,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIAXxpJSN+F/aBVJMe0I5bnU1
-# T1UrhG9otraaeV6m6RrpMA0GCSqGSIb3DQEBAQUABIICAGzntc75MTzfJb3MJpWZ
-# gk+g6V7RTkbzWG4nq4RI0mwPVYyZJ8eh3EX+5e1mrlJwHyi0h7s5TKwCTLiljxT6
-# fFYWFSEFnVu8glpJLeSeHdeoFnqv6pYDwE8BA+WkuTz0KvbfOvTW+omWBp3HYe5c
-# 1+cIcn9j7vklmbBG7psDLdLFo4RsdfysEiz1+TCkruQTOlyblojX8R2Bz86kygRX
-# 73Rn8c9uFlgIPPd8CWphPeHd8F8/bVIPbqpAQUcKYFMP+guLXcUsPFgOzav+jjcc
-# S2vqwfbU4SPDpuy7OYsnkrc7qf3bzmrRDN9/s2c3ENwMYcAA5S2RBDcqZVp5oiK6
-# 8AvN0a7opGKzmjab5iTQdAFC/S4ezA87SZWaaeV8OK1AQhqUOpZyF+0Xf9iwQNDl
-# c1CAbSyc91TZR/ljxFAeKz+0KrekPnFIO0LWS4qRGvDWdXjP2c51xYOFbsmu2jOx
-# yKqNsI10BPzena+Mon8gyPT5EdBILTO06xp026VAiLZNTxXKgGulpgHKidj2U3ZS
-# lfXYvYaznJEE7rc500Mm0mG+jGm971q3qTQbfAyU8Lr0MbAly+eW2W02NMVuSYlK
-# 9a4i7lc3QW2clDDt+mOdXL+WskaCTP0AS7k5xgtfrkrEII710DxMFbcKnEb/g1/W
-# D/XbHSbp9yOnuurYryAOy+g+
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIAZmJ6owVcKaBcpVy0ljy80r
+# aB0oHaoRYc+V33igUIp3MA0GCSqGSIb3DQEBAQUABIICACDr/7bBsQi3+NJTSyV7
+# Ax9HxjU+HS1ncX1wSYAHIbOnRlubZmYU+QLJCcW/8su1i2Y5UMcGptPFzMH8yf6E
+# hGQOC/KUcnNnBp282c2vAj8rq3dB4sfV6qwpxTBeFAv2DsFjTet4Es1iOlE2nzRs
+# KdPuORNEmd9MVDkeroKXlOv5i+3NbI2sxV3MYBao7NiA9m+vbEEgf+sD2aZT6ibL
+# BvNXHKveh+FEgUNwO67XaID6RP6MiVzqZADz0G/EphOnqaydEocMnFOxMIL01jSL
+# qjYmYfSji4VSkFbtlxbS3wdZzWi20KvVK8yC+ZCX49DEGSpYWaMgUYIX8cOZiThr
+# 9z4zA4PGJM1qtxdGsI6ZjSwsdT05CesPhf02MJW9g0zs/mJMLcMnZ8HmBNp76MfK
+# WQmwlIkeAG+CEgc+QpO9/kQ289DGzk1EXgY2tuUHjQIpcgxFEM4PEniAQieZ0nX1
+# Az1wH4gezhC/KuNBX1wALXZXjr4BsykAdv0QOlVVv4So+bAH67k2xEbNos5u6AdQ
+# BZMLr+BLBozI5n030v700ldR/C3V1IR5WU0TMLuFBHQ8mjsmVK3G1vXvgleN1WtU
+# /a1yQ3R0UP17aunO9XAulhDtH1iIxg8xoXKYozHBUdv5Y/aDJS83iUIC3+tJhzoI
+# 1uXeDgx8qUiTlLJoX5GalHuw
 # SIG # End signature block

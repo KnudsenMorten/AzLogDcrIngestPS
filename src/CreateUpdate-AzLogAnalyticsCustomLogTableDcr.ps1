@@ -281,7 +281,11 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                     $PropertyFound = $false
                     ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
                         {
-                            If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
+
+                            # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
+                            # If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
+                            
+                            If ($Property.name -eq $PropertySource.name)
                                 {
                                     $PropertyFound = $true
                                 }
@@ -359,8 +363,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVlcAoGfhmIYfSk7RQTjNfyc0
-# 6QGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZN1cYI036X5WJEIesLgyL6D+
+# gueggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -439,16 +443,16 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# o202QfYTJIecFd/5UPO1SGHHtk8wDQYJKoZIhvcNAQEBBQAEggIALTHBOD8+087S
-# womMgPzjBKwfoDL2guwq6QZgpRDLaP+PPwQP/dY0fKDMsFWS7pmdfuryhs76AYOt
-# Z/sf3LuIU6iXGGeoacIuhcxFiMzTL/GXjvVJauWIqu3NDTOdSuwqHVlYTXPcFVTP
-# hduvBCJyLBFv9P9YQEfAje1sCmyqzQzHaKPWXPVWdSfDnI9ZLorJXEpwdYUf7LGx
-# umZg1TBZ47n6gGx0jaox9KrqsnixlDok6CXDD7FZXXHmSPylU7dp3LO1q6Kh0PU9
-# xQP7nhI+FzucC9IDzWuq2LsTc/Opt07GSXJcjjBYUNPTXCLSJAe/gvtO3Qwi719M
-# q7uCp3jIkPDFIigEG528EQEP6FpmA/8/jGV8jiu9LK8vO6YxocK+j6qtOifGPhdj
-# hn27kkFTUGQxeX9q2IRj+e0r5+7LQdK5+Ow3U7t+e7umYuy5YVYbGU73qNRMZ5CZ
-# 0ytdQvmdJRJNOSvBeudM9y/QjJkxzX53rEebAdFVYU6OvFWf4hy2/N5k7RjU6wGj
-# G+y2WRPbxzLKshn0GAWTm89vI93Kh/kZ0SjodHgcY+H+8nV1tVAmYe076e6fL8Xn
-# WlsWErL/8L4xxEn1+aiRWlqIuwfqpPhrGV7ECiV4KpNCdBc7fmwqYm501WNLtdEG
-# V4lP8VK/zZKYBLLB6IRoJjEDma94GA0=
+# k1vUbRkiHYCPGlyvZ8EqR/KnniQwDQYJKoZIhvcNAQEBBQAEggIActSYMNXL0eQW
+# HeBgdJQ51Q0QciSdsMrC1Jr5aKFc5E62m9Leg436difmAWM9OA4W0L9XF2WjkMRW
+# xEpawiQzbbkWEnhYT8/fO5PDG8F+fpe23OIMC8sC6KC+kGUkGJk3K8CJ/JMLIcQJ
+# dPWiTDdeh9KHbZLuLD4q/msRlQ2VP9BFMw5mQTSjZe1C9Snemw+45FR5KMKTCj7d
+# QlxVhVeIF826/QfIFZz4HXX1iH2H1yPBrlmchcgKTZ4JVJ87FIKesQLO2+Mzav93
+# zw2zBOr1ode3JX5Raid+B3k/BGNSeBfayA47yegjbE2W6XYlagxiBLzH5Vhqg349
+# d8hh94JjORnSXI7LH2WajGM6rFsGrNIiDPfA9zE+++3lx7LTgcvqqa3NYlT37Uh3
+# hee1QlYoz2op7x7JvbiuytePTNvcBT3ZMjguYvk7yspN+I3eX3WHDu1M29vUXuGR
+# LP18+oBqmh9d6FMjlT6vsCWWcqt4gCOmfGX16m7YWm4wB3JRy0SECpqmyvx3EOyO
+# 9H1nJiKbjt38O4WsB0XeEsyeUoWhlUnBJqCehRbwvLbxj0oVaEDb85eAfcSKV1gX
+# +C27FzjxQlRxB7jaRnGuzSS4Wi5c92qzaG41NuRRLpIGVHVwnFO+tm34lJQXRyvL
+# y9zt+mPIJSPUGWJiJNkvlj/t9zBdzsI=
 # SIG # End signature block

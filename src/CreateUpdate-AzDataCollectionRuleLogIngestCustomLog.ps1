@@ -623,7 +623,10 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                         # Skip if name = TimeGenerated as it only exist in tables - not DCRs
                         If ($Name -ne "TimeGenerated")
                             {
-                                $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+                                # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
+                                # $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
+
+                                $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) }
                                     If (!($ChkDcrSchema))
                                         {
                                             # DCR must be updated, changes was detected !
@@ -725,16 +728,13 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                 invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
                     }
             }
-
-            
 }
-
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUR4GNctZ9rG2nSWAWlbQAgT6K
-# WOiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAHRRLDUdn7X8JDYJY4faDLpy
+# E7mggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -813,16 +813,16 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# qHuFe3Sn+kIJxv2fGRfZ/6jGH+UwDQYJKoZIhvcNAQEBBQAEggIAEPKJ/ZHtctLb
-# TFG+y0BHSZJ5gJSgNIKcQ8QRG3qj4AOo1Q8168wQ38s43Yf0G46pz/3AiFVIM0qS
-# X2Ur4e1yr+Pt5sjffYZIYhCr60Mkc7ZQ5BHX/2v3lesWET9hXOq7phJXg7Qrk2Bg
-# G7Izx++k/Nqfgg11MPWSnmKZKQepQeiriRRcS68cwYx0nCB7LuqRxP4hBMhRpLw2
-# ZDl+xlxpkwcfiJ/YUkr458TqTIGH4UduDqsvihnJdVmjfima0Yd0pmx7KWkN5oJ6
-# 6F2sVlcU5e3qx4J7XYUWdFlgJ9PdAUYygOkae6QF8H4qpXCCAiMeeyVt4Er1vNgx
-# tTxeGc6TGg3rerHiP6EjCNZIvV2KA5oTz9ZaU2Ho2WZ3Z9kLcp48LVDmC5Y8Ctvu
-# OpMbRA4fapZcXggdAm0Bxvt/b7OKfWuYAHOE6pTssF3Wfg9M8PihX1MFKd+AZ8l6
-# 1NQPE94iSjFp3dv9DAVhIK2ZEP/DTvpafSuDVHLzzEOZVqcCg8RnQDTfHolcsUj8
-# /NWLDKOvHLrPKxa3An/kXxzlXIYaeXvH0fDG3v8ceLzt7yLRrq9B75rrv5ZTML36
-# KtSkK0gun22Jf2f2pIWJrereOs87qWGrLmuSDhnQrNpERepJlSWVzEU+BOJZ+5jN
-# LJsVCTrYT94FU4uk1ZBosrBjGsAnGoQ=
+# JRZ/MMkRN1UPRrKM+7xt9mdurfkwDQYJKoZIhvcNAQEBBQAEggIAA1GFOcOfWGa6
+# 7xinLMsMVQX+29gjzKzU60nsvyTpTDP+5sEuCGNmFxa4mIIyOKab9aZPoIBO0Bgj
+# qsmFuq+fx2IcxULQ1acAsc1OQul9kr324mSJuh7KTU+uwIC8V6fTu5bRgBAYOqQT
+# a3AK4uf0RAzzHf/CC0EmRWViGc/e0T9iuqAbINGjh2FVQA/r8d+i+I+Lp6eCbATZ
+# w4X8PTLc9+gwcS4qx4Dq+vkmSq+uQShuhpPyRzAIZaOvNv5MhEB1xGuZX50FxbLU
+# GTbcq9ZZgjP5YD2LNJno6/Bwj5ZyzGyBmc8/hPrqMFxaIj8FOOjf1uLzrr7O2i0j
+# O5DrjBmhSmQTpynEYbZ42beIaUaKynHvRPRefOCRgPOlXyc8QPTnxqUlN7eEuGVp
+# i73OcMjuBWWsIyDzMFPs1p1IysFa5rNL9XtMR5xhBta3pnep1znV60A0UZN6tkrS
+# wtexXmKi2hA9LJSz6aWiRvG0TK/xaLF9vMpEynpMt9tMaqm2TAxkroHcTyJr8JVA
+# ZhMM/i1CCwm9kozntv61yhIOFxf1TDI6bgJbGh3y/B319pqaNK040AmrLnAvgCUy
+# 1iVg1vOsfmI1duKvcBE5YClfh8dJMgWoNcscnDOk9yQOTDoh4cUg7qX5xXtByGR+
+# Irtug7gFbZLm8TVhT6nAiTUf7OyeHVk=
 # SIG # End signature block
