@@ -1,5 +1,7 @@
 RELEASE NOTES
-v1.2.38  Changed the logic around SchemaMode = Merge, so the schema in DCR will be based on LogAnalytics table schema - and not the source object schema
+v1.2.39  Removed so script will only change schema if name is not found - not if property type is different (who wins?)
+
+v1.2.38  Changed the logic around SchemaMode = Merge, so the schema in DCR will be based on LogAnalytics table schema - and not the source object schema. 
 
 v1.2.37  Adding another check to SchemaMode = Merge, so it will support existing properties are changing type
 
