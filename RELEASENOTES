@@ -1,4 +1,6 @@
 RELEASE NOTES
+V1.3.0   Minor changes. Decided to change to v1.3, as we had 39 minor version changes under v1.2.xx
+ 
 v1.2.39  Removed so script will only change schema if name is not found - not if property type is different (who wins?)
 
 v1.2.38  Changed the logic around SchemaMode = Merge, so the schema in DCR will be based on LogAnalytics table schema - and not the source object schema. 
