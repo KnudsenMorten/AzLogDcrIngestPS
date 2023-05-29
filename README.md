@@ -1264,43 +1264,22 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 # Migration of LogAnalytics v1 table to v2-format (keep existing)
 
-The steps to migrate your LogAnalytics table to v2-mode, while keeping the existing table are:
+I have provided a sample migration / demo script, which can be found [here](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/migration/LogAnalyticsMigationSample.ps1)
 
-* Migrate the table
-* ddd
-
-
-
-Sample script are found here
-
-The code to do this are shown below
-
-```powershell
-$Headers = Get-AzAccessTokenManagement -AzAppId $LogIngestAppId `
-                                       -AzAppSecret $LogIngestAppSecret `
-                                       -TenantId $TenantId -Verbose:$Verbose
-
-# Get existing LA table info
-$TableUrl = "https://management.azure.com" + $LogAnalyticsWorkspaceResourceId + "/tables?api-version=2021-12-01-preview"
-$table = invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
-$res = $table.value.properties | Where-Object { $_.schema.name -like "$($TableName" }
-$res.schema
-$res.schema.columns
-
-pause
-
-# Migrate table
-$Uri         = "https://management.azure.com" + $LogAnalyticsWorkspaceResourceId + "/tables/$($TableName)_CL/migrate?api-version=2021-12-01-preview"
-$Response    = invoke-webrequest -UseBasicParsing -Method POST -Uri $Uri -Headers $Headers
-```
+Script includes both setting up a sample table in v1-format and the steps to migrate to v2-format (start line 152).
 
 
 
-Here is an example where the function is called in verbose-mode
+The steps to migrate your LogAnalytics table to v2-mode, while keeping the existing table, are:
 
-```
-Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$true
-```
+* Define variables for deployment of environment + connectivity (step 1+2, lines 156-206)
+* Deployment of the necessary infrastructure (DCE, LogAnalytics workspace, DCR resource group, permissions, etc.)  - step 3, lines 210-696
+* Variables for targeting (step 4, lines 703-722)
+* Migrate the table to DCR-based format - from ClassicStyle-format - step 5A, lines 729-745
+* Create the DCR with the schema using AzLogDcrIngestPS in Migrate-mode - step 5B, lines 750-822
+* Sample upload of data - step 6-10 - line 823-895
+* Optional: Add necessary transformations - step 11 - lines 907-913
+  * NOTE: Wait for approx 30 min before uploading the sample data in step 12
 
 
 

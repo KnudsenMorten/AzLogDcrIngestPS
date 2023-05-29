@@ -724,7 +724,7 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
 pause
 
     #-------------------------------------------------------------------------------------------
-    # (5) Migration of existing table to V2-format (DCR-based)
+    # (5A) Migration of existing table to V2-format (DCR-based)
     #-------------------------------------------------------------------------------------------
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $LogIngestAppId `
@@ -739,14 +739,13 @@ pause
             $res.schema.columns
             pause
 
-        # Migrate table
+        # Migrate table to v2 (DCR-based)
             $Uri         = "https://management.azure.com" + $LogAnalyticsWorkspaceResourceId + "/tables/$($TableName)_CL/migrate?api-version=2021-12-01-preview"
             $Response    = invoke-webrequest -UseBasicParsing -Method POST -Uri $Uri -Headers $Headers
 
-
-###################################################################
-# MIGRATION
-###################################################################
+    #-------------------------------------------------------------------------------------------
+    # (5B) Create a DCR based on existing LA table schema in Migrate-mode
+    #-------------------------------------------------------------------------------------------
 
             #----------------------------------------
             # (M1) Data to Upload (sample)
@@ -823,7 +822,7 @@ pause
 
 
 
-###################################################################
+    ###################################################################
 
     #----------------------------------------
     # (6) Data to Upload (sample)
@@ -900,7 +899,7 @@ pause
 
 
 ###################################################################
-# Transform data into old fields
+# (11) Transform data into old fields
 ###################################################################
 
 pause
@@ -914,7 +913,7 @@ pause
 
 
     #-----------------------------------------------------------------------------------------------
-    # Upload data to LogAnalytics using DCR / DCE / Log Ingestion API with transformation
+    # (12) Upload data to LogAnalytics using DCR / DCE / Log Ingestion API with transformation
     #-----------------------------------------------------------------------------------------------
 
         If ($DataVariable)
