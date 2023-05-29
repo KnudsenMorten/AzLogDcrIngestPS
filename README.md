@@ -90,7 +90,7 @@ install-module AzLogDcrIngestPS
 [Source data - what data can I use ?](#source-data---what-data-can-i-use-)  
 [Example of how to use the functions](https://github.com/KnudsenMorten/AzLogDcrIngestPS#example-of-how-to-use-the-functions)  
 [How can I modify the schema of LogAnalytics table & Data Collection Rule, when the source object schema changes ?](#how-can-i-modify-the-schema-of-loganalytics-table--data-collection-rule-when-the-source-object-schema-changes-)  
-[Migration of LogAnalytics v1 table to v2-format (keep existing)](#https://github.com/KnudsenMorten/AzLogDcrIngestPS#migration-of-loganalytics-v1-table-to-v2-format-keep-existing)  
+[Migration of LogAnalytics v1 table to v2-format (keep existing)](#migration-of-loganalytics-v1-table-to-v2-format-keep-existing)  
 [How to enable verbose-mode & get more help ?](#how-to-enable-verbose-mode--get-more-help-)  
 [Integration of AzLogDcrIngest in your scripts](https://github.com/KnudsenMorten/AzLogDcrIngestPS#integration-of-azlogdcringest-in-your-scripts)  
 [Function synopsis](#function-synopsis)  
