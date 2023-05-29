@@ -156,15 +156,15 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
     #----------------------------------------------------------------------------
     # (1) Variables (Prereq, setup environment)
     #----------------------------------------------------------------------------
-        $TenantId                              = "f0fa27a0-8e7c-4f63-9a77-ec94786b7c9e"
+        $TenantId                              = "xxxxxx"
 
         # Azure App
         $AzureAppName                          = "DemoMigration - Automation - Log-Ingestion"
         $AzAppSecretName                       = "Secret used for Log-Ingestion"
-        $AzAppSecret                           = "BgN8Q~a7-LvufU-PZmGyzSd7.ry0TeZNLmD2Yb_G"
+        $AzAppSecret                           = "xxxxxxx"
 
         # Azure LogAnalytics
-        $LogAnalyticsSubscription              = "fce4f282-fcc6-43fb-94d8-bf1701b862c3"
+        $LogAnalyticsSubscription              = "xxxxxx"
         $LogAnalyticsResourceGroup             = "rg-loganalyticsv2demo"
         $LoganalyticsWorkspaceName             = "log-loganalyticsv2-migration-demo"
         $LoganalyticsLocation                  = "westeurope"
@@ -703,17 +703,17 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
 
         $TableName                                    = "V1CustomTable" + $DemoNumber
 
-        $TenantId                                     = "f0fa27a0-8e7c-4f63-9a77-ec94786b7c9e" 
-        $LogIngestAppId                               = "8cd71693-be69-421c-a04f-54d45e1e305d" 
-        $LogIngestAppSecret                           = "BgN8Q~a7-LvufU-PZmGyzSd7.ry0TeZNLmD2Yb_G" 
+        $TenantId                                     = "xxxxxxx" 
+        $LogIngestAppId                               = "xxxxxxx" 
+        $LogIngestAppSecret                           = "xxxxxxx" 
 
         $DceName                                      = "dce-log-loganalyticsv2-migration-demo" 
         $AzDcrResourceGroup                           = "rg-dcr-log-loganalyticsv2-migration-demo" 
 
-        $LogAnalyticsWorkspaceResourceId              = "/subscriptions/fce4f282-fcc6-43fb-94d8-bf1701b862c3/resourceGroups/rg-loganalyticsv2demo/providers/Microsoft.OperationalInsights/workspaces/log-loganalyticsv2-migration-demo" 
+        $LogAnalyticsWorkspaceResourceId              = "/subscriptions/xxxxxxxxxxx/resourceGroups/rg-loganalyticsv2demo/providers/Microsoft.OperationalInsights/workspaces/log-loganalyticsv2-migration-demo" 
 
         $AzDcrSetLogIngestApiAppPermissionsDcrLevel   = $false
-        $AzDcrLogIngestServicePrincipalObjectId       = "2f259c5a-503f-4c36-909d-9d97c4e5cf8d" 
+        $AzDcrLogIngestServicePrincipalObjectId       = "xxxxx" 
 
         $AzLogDcrTableCreateFromReferenceMachine      = @()
         $AzLogDcrTableCreateFromAnyMachine            = $true
