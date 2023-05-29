@@ -1221,6 +1221,10 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     It will overwrite existing schema in DCR/table – based on source object schema
     This parameter can be useful for separate overflow work
 
+    SchemaMode = Migrate
+    It will create the DCR, based on the schema from the LogAnalytics v1 table schema
+    This parameter is used only as part of migration away from HTTP Data Collector API to Log Ingestion API
+
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
 
@@ -1442,7 +1446,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 [AllowEmptyCollection()]
                 [string]$LogIngestServicePricipleObjectId,
             [Parameter()]
-                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
+                [string]$SchemaMode = "Merge",  # Merge/Migrate = Merge new properties into existing schema, Overwrite = use source object schema, Migrate = It will create the DCR, based on the schema from the LogAnalytics v1 table schema
             [Parameter()]
                 [string]$AzAppId,
             [Parameter()]
@@ -1568,7 +1572,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
     #--------------------------------------------------------------------------
     # DCR was NOT found (create) - or we do an Overwrite
     #--------------------------------------------------------------------------
-        If ( (!($Dcr)) -or ($SchemaMode -eq "Overwrite") )
+        If ( (!($Dcr) -and ( ($SchemaMode -eq "Overwrite") -or ($SchemaMode -eq "Merge") ) ) -or ($SchemaMode -eq "Overwrite") )
             {
                 #--------------------------------------------------------------------------
                 # build initial payload to create DCR for log ingest (api) to custom logs
@@ -1782,6 +1786,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 If ($TableStatus)
                     {
                         $CurrentTableSchema = $TableStatus.properties.schema.columns
+                        $AzureTableSchema   = $TableStatus.properties.schema.standardColumns
                     }
 
                 # start by building new schema hash, based on existing schema in LogAnalytics custom log table
@@ -1800,6 +1805,20 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                                                   }
                                 }
                         }
+                
+                # Add specific Azure column-names, if found as standard Azure columns (migrated from v1)
+                $LAV1StandardColumns = @("Computer","RawData")
+                ForEach ($Column in $LAV1StandardColumns)
+                    {
+                        If ( ($Column -notin $SchemaArrayDCRFormatHash.name) -and ($Column -in $AzureTableSchema.name) )
+                            {
+                                    $SchemaArrayDCRFormatHash += @{
+                                                                    name        = $column
+                                                                    type        = "string"
+                                                                  }
+                            }
+                    }
+
 
                 # get current DCR schema
                 $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
@@ -1809,7 +1828,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 
                 # enum $CurrentDcrSchema - and check if it exists in $SchemaArrayDCRFormatHash (coming from LogAnalytics)
                 $UpdateDCR = $False
-                ForEach ($Property in $CurrentTableSchema)
+                ForEach ($Property in $SchemaArrayDCRFormatHash)
                     {
                         $Name = $Property.name
                         $Type = $Property.type
@@ -1817,9 +1836,6 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                         # Skip if name = TimeGenerated as it only exist in tables - not DCRs
                         If ($Name -ne "TimeGenerated")
                             {
-                                # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
-                                # $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) -and ($_.Type -eq $Type) }
-
                                 $ChkDcrSchema = $CurrentDcrSchema | Where-Object { ($_.name -eq $Name) }
                                     If (!($ChkDcrSchema))
                                         {
@@ -1828,42 +1844,6 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                         }
                              }
                     }
-
-
-<#
-
-                # enum $SchemaSourceObject - and check if it exists in $SchemaArrayDCRFormatHash
-                $UpdateDCR = $False
-                ForEach ($PropertySource in $SchemaSourceObject)
-                    {
-                        $PropertyFound = $false
-                        ForEach ($Property in $SchemaArrayDCRFormatHash)
-                            {
-                                If ($Property.name -eq $PropertySource.name)
-                                    {
-                                        $PropertyFound = $true
-                                    }
-
-                            }
-
-                        If ($PropertyFound -eq $true)
-                            {
-                                # Name already found ... skipping
-                            }
-                        Else
-                            {
-                                # DCR must be updated, changes was detected !
-                                $UpdateDCR = $true
-                                
-                                Write-verbose "SchemaMode = Merge: Adding property $($PropertySource.name)"
-                                $SchemaArrayDCRFormatHash += @{
-                                                                name        = $PropertySource.name
-                                                                type        = $PropertySource.type
-                                                              }
-                            }
-                    }
-#>
-
 
                     #--------------------------------------------------------------------------
                     # Merge: build full payload to create DCR for log ingest (api) to custom logs
@@ -1921,6 +1901,236 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                 $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
                                 invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
                     }
+                }
+
+    #--------------------------------------------------------------------------
+    # DCR was NOT found - we are in Migrate mode
+    #--------------------------------------------------------------------------
+        ElseIf (!($Dcr) -and ($SchemaMode -eq "Migrate") )
+            {
+                $TableUrl = "https://management.azure.com" + $AzLogWorkspaceResourceId + "/tables/$($TableName)_CL?api-version=2021-12-01-preview"
+                $TableStatus = Try
+                                    {
+                                        invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
+                                    }
+                               Catch
+                                    {
+                                    }
+
+
+                If ($TableStatus)
+                    {
+                        $CurrentTableSchema = $TableStatus.properties.schema.columns
+                    }
+
+                # start by building new schema hash, based on existing schema in LogAnalytics custom log table
+                    $SchemaArrayDCRFormatHash = @()
+                    ForEach ($Property in $CurrentTableSchema)
+                        {
+                            $Name = $Property.name
+                            $Type = $Property.type
+
+                            # Add all properties except TimeGenerated as it only exist in tables - not DCRs
+                            If ($Name -ne "TimeGenerated")
+                                {
+                                    $SchemaArrayDCRFormatHash += @{
+                                                                    name        = $name
+                                                                    type        = $type
+                                                                  }
+                                }
+                        }
+
+                #--------------------------------------------------------------------------
+                # build initial payload to create DCR for log ingest (api) to custom logs
+                #--------------------------------------------------------------------------
+
+                    If ($SchemaArrayDCRFormatHash.count -gt 10)
+                        {
+                            $SchemaSourceObjectLimited = $SchemaArrayDCRFormatHash[0..10]
+                        }
+                    Else
+                        {
+                            $SchemaSourceObjectLimited = $SchemaArrayDCRFormatHash
+                        }
+
+
+                    $DcrObject = [pscustomobject][ordered]@{
+                                    properties = @{
+                                                    dataCollectionEndpointId = $DceResourceId
+                                                    streamDeclarations = @{
+                                                                            $StreamName = @{
+	  				                                                                            columns = @(
+                                                                                                            $SchemaSourceObjectLimited
+                                                                                                           )
+                                                                                           }
+                                                                          }
+                                                    destinations = @{
+                                                                        logAnalytics = @(
+                                                                                            @{ 
+                                                                                                workspaceResourceId = $AzLogWorkspaceResourceId
+                                                                                                workspaceId = $LogWorkspaceId
+                                                                                                name = $DcrLogWorkspaceName
+                                                                                             }
+                                                                                        ) 
+
+                                                                    }
+                                                    dataFlows = @(
+                                                                    @{
+                                                                        streams = @(
+                                                                                        $StreamName
+                                                                                   )
+                                                                        destinations = @(
+                                                                                            $DcrLogWorkspaceName
+                                                                                        )
+                                                                        transformKql = $KustoDefault
+                                                                        outputStream = $StreamName
+                                                                     }
+                                                                 )
+                                                    }
+                                    location = $DceLocation
+                                    name = $DcrName
+                                    type = "Microsoft.Insights/dataCollectionRules"
+                                }
+
+                #--------------------------------------------------------------------------
+                # create initial DCR using payload
+                #--------------------------------------------------------------------------
+
+                    Write-Verbose ""
+                    Write-Verbose "Migration - Creating/updating DCR [ $($DcrName) ] with limited payload"
+                    Write-Verbose $DcrResourceId
+
+                    $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
+
+                    $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
+                    invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+        
+                    # sleeping to let API sync up before modifying
+                    Start-Sleep -s 5
+
+                #--------------------------------------------------------------------------
+                # build full payload to create DCR for log ingest (api) to custom logs
+                #--------------------------------------------------------------------------
+                
+                    $DcrObject = [pscustomobject][ordered]@{
+                                    properties = @{
+                                                    dataCollectionEndpointId = $DceResourceId
+                                                    streamDeclarations = @{
+                                                                            $StreamName = @{
+	  				                                                                            columns = @(
+                                                                                                            $SchemaArrayDCRFormatHash
+                                                                                                           )
+                                                                                           }
+                                                                          }
+                                                    destinations = @{
+                                                                        logAnalytics = @(
+                                                                                            @{ 
+                                                                                                workspaceResourceId = $AzLogWorkspaceResourceId
+                                                                                                workspaceId = $LogWorkspaceId
+                                                                                                name = $DcrLogWorkspaceName
+                                                                                             }
+                                                                                        ) 
+
+                                                                    }
+                                                    dataFlows = @(
+                                                                    @{
+                                                                        streams = @(
+                                                                                        $StreamName
+                                                                                   )
+                                                                        destinations = @(
+                                                                                            $DcrLogWorkspaceName
+                                                                                        )
+                                                                        transformKql = $KustoDefault
+                                                                        outputStream = $StreamName
+                                                                     }
+                                                                 )
+                                                    }
+                                    location = $DceLocation
+                                    name = $DcrName
+                                    type = "Microsoft.Insights/dataCollectionRules"
+                                }
+
+                #--------------------------------------------------------------------------
+                # create DCR using payload
+                #--------------------------------------------------------------------------
+
+                    Write-Verbose ""
+                    Write-Verbose "Migration - Updating DCR [ $($DcrName) ] with full payload"
+                    Write-Verbose $DcrResourceId
+
+                    $DcrPayload = $DcrObject | ConvertTo-Json -Depth 20
+
+                    $Uri = "https://management.azure.com" + "$DcrResourceId" + "?api-version=2022-06-01"
+                    invoke-webrequest -UseBasicParsing -Uri $Uri -Method PUT -Body $DcrPayload -Headers $Headers
+
+
+                #--------------------------------------------------------------------------
+                # Continue - sleep 10 sec to let Azure Resource Graph pick up the new DCR
+                #--------------------------------------------------------------------------
+
+                    Write-Verbose ""
+                    Write-Verbose "Waiting 10 sec to let Azure sync up so DCR rule can be retrieved from Azure Resource Graph"
+                    Start-Sleep -Seconds 10
+
+                #--------------------------------------------------------------------------
+                # updating DCR list using Azure Resource Graph due to new DCR was created
+                #--------------------------------------------------------------------------
+
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+
+                #--------------------------------------------------------------------------
+                # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
+                #--------------------------------------------------------------------------
+
+                    If ($AzDcrSetLogIngestApiAppPermissionsDcrLevel -eq $true)
+                        {
+                            $DcrRule = $global:AzDcrDetails | where-Object { $_.name -eq $DcrName }
+                            $DcrRuleId = $DcrRule.id
+
+                            Write-Verbose ""
+                            Write-Verbose "Setting Monitor Metrics Publisher Role permissions on DCR [ $($DcrName) ]"
+
+                            $guid = (new-guid).guid
+                            $monitorMetricsPublisherRoleId = "3913510d-42f4-4e42-8a64-420c390055eb"
+                            $roleDefinitionId = "/subscriptions/$($DcrSubscription)/providers/Microsoft.Authorization/roleDefinitions/$($monitorMetricsPublisherRoleId)"
+                            $roleUrl = "https://management.azure.com" + $DcrRuleId + "/providers/Microsoft.Authorization/roleAssignments/$($Guid)?api-version=2018-07-01"
+                            $roleBody = @{
+                                properties = @{
+                                    roleDefinitionId = $roleDefinitionId
+                                    principalId      = $LogIngestServicePricipleObjectId
+                                    scope            = $DcrRuleId
+                                }
+                            }
+                            $jsonRoleBody = $roleBody | ConvertTo-Json -Depth 6
+
+                            $result = try
+                                {
+                                    invoke-restmethod -UseBasicParsing -Uri $roleUrl -Method PUT -Body $jsonRoleBody -headers $Headers -ErrorAction SilentlyContinue
+                                }
+                            catch
+                                {
+                                }
+
+                            $StatusCode = $result.StatusCode
+                            If ($StatusCode -eq "204")
+                                {
+                                    Write-host "  SUCCESS - data uploaded to LogAnalytics"
+                                }
+                            ElseIf ($StatusCode -eq "RequestEntityTooLarge")
+                                {
+                                    Write-Error "  Error 513 - You are sending too large data - make the dataset smaller"
+                                }
+                            Else
+                                {
+                                    Write-Error $result
+                                }
+
+                            # Sleep 10 sec to let Azure sync up
+                            Write-Verbose ""
+                            Write-Verbose "Waiting 10 sec to let Azure sync up for permissions to replicate"
+                            Start-Sleep -Seconds 10
+                            Write-Verbose ""
+                        }
             }
 }
 
@@ -1948,6 +2158,10 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     SchemaMode = Overwrite
     It will overwrite existing schema in DCR/table – based on source object schema
     This parameter can be useful for separate overflow work
+
+    SchemaMode = Migrate
+    It will create the DCR, based on the schema from the LogAnalytics v1 table schema
+    This parameter is used only as part of migration away from HTTP Data Collector API to Log Ingestion API
 
     .PARAMETER AzLogWorkspaceResourceId
     This is the Loganaytics Resource Id
@@ -2087,7 +2301,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
             [Parameter(mandatory)]
                 [string]$AzLogWorkspaceResourceId,
             [Parameter()]
-                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema
+                [string]$SchemaMode = "Merge",     # Merge = Merge new properties into existing schema, Overwrite = use source object schema, Migrate = It will create the DCR, based on the schema from the LogAnalytics v1 table schema
             [Parameter()]
                 [string]$AzAppId,
             [Parameter()]
@@ -2129,6 +2343,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
         If ($TableStatus)
             {
                 $CurrentTableSchema = $TableStatus.properties.schema.columns
+                $AzureTableSchema   = $TableStatus.properties.schema.standardColumns
             }
 
     #--------------------------------------------------------------------------
@@ -2193,11 +2408,14 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
                         $Name = $Property.name
                         $Type = $Property.type
 
-                        $SchemaArrayLogAnalyticsTableFormatHash += @{
-                                                                      name        = $name
-                                                                      type        = $type
-                                                                      description = ""
-                                                                   }
+                        If ($Name -notin $AzureTableSchema.name)   # exclude standard columns, especially important with migrated from v1 as Computer, TimeGenerated, etc. exist
+                            {
+                                $SchemaArrayLogAnalyticsTableFormatHash += @{
+                                                                              name        = $name
+                                                                              type        = $type
+                                                                              description = ""
+                                                                           }
+                            }
                     }
 
 
@@ -2205,35 +2423,38 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
             $UpdateTable = $False
             ForEach ($PropertySource in $SchemaSourceObject)
                 {
-                    $PropertyFound = $false
-                    ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
+                    If ($PropertySource.name -notin $AzureTableSchema.name)   # exclude standard columns, especially important with migrated from v1 as Computer, TimeGenerated, etc. exist
                         {
-
-                            # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
-                            # If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
-                            
-                            If ($Property.name -eq $PropertySource.name)
+                            $PropertyFound = $false
+                            ForEach ($Property in $SchemaArrayLogAnalyticsTableFormatHash)
                                 {
-                                    $PropertyFound = $true
+
+                                    # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
+                                    # If ( ($Property.name -eq $PropertySource.name) -and ($Property.type -eq $PropertySource.type) )
+                            
+                                    If ($Property.name -eq $PropertySource.name)
+                                        {
+                                            $PropertyFound = $true
+                                        }
+
                                 }
+                        
+                            If ($PropertyFound -eq $true)
+                                {
+                                    # Name already found ... skipping
+                                }
+                            Else
+                                {
+                                    # table must be updated, changes detected in merge-mode
+                                    $UpdateTable = $true
 
-                        }
-
-                    If ($PropertyFound -eq $true)
-                        {
-                            # Name already found ... skipping
-                        }
-                    Else
-                        {
-                            # table must be updated, changes detected in merge-mode
-                            $UpdateTable = $true
-
-                            Write-verbose "SchemaMode = Merge: Adding property $($PropertySource.name)"
-                            $SchemaArrayLogAnalyticsTableFormatHash += @{
-                                                                            name        = $PropertySource.name
-                                                                            type        = $PropertySource.type
-                                                                            description = ""
-                                                                        }
+                                    Write-verbose "SchemaMode = Merge: Adding property $($PropertySource.name)"
+                                    $SchemaArrayLogAnalyticsTableFormatHash += @{
+                                                                                    name        = $PropertySource.name
+                                                                                    type        = $PropertySource.type
+                                                                                    description = ""
+                                                                                }
+                                }
                         }
                 }
 
@@ -2274,12 +2495,14 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 
                             Write-Verbose ""
                             Write-Verbose "Internal error 500 - recreating table"
-
                             invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method DELETE -Headers $Headers
                                 
                             Start-Sleep -Seconds 10
-                                
-                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPutFull
+                            
+                            # Changed to create with merged structure    
+                            # invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPutFull
+                            
+                            invoke-webrequest -UseBasicParsing -Uri $TableUrl -Method PUT -Headers $Headers -Body $TablebodyPut
                         }
                 }
         }
@@ -3711,6 +3934,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
             If ($TableStatus)
                 {
                     $CurrentTableSchema = $TableStatus.properties.schema.columns
+                    $AzureTableSchema   = $TableStatus.properties.schema.standardColumns
 
                     # Checking number of objects in schema
                         $CurrentTableSchemaCount = $CurrentTableSchema.count
@@ -3726,12 +3950,10 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 
                         ForEach ($Entry in $SchemaSourceObject)
                             {
-                                # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
-                                # $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) -and ($_.type -eq $Entry.type) }
-                                
-                                $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) }
+                                $ChkSchemaCurrent = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) }
+                                $ChkSchemaStd = $AzureTableSchema | Where-Object { ($_.name -eq $Entry.name) }
 
-                                If ($ChkSchema -eq $null)
+                                If ( ($ChkSchemaCurrent -eq $null) -and ($ChkSchemaStd -eq $null) )
                                     {
                                         Write-Verbose "  Schema mismatch - property missing (name: $($Entry.name), type: $($Entry.type))"
 
@@ -6083,8 +6305,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDKlYx5tEKYv9LM
-# IlpTN0ZU2jwXWJW2uxBIRQd4ts5sKqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBarDCu6lWaNqZw
+# dOP/fM4XsTMnQrCU0Cudk9Vetql2NqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6192,17 +6414,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIAZmJ6owVcKaBcpVy0ljy80r
-# aB0oHaoRYc+V33igUIp3MA0GCSqGSIb3DQEBAQUABIICACDr/7bBsQi3+NJTSyV7
-# Ax9HxjU+HS1ncX1wSYAHIbOnRlubZmYU+QLJCcW/8su1i2Y5UMcGptPFzMH8yf6E
-# hGQOC/KUcnNnBp282c2vAj8rq3dB4sfV6qwpxTBeFAv2DsFjTet4Es1iOlE2nzRs
-# KdPuORNEmd9MVDkeroKXlOv5i+3NbI2sxV3MYBao7NiA9m+vbEEgf+sD2aZT6ibL
-# BvNXHKveh+FEgUNwO67XaID6RP6MiVzqZADz0G/EphOnqaydEocMnFOxMIL01jSL
-# qjYmYfSji4VSkFbtlxbS3wdZzWi20KvVK8yC+ZCX49DEGSpYWaMgUYIX8cOZiThr
-# 9z4zA4PGJM1qtxdGsI6ZjSwsdT05CesPhf02MJW9g0zs/mJMLcMnZ8HmBNp76MfK
-# WQmwlIkeAG+CEgc+QpO9/kQ289DGzk1EXgY2tuUHjQIpcgxFEM4PEniAQieZ0nX1
-# Az1wH4gezhC/KuNBX1wALXZXjr4BsykAdv0QOlVVv4So+bAH67k2xEbNos5u6AdQ
-# BZMLr+BLBozI5n030v700ldR/C3V1IR5WU0TMLuFBHQ8mjsmVK3G1vXvgleN1WtU
-# /a1yQ3R0UP17aunO9XAulhDtH1iIxg8xoXKYozHBUdv5Y/aDJS83iUIC3+tJhzoI
-# 1uXeDgx8qUiTlLJoX5GalHuw
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEILRDs+OJUKsB9dVd9D7NFfxu
+# Xhr8y6gC+SYaT8Ju0RN1MA0GCSqGSIb3DQEBAQUABIICALGLEJDfeozbKicOrP6k
+# 2eL00Qf8t45wdv0joYmKUZILgNQoqXel86MK8HKxHVTGuRYoOWFPKXW7FxJkXm4i
+# 5sN/+M8L2CWai8fEiao2ZZX2gLQaDJblWcFOl0XUxmmwclxaIOvvEKckuuFY6GIC
+# r6U9hz1Uok2pIxhUvoJXa7FkE2n/J4KxWeRTBTVt0gRi8TSKbbafHN1y2qSkr/eh
+# 6Q5CgLV/VezSIMFzFxp+QyxJaKXq87n7FUrVe10ArMI15iG26KUUk8go43EXxqOt
+# kYqD1F2vb+nqKWReHez28H2jbFMNW62HD5ts845pc8GrpVe1M5rZ+7HDJi6UzzTB
+# Coqjt5/AMsIWSLVSh0PFLPOcH26gadb0tqJwuAZ3o5s6PePxryqJ6Xk/WDO9Hm00
+# R9hyrYgHk1BwANAxLQ4kh/4TBUl9Ir3Ps2FOFSFYxZ1SUKtSA32X4jOFB93BrFIp
+# +cMYd4aBigH367QtCuKsypmA9bw1yUZiedooc/c4MNbErlmOv/OkazrTnkfpRQlg
+# Pz/k1wqDBQE8USeceyVSRhNLPt4uVKKxwXyMFJQIk7cgwgHqP56Lz1gRdErC9kCD
+# GLsf5t5vPNZHthQUU64fVXDP0Br3ktw46+WnkoBBdiJIPIyAsDWuGkvzuYUgsdrB
+# MfPCZp7PSKMskPC8OgT1mVym
 # SIG # End signature block

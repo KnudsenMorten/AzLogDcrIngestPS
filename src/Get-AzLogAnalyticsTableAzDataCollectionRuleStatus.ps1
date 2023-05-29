@@ -164,6 +164,7 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
             If ($TableStatus)
                 {
                     $CurrentTableSchema = $TableStatus.properties.schema.columns
+                    $AzureTableSchema   = $TableStatus.properties.schema.standardColumns
 
                     # Checking number of objects in schema
                         $CurrentTableSchemaCount = $CurrentTableSchema.count
@@ -179,12 +180,10 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 
                         ForEach ($Entry in $SchemaSourceObject)
                             {
-                                # 2023-04-25 - removed so script will only change schema if name is not found - not if property type is different (who wins?)
-                                # $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) -and ($_.type -eq $Entry.type) }
-                                
-                                $ChkSchema = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) }
+                                $ChkSchemaCurrent = $CurrentTableSchema | Where-Object { ($_.name -eq $Entry.name) }
+                                $ChkSchemaStd = $AzureTableSchema | Where-Object { ($_.name -eq $Entry.name) }
 
-                                If ($ChkSchema -eq $null)
+                                If ( ($ChkSchemaCurrent -eq $null) -and ($ChkSchemaStd -eq $null) )
                                     {
                                         Write-Verbose "  Schema mismatch - property missing (name: $($Entry.name), type: $($Entry.type))"
 
@@ -291,8 +290,8 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZAk4zehxFvpzAhUTFQS3EBx8
-# VASggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZuVH/L6X9UuSeLqX+NqeOD/E
+# qByggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -371,16 +370,16 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# GKj1AnLug4LLYmg8K+7oo1486A8wDQYJKoZIhvcNAQEBBQAEggIASOitBZttwANE
-# 5QpBPITq2DUMhMNqCfGd0tHnSkZIo07GkqSS9QyQCquCUOep30KqYQvSi7xyS7+c
-# wi8bcENYBJm6Ihg11aa8uVGCi3WeKK0rXaKUe7MQ4aYXRSR2W2lL54TX/Ybk1jVn
-# iUvTOTKJSsT59FRT1tlvadZ3v3LpCgLcpbpSQsaFEiYgJQ/KdLR/ZES8eD6M9xGm
-# ZE1gI8eifsjHpQ4K2KjMAzG9auKD2iNtWkmPV7xktnQId1wjuBpiHcP8Z7XW4KhL
-# ESrIp/h+gBDCNujOpeRVY9s+h1DB4bN7FSRbS1jUIABBdiJW1hfqhjUP9ZUOsnOD
-# WVIgrov16f04hO1xwklI1HWp1O1q3Spl4SW6kdc21PvROeUhd/xeI8hF7ydpkDSI
-# WdrDcKc8LZ/EZz0G+BBOSvJzdON/3xvJ1sIQUeiWAx8Eu6C8ZsR4CjHBEbHe96IS
-# usjjdidmU+UPGip9pI3FxG3bkGBPkpNGs1RDThwS4CjJK6iWqkgWeDR9YDk0Lw9/
-# rVLZJ21wFGwOJTluV3V52WjiOVd0su1OXU9isKTvAVDOjgZCFZQVQFQkFM0fPbCD
-# 0tVeSYe2i+3D46mW/POzpMO8/VPcDaR1av9LPNhlgc5Apav+8Cm3+bl8pSOlf32c
-# mIKM9Kh21r20cs0yS4IXeFiRj8uplS4=
+# eWVE1t799eFP+TjiGE7QO3bzSRIwDQYJKoZIhvcNAQEBBQAEggIAnMB0SZ/AhDBs
+# 4HG9RRHXyOGXes2Se5FJMa8uCvuVCg5ln7C6rh/RwIsto6vzyDvfxD7rUcSXvIFM
+# 2OKpxXuaAbj5rIahOk5NEKCGflwx3cqXDH2cAUHGDzdO+A+/mjM7Q7TVQKst20ba
+# rjXmf1ljGvNRNNLyKeP91XSfNiNwwtKGXvC3MD5NS9wsM7k71zETwRr+0WnXPGKi
+# WotPidBxjAxJ083bv/Hp7kvRBd1ydhQOsK+UnUTezFyF/OhktdpSbDbvl7ZLSI9W
+# AUAKy4hgyGSH7KH0UzVWRxVFDgLKXuE3su/xc+/sP+yx9JNq3xo0ymTkmTduasUq
+# yH2tHpjLuwIaIcpDRzLrl96+fE03OwCQLnafCPyp5H4/KE7/XArrRWTv/6I454C3
+# hZwgApkawR1eLFOx2d2A/ze61C26eWP22b/sMoHCAVUezdjVSTzDNEM4s8agjM9W
+# MM0vbhoXCwth66gFA/0UXnzTTyFCiYTxFk26Ry9A2Hzh7JbgCacto2g30d8nAhjo
+# 8XqvfLq20ZcmlEO0h7nQU0gJFBbahCB8RvB6iuW4Mzn7HocxiT8hFEZbkDW63C1h
+# mA7Wf8RrFYqOs3Nc5GX7426DWfIqeCCwwBqYGRKSXMDMXcZGFPWw5JCIzfQp6ZwP
+# ruWwBYA+Zu5956txLvSQ1igulQxWPWU=
 # SIG # End signature block
