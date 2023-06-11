@@ -727,6 +727,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 If ($TableStatus)
                     {
                         $CurrentTableSchema = $TableStatus.properties.schema.columns
+                        $AzureTableSchema   = $TableStatus.properties.schema.standardColumns
                     }
 
                 # start by building new schema hash, based on existing schema in LogAnalytics custom log table
@@ -745,6 +746,20 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                                                   }
                                 }
                         }
+                
+                # Add specific Azure column-names, if found as standard Azure columns (migrated from v1)
+                $LAV1StandardColumns = @("Computer","RawData")
+                ForEach ($Column in $LAV1StandardColumns)
+                    {
+                        If ( ($Column -notin $SchemaArrayDCRFormatHash.name) -and ($Column -in $AzureTableSchema.name) )
+                            {
+                                    $SchemaArrayDCRFormatHash += @{
+                                                                    name        = $column
+                                                                    type        = "string"
+                                                                  }
+                            }
+                    }
+
 
                 #--------------------------------------------------------------------------
                 # build initial payload to create DCR for log ingest (api) to custom logs
@@ -943,8 +958,8 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU472iJUv1I6ohrdHIo8lRWRIq
-# HHyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUliaYH+83Z8GO6UZSwF4V3sca
+# 8g+ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -1023,16 +1038,16 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# H4EX04x1rBL9X9RJdwoyEIXnNHEwDQYJKoZIhvcNAQEBBQAEggIAhSZIR6cDiV2D
-# v0W2ETBpkdx0MUC8sFi63xQZFvr1FdxoteIPha4nDGqNWREZyMmTyMShGsDvPFXM
-# C0g0uhVz12VU6YuAdB9ikvYR/A4Vwx88KSYNWmS15RQCFq8eSj59XAK7+aMThAJQ
-# MZ4gTv+GPKgXkm92v4JODFkttfiIKao66ZKuH3WfGEGSIHs5BnS9fUlbX6U5MM2R
-# LmR+DI+umQy8dR8xJxWhBrjM7VuEySUYKZtKwBfC9GUqpWvq4tFXIqeH7DlsfSBL
-# /3o5juwFrRCUIunkyzm4CeAvhstzUP+rQj1zfS3uNIaiXvST329hmjAJ0aU2yczH
-# GL6bzPm2p/z28+tI1vSTFTwVVKs0Zd9XOkV5LUbxwTqBdY/tWwfNS0jKJoHeDJYb
-# olXMzVePkhMLztdJs+SZrmQsQGCPTQZvdhJeH3N8eoHb7BP2LlbwDAbbN2mQ4CvF
-# uim7xZmZ9O7WxeT9UkJrGkjPMNAJ67BMbBbZm1rEbPN2gFSs5mX8XcSXSbc173MX
-# s1AZlr4H/P3eHvuheOLnKi3jSQGC1Qk77Yv77Zaw509lCE9Ha6AxvMmjrPfEay7+
-# EYZeJkGSuwBnXUSwZk0vyuwBy2U96EL7/eGiq7YyrytucPsXlo3dmou9vUFwcK4V
-# 0g2sAabqx3MV78dVZr/0DX2y5OC/mY8=
+# wfaDuK1NaYR6DWHQkqAhLP57v5MwDQYJKoZIhvcNAQEBBQAEggIAELD0jrIv3i5P
+# 1vRBHRwnFFi1C4RfPt+7tLnpU8Heq5Exb3tnhEJ7OWG48a6txQW2vPbH0mOEdKsi
+# Y8ALrfLhyEJj71bLVkenW9GdOcgvrmGAsV8c6E9wc8sBFjfM4kuvgSGAniHAo7bv
+# /kBtRwGmtyBYM5VnffjfGLSWZp1hWqqPqrIZ5XgTokg/sp1SnRRTr7A8dC4q5Qgp
+# Qcy7DSE/MhbcFTCT9vB+s3g0OU3CS/CA1/bxppJVoKhw8BJ+E9pwRYcVPpCgaW1i
+# Qtooks/ITJ4qSOIl62AQInnYyE/ii5aEPSlg/wxvmKKMFOz/7stujcB4fQok3vHI
+# Zcd+SjPUMymHd7OfH7jozoP07CAZ16h8bi92AcYGktlt+xzjcTh69Jb4HI+FMbq+
+# 9qO9jC13UzkoGnbyflcHICEBAo7hiCTxdNPbEONYgtBj68kq8b5hQxg9txFstl/B
+# UF01dXUnRj+5i4F5bfoWC8W9VDNwJewXai10j4vfcWCHL1Fe5F0eWMnV6IuPtgcB
+# XBCRL3ifFQsmJr/og7SE/n0H+JJkMMbi7dFrhFcdp50JrKm7Kb0JaOwIpl9ZOkGr
+# ooG+CaTAF8Um7buIzawItVVuNrMb6f2P9myulM7XNdf94r2D/tfG1gT3amfzNlbK
+# SzyVyRNN2ojwzLkSh8jJdjmpo9R+2HY=
 # SIG # End signature block

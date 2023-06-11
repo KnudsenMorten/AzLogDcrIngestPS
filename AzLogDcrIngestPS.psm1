@@ -1921,6 +1921,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                 If ($TableStatus)
                     {
                         $CurrentTableSchema = $TableStatus.properties.schema.columns
+                        $AzureTableSchema   = $TableStatus.properties.schema.standardColumns
                     }
 
                 # start by building new schema hash, based on existing schema in LogAnalytics custom log table
@@ -1939,6 +1940,20 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog
                                                                   }
                                 }
                         }
+                
+                # Add specific Azure column-names, if found as standard Azure columns (migrated from v1)
+                $LAV1StandardColumns = @("Computer","RawData")
+                ForEach ($Column in $LAV1StandardColumns)
+                    {
+                        If ( ($Column -notin $SchemaArrayDCRFormatHash.name) -and ($Column -in $AzureTableSchema.name) )
+                            {
+                                    $SchemaArrayDCRFormatHash += @{
+                                                                    name        = $column
+                                                                    type        = "string"
+                                                                  }
+                            }
+                    }
+
 
                 #--------------------------------------------------------------------------
                 # build initial payload to create DCR for log ingest (api) to custom logs
@@ -2399,7 +2414,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     #-----------------------------------------------------------------------------------------------
     # SchemaMode = Merge - Merging new properties into existing schema
     #-----------------------------------------------------------------------------------------------
-    If ($SchemaMode -eq "Merge")
+    If ( ($SchemaMode -eq "Merge") -or ($SchemaMode -eq "Migrate") )
         {
             # start by building new schema hash, based on existing schema in LogAnalytics custom log table
                 $SchemaArrayLogAnalyticsTableFormatHash = @()
@@ -3940,11 +3955,13 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                         $CurrentTableSchemaCount = $CurrentTableSchema.count
                         $SchemaSourceObjectCount = ($SchemaSourceObject.count) + 1  # add 1 because TimeGenerated will automatically be added
 
+<#
                         If ($SchemaSourceObjectCount -gt $CurrentTableSchemaCount)
                             {
                                Write-Verbose "  Schema mismatch - Schema source object contains more properties than defined in current schema"
                                $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                             }
+#>
 
                     # Verify LogAnalytics table schema matches source object ($SchemaSourceObject) - otherwise set flag to update schema in LA/DCR
 
@@ -6305,8 +6322,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBarDCu6lWaNqZw
-# dOP/fM4XsTMnQrCU0Cudk9Vetql2NqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDN028yx0F2xcus
+# m7qvv1DGjanZCYlhYL3KoOj0tj/g06CCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6414,17 +6431,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEILRDs+OJUKsB9dVd9D7NFfxu
-# Xhr8y6gC+SYaT8Ju0RN1MA0GCSqGSIb3DQEBAQUABIICALGLEJDfeozbKicOrP6k
-# 2eL00Qf8t45wdv0joYmKUZILgNQoqXel86MK8HKxHVTGuRYoOWFPKXW7FxJkXm4i
-# 5sN/+M8L2CWai8fEiao2ZZX2gLQaDJblWcFOl0XUxmmwclxaIOvvEKckuuFY6GIC
-# r6U9hz1Uok2pIxhUvoJXa7FkE2n/J4KxWeRTBTVt0gRi8TSKbbafHN1y2qSkr/eh
-# 6Q5CgLV/VezSIMFzFxp+QyxJaKXq87n7FUrVe10ArMI15iG26KUUk8go43EXxqOt
-# kYqD1F2vb+nqKWReHez28H2jbFMNW62HD5ts845pc8GrpVe1M5rZ+7HDJi6UzzTB
-# Coqjt5/AMsIWSLVSh0PFLPOcH26gadb0tqJwuAZ3o5s6PePxryqJ6Xk/WDO9Hm00
-# R9hyrYgHk1BwANAxLQ4kh/4TBUl9Ir3Ps2FOFSFYxZ1SUKtSA32X4jOFB93BrFIp
-# +cMYd4aBigH367QtCuKsypmA9bw1yUZiedooc/c4MNbErlmOv/OkazrTnkfpRQlg
-# Pz/k1wqDBQE8USeceyVSRhNLPt4uVKKxwXyMFJQIk7cgwgHqP56Lz1gRdErC9kCD
-# GLsf5t5vPNZHthQUU64fVXDP0Br3ktw46+WnkoBBdiJIPIyAsDWuGkvzuYUgsdrB
-# MfPCZp7PSKMskPC8OgT1mVym
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIJ+M3jtR5bGRcr+X4rgahyZG
+# qcEdaFMuGLT+E41dox3zMA0GCSqGSIb3DQEBAQUABIICABLOaRaL2MqqN5F91dJh
+# oXKqYEhkDBDchoRTHWMi1QF+06QozNDQ4rQ72xTXDSedpCoDPfOS67MBHt2gE+5Q
+# fRyy/c6hPG/XQz0Ju05Rr1KDX76Llna5ozOfM5SA1ufL9fom9L2c7M1vGfyRUK/5
+# CA3bMDRkDfhLiE0njfJ0DPJ2npIk1lcEDMCJTIjGKpuI9Wpk/TKLV5vWIY8pC41T
+# tyfgrmGfJvFNVjN5tlDdyxDQEr2iIkwJn+UolqJWuBMZOlQ0ha07T8sUnND1r1ws
+# 3GD5JT6V2UvGgcJajW8sfTLOnbAUM4vK3HkVYJ2QTKXevJJ1R/wvkCRg512sMWLh
+# qwTbDyOwuMgigjK1mRH7LDou71udDCVO6Y149sSzNozyJz07kMVtRi6K9FyBTanp
+# c4Ssb41y66t2ctylqBMCE3TxlJE9N605mhSoYjLdH9HcQXSoNVOd+Jxx0PoQDus8
+# CXTFlGVeYYGwGndP3404IEh7ltgKL0KpRBEhybePiATAhmvkXGAV3oRQSlWjFEvK
+# KU87XNFL42sKg8dOxkppqWOzbd2Gd7AnCbpdV13WZ8/vg0D5LB7u7/WKUEn08CwZ
+# jPY2D5wCHm7dIO5hI5jPCy3G6PgdwNfCwKJO9UORX1bX9AsKkZi68rlijTo3EEgi
+# P2ZohXSJ/0SDOgk8At0UA5Le
 # SIG # End signature block

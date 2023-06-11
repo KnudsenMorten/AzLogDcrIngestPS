@@ -170,11 +170,13 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
                         $CurrentTableSchemaCount = $CurrentTableSchema.count
                         $SchemaSourceObjectCount = ($SchemaSourceObject.count) + 1  # add 1 because TimeGenerated will automatically be added
 
+<#
                         If ($SchemaSourceObjectCount -gt $CurrentTableSchemaCount)
                             {
                                Write-Verbose "  Schema mismatch - Schema source object contains more properties than defined in current schema"
                                $AzDcrDceTableCustomLogCreateUpdate = $true     # $True/$False - typically used when updates to schema detected
                             }
+#>
 
                     # Verify LogAnalytics table schema matches source object ($SchemaSourceObject) - otherwise set flag to update schema in LA/DCR
 
@@ -290,8 +292,8 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZuVH/L6X9UuSeLqX+NqeOD/E
-# qByggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+cQjLg883LysiHWOFMy6UXrR
+# mI2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -370,16 +372,16 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# eWVE1t799eFP+TjiGE7QO3bzSRIwDQYJKoZIhvcNAQEBBQAEggIAnMB0SZ/AhDBs
-# 4HG9RRHXyOGXes2Se5FJMa8uCvuVCg5ln7C6rh/RwIsto6vzyDvfxD7rUcSXvIFM
-# 2OKpxXuaAbj5rIahOk5NEKCGflwx3cqXDH2cAUHGDzdO+A+/mjM7Q7TVQKst20ba
-# rjXmf1ljGvNRNNLyKeP91XSfNiNwwtKGXvC3MD5NS9wsM7k71zETwRr+0WnXPGKi
-# WotPidBxjAxJ083bv/Hp7kvRBd1ydhQOsK+UnUTezFyF/OhktdpSbDbvl7ZLSI9W
-# AUAKy4hgyGSH7KH0UzVWRxVFDgLKXuE3su/xc+/sP+yx9JNq3xo0ymTkmTduasUq
-# yH2tHpjLuwIaIcpDRzLrl96+fE03OwCQLnafCPyp5H4/KE7/XArrRWTv/6I454C3
-# hZwgApkawR1eLFOx2d2A/ze61C26eWP22b/sMoHCAVUezdjVSTzDNEM4s8agjM9W
-# MM0vbhoXCwth66gFA/0UXnzTTyFCiYTxFk26Ry9A2Hzh7JbgCacto2g30d8nAhjo
-# 8XqvfLq20ZcmlEO0h7nQU0gJFBbahCB8RvB6iuW4Mzn7HocxiT8hFEZbkDW63C1h
-# mA7Wf8RrFYqOs3Nc5GX7426DWfIqeCCwwBqYGRKSXMDMXcZGFPWw5JCIzfQp6ZwP
-# ruWwBYA+Zu5956txLvSQ1igulQxWPWU=
+# 9BXDPAIJgb23BX7eRYLYcJk4ahEwDQYJKoZIhvcNAQEBBQAEggIAprM1fuOoZHOS
+# o/8XzLsK+gL32rEeam2gvPlQTw8QnoJUNCY5t1/DNYF07OCgfN61IBtX0IH8BNb2
+# OILZM24b43P0Id4dIO0eBZ67kYCmvUnzSc5INPm+i8WJLktIzZRqW8JtlhIU3FN1
+# vA8B/LCIqR8ur0EvwNzLZXX3QcV21GgJXIrY3NIteH3OkXiPB4mTU8LYzbSoCqxk
+# /kzsgKdSjdzK+IQWH5DfqK86IV8ysf0wy6qmexxgREYBdGgxQFKsH2AwOVaJT1Qy
+# kOTkqORZe0IOpnmp8ZlrD6w0WvK7v+dnekEqLADshwaYLVmZ4CtTKfCMZZLYiEg4
+# b54iZGj0txyN1ni/NXnE8YsyeSGOCvYDNn6V2cCsm1SbkRThsuDwMXdfyyAAvm3n
+# 4PQOZ8xFS0+Fb85v29eFCmAhWp1VAhJm5+MASD0R/G+lJDbsF8hrQBMuW3fl9ERW
+# zLq3OGCj5t+o3S8su9M3sdsFGBYtbOgDE9ks/GwTRo/RajmK6sE/vKHtoj43AgfK
+# 5Y+Jsli/V8r7F1qdJn1KtpGjf6s49TJ/LhULe4qjfy1i5ipreR0H6WaWLcvClVH8
+# r7qwRKm8Bi3SPPKA6jo86HOTfkQnjJV0E49FUIydgMQxqw6t/yz0L53vDJWYWM5D
+# YkboBper63yVKM5tlgJ3YcQTaif1whY=
 # SIG # End signature block

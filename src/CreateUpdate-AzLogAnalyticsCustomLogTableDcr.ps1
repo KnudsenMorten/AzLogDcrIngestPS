@@ -262,7 +262,7 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
     #-----------------------------------------------------------------------------------------------
     # SchemaMode = Merge - Merging new properties into existing schema
     #-----------------------------------------------------------------------------------------------
-    If ($SchemaMode -eq "Merge")
+    If ( ($SchemaMode -eq "Merge") -or ($SchemaMode -eq "Migrate") )
         {
             # start by building new schema hash, based on existing schema in LogAnalytics custom log table
                 $SchemaArrayLogAnalyticsTableFormatHash = @()
@@ -376,8 +376,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUD7kN6Icq4Ei4BgVPoeHelA65
-# 5WOggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJtNTOxdCa3c3bt8qcCd28S4G
+# Vr2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -456,16 +456,16 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# iBZyla2rFJ6qD2Ri9yKRu4ziTvowDQYJKoZIhvcNAQEBBQAEggIAVsoeEBtoX/nn
-# 16C+s7tJCApvfEVw1H2yIGGcmJHhSSNx4tSX0NX11Gonc3FhM/LCS/7QNU/amHRq
-# YJEqBxJprv6Mr2LOh7adaqktv6KUfNYjY8e/ama2/QbhWlGgDoVYHQR2dkTlvNkJ
-# fX14nr5d4rJD7fBQES1v2b2DPbpMwQ4wHkb6kbo9doCNdFGxPa2fWUIRahEPp/gn
-# KHvNyx7L6P1EUuEUMNobTq0kYXzI5qycrS0ynRgvalXF7aiboaJFUEanVuuQ16yf
-# Fr5eyhLdiwG/lJbNl2bISRzGX7+nfvA8LeZoNFdllBgxC7EiMLpV+vxIB7kF9q2v
-# GrRKBKv+xhVR61TVw0p7xEmk+1CXqY8CF4jkHmDQkCEwljOqPxstxtrNw1cE+dbV
-# /LuXXY6wCZ62Vx578bjRxjkhnBZjwvQ8yWXIeVgmtiGBs2AQQgh3aLQwmKAC7V/c
-# 4mXKH3kE4JlvPVfevla7S1sZvCSFdHRaegGjHQdkmSR3s7yZkepwqSnlNluDm0Jw
-# VycEbE/33Xqwm2FKY8qPPGRVWJ8eu0gEes76zFOsqnjSlCITEeZhNn7Y90rGrms6
-# ErHIP8QW32Yau2rAwlU4KN4DhbLOHOecMzyLZ2+MqDnfpH870V1na+6Fc9RLX3fB
-# t/QBj0LiQ4QAHcfMmu0xkRG0K/rXKNw=
+# KZJl2lfPpLgarml+oPtwvkSlRGEwDQYJKoZIhvcNAQEBBQAEggIAy6XRCdlmDGES
+# yPzALWB4f/4HbiNmGh1h3zR544qAxMGGBFwdw7KaJkgzmCvGMXT79fP1OeT5gT8S
+# arLPz4nngAG2GwCxH4hwVlFUznoY1VA7kc2cTAOurIDzK9fskWM7lD1wpIynmbj7
+# sgESRXU79fxKWlRaTTt1MqFrQSa5mn8paev7RLofdJuPJ534rb6emSAq6wXfz3Gr
+# 9CGvQpa19/NfbS1A1/S1pZ9S7Pxhm5kB2/0VQ0WaoYw3ka4ysXquvXCiDzgs0BxR
+# zVm0czg35CNyLozHwJfXxNdCudXyp/v45NTznofvzWU8spSer4tUEAZ+SD8k8w03
+# 4sjdP+KSZWBYyg8uSOjD3upr1V1nyDCXWTu0vD4Tirgo9XO4kL24XAHP5/C+hw61
+# f1k57zEkc1meDQcVWPfSNK27/o4Ruv5RvgGtRJ+yoEQYEr5ho1KnHT5Us6MlR+pd
+# Iz8OVv4bgLCs5i/PRq09WJirs+WDYvcDl3wBjdkXpH8xGJR5l88ujElt/l7/v61h
+# KLU65ID3jw3AkTpCzUBm0FlJXFWnLniem+3tziwFpARz4yAc3Wadl62kCnpeBdxh
+# k+kk/JJkIKx2lgkYLudno2rs3Mi6oLm7WDzP4fsl35ROVMuv09AQSlsXeszwp63d
+# CF7VpcRbwIhpWX1tzs8rpHiMPFHnAhA=
 # SIG # End signature block
