@@ -54,6 +54,8 @@ Alternatively, I have built a cool showcase - [ClientInspector (v2)](https://git
 
 [ClientInspector](https://github.com/KnudsenMorten/ClientInspectorV2) can bring back data from your clients using **Azure Log Ingestion Pipeline**, **Azure Data Collection Rules**, **Azure LogAnalytics**; view them with **Azure Monitor & Azure Dashboards** - and get "drift-alerts" using **Microsoft Sentinel**. it includes tons of great information and dashboards to see if you are in control with your clients - or something is drifting from desired state.
 
+
+
 ## Videos
 I have [provided 4 demos](#how-to-get-started-) for you to try, but if you want to see it first using video, check out these videos:
 
@@ -66,6 +68,19 @@ I have [provided 4 demos](#how-to-get-started-) for you to try, but if you want 
 [Video 3m 01s - Dashboards](https://youtu.be/0MKPgzvDNRk)  
 [Video 0m 48s - Sample usage of data - lookup against Lenovo warranty db](https://youtu.be/3ZDyTwiLU0w)  
 [Video 7m 25s - Deployment via ClientInspector DeploymentKit](https://youtu.be/_RNlSqRcetg) 
+
+
+
+**Migration videos**
+
+If you are looking for videos on how to migrate your LogAnalytics tables from Classic (v1) to Data Collector Rule-based (v2) video’s – to replace HTTP Data Collector API (v1) with Log Ingestion API (v2), you can find them here:
+
+* [Side-by-Side Migration (new table, new naming convention)](https://www.youtube.com/watch?v=vA-90GOxu2Q)
+* [Re-use existing table – Migrate to DCR based format](https://www.youtube.com/watch?v=2OyXo9-8Fvw)
+
+
+
+
 
 ## Download latest version
 You can download latest version of AzLogDcrIngestPS here - or install from Powershell Gallery:
@@ -439,6 +454,11 @@ You can modify the target table and workspace by modifying the DCR without any c
 
 ### Migration
 To migrate solutions from the Data Collector API, see [Migrate from Data Collector API and custom fields-enabled tables to DCR-based custom logs](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/custom-logs-migrate).
+
+If you are looking for videos on how to migrate your LogAnalytics tables from Classic (v1) to Data Collector Rule-based (v2) video’s – to replace HTTP Data Collector API (v1) with Log Ingestion API (v2), you can find them here:
+
+* [Side-by-Side Migration (new table, new naming convention)](https://www.youtube.com/watch?v=vA-90GOxu2Q)
+* [Re-use existing table – Migrate to DCR based format](https://www.youtube.com/watch?v=2OyXo9-8Fvw)
 
 ## Supported tables
 
@@ -1263,24 +1283,19 @@ VERBOSE: received 110861-byte response of content type application/json; charset
 
 <br>
 
-# Migration of LogAnalytics v1 table to v2-format (keep existing)
+# Migration of LogAnalytics v1 table to v2-format
 
-I have provided a sample migration / demo script, which can be found [here](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/migration/LogAnalyticsMigationSample.ps1)
+I have provided 2 sample migration / demo script, which can be found here:
 
-Script includes both setting up a sample table in v1-format and the steps to migrate to v2-format (start line 152).
+*  [Side-by-Side](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/migration/LogAnalytics-Migration%20-%20Side-by-Side.ps1)
+*  [Re-use existing table](https://raw.githubusercontent.com/KnudsenMorten/AzLogDcrIngestPS/main/migration/LogAnalytics-Migration%20-%20Re-use%20existing%20table.ps1 )
 
 
 
-The steps to migrate your LogAnalytics table to v2-mode, while keeping the existing table, are:
+If you are looking for videos on how to migrate your LogAnalytics tables from Classic (v1) to Data Collector Rule-based (v2) video’s – to replace HTTP Data Collector API (v1) with Log Ingestion API (v2), you can find them here:
 
-* Define variables for deployment of environment + connectivity (step 1+2, lines 156-206)
-* Deployment of the necessary infrastructure (DCE, LogAnalytics workspace, DCR resource group, permissions, etc.)  - step 3, lines 210-696
-* Variables for targeting (step 4, lines 703-722)
-* Migrate the table to DCR-based format - from ClassicStyle-format - step 5A, lines 729-745
-* Create the DCR with the schema using AzLogDcrIngestPS in Migrate-mode - step 5B, lines 750-822
-* Sample upload of data - step 6-10 - line 823-895
-* Optional: Add necessary transformations - step 11 - lines 907-913
-  * NOTE: Wait for approx 30 min before uploading the sample data in step 12
+* [Side-by-Side Migration (new table, new naming convention)](https://www.youtube.com/watch?v=vA-90GOxu2Q)
+* [Re-use existing table – Migrate to DCR based format](https://www.youtube.com/watch?v=2OyXo9-8Fvw)
 
 
 
@@ -4923,9 +4938,9 @@ Else
 ​    # Upload data to LogAnalytics using DCR / DCE / Log Ingestion API
 ​    #-----------------------------------------------------------------------------------------------
 ​    
-    Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
-                                                        -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-    
+​    Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
+​                                                        -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+​    
     #-------------------------------------------------------------------------------------------
     # Output
     #-------------------------------------------------------------------------------------------
