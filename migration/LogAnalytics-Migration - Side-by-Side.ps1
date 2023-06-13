@@ -1,13 +1,14 @@
 ﻿#############################################################################
 # Azure LogAnalytics Migration Demo
 # ------------------------------------
-# Demo #2 - Migration of existing table to V2-format
+# Demo #1 - Array in V1 becomes string, Array in V2 becomes Dynamic
+#           Side-by-Side
 
 # Prepared by Morten Knudsen, Microsoft MVP (https://mortenknudsen.net)
 #############################################################################
 
     # Demo number for custom table
-    $DemoNumber                     = (Get-Random -Maximum 10000)
+    $DemoNumber = (Get-Random -Maximum 10000)
 
     # default
     $UserLoggedOnRaw                = Get-Process -IncludeUserName -Name explorer | Select-Object UserName -Unique
@@ -110,11 +111,11 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
     #----------------------------------------------------------------------------
     # (1) Variables
     #----------------------------------------------------------------------------
-        $TenantId                       = "f0fa27a0-8e7c-4f63-9a77-ec94786b7c9e"
+        $TenantId                       = "xxxx"
 
         # Destination
-        $LogAnalyticsWorkspaceId        = "fff35227-7f8d-45ab-9670-c87ed13a36ee"
-        $LogAnalyticsWorkspaceAccessKey = "4F4CSeQ8McSO3tLBrNGwNtaci5lvsKNul9cVcDERCVU1fcTh+8qYHS85Dt/Cm5fHVLfECXY82vbPQTqVctFVDA=="
+        $LogAnalyticsWorkspaceId        = "xxxx"
+        $LogAnalyticsWorkspaceAccessKey = "xxxx"
         $LogAnalyticsCustomTable        = "V1CustomTable" + $DemoNumber
 
     #----------------------------------------------------------------------------
@@ -125,17 +126,8 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
     #----------------------------------------
     # (3) Data to Upload (sample)
     #----------------------------------------
-
-        $DataVariable = @()
-
-        $item = New-Object PSObject
-        $item | Add-Member -type NoteProperty -Name 'Computer' -Value $Env:ComputerName
-        $item | Add-Member -type NoteProperty -Name 'ColumnString' -Value 'StringText'
-        $item | Add-Member -type NoteProperty -Name 'ColumnDate' -Value (Get-date)
-        $item | Add-Member -type NoteProperty -Name 'ColumnNumber' -Value (Get-random -max 10000)
-       # $item | Add-Member -type NoteProperty -Name 'ColumnStringExtra' -Value "Extra"
-
-        $DataVariable += $item
+        # Build DataVariable
+        $DataVariable = Get-MPComputerStatus
 
     #----------------------------------------
     # (4) Upload to LogAnalytics
@@ -143,7 +135,7 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
         $TimeStampField   = "" 
         $json = $DataVariable | ConvertTo-Json -Compress
 
-        Write-host "Sending data to custom table (v1): $($LogAnalyticsCustomTable)"
+        Write-host "Sending data to v1 custom table: $($LogAnalyticsCustomTable)"
         AzLogAnalytics-V1-Post-Data -customerId $LogAnalyticsWorkspaceId -sharedKey $LogAnalyticsWorkspaceAccessKey -body ([System.Text.Encoding]::UTF8.GetBytes($json)) -logType $LogAnalyticsCustomTable
 
 #endregion
@@ -156,15 +148,14 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
     #----------------------------------------------------------------------------
     # (1) Variables (Prereq, setup environment)
     #----------------------------------------------------------------------------
-        $TenantId                              = "xxxxxx"
+        $TenantId                              = "xxxxx"
 
         # Azure App
         $AzureAppName                          = "DemoMigration - Automation - Log-Ingestion"
         $AzAppSecretName                       = "Secret used for Log-Ingestion"
-        $AzAppSecret                           = "xxxxxxx"
 
         # Azure LogAnalytics
-        $LogAnalyticsSubscription              = "xxxxxx"
+        $LogAnalyticsSubscription              = "xxxx"
         $LogAnalyticsResourceGroup             = "rg-loganalyticsv2demo"
         $LoganalyticsWorkspaceName             = "log-loganalyticsv2-migration-demo"
         $LoganalyticsLocation                  = "westeurope"
@@ -417,8 +408,8 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
         # Sleeping 1 min to let Azure AD replicate before doing delegation
         #-------------------------------------------------------------------------------------
 
-            Write-Output "Sleeping 1 min to let Azure AD replicate before doing delegation"
-            Start-Sleep -s 60
+           # Write-Output "Sleeping 1 min to let Azure AD replicate before doing delegation"
+           # Start-Sleep -s 60
 
         #-------------------------------------------------------------------------------------
         # Delegation permissions for Azure App on LogAnalytics workspace
@@ -695,25 +686,26 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
                 }
         #endregion
 
+pause
 
 
     #-------------------------------------------------------------------------------------------
-    # (4) Variables - LogAnalytics v2-format
+    # (4) Variables - Send data to LogAnalytics v2
     #-------------------------------------------------------------------------------------------
 
-        $TableName                                    = "V1CustomTable" + $DemoNumber
+        $TableName                                    = "V2CustomTable" + $DemoNumber
 
-        $TenantId                                     = "xxxxxxx" 
-        $LogIngestAppId                               = "xxxxxxx" 
-        $LogIngestAppSecret                           = "xxxxxxx" 
+        $TenantId                                     = "xxx" 
+        $LogIngestAppId                               = "xxxx" 
+        $LogIngestAppSecret                           = "xxxx" 
 
         $DceName                                      = "dce-log-loganalyticsv2-migration-demo" 
         $AzDcrResourceGroup                           = "rg-dcr-log-loganalyticsv2-migration-demo" 
 
-        $LogAnalyticsWorkspaceResourceId              = "/subscriptions/xxxxxxxxxxx/resourceGroups/rg-loganalyticsv2demo/providers/Microsoft.OperationalInsights/workspaces/log-loganalyticsv2-migration-demo" 
+        $LogAnalyticsWorkspaceResourceId              = "/subscriptions/xxxx/resourceGroups/rg-loganalyticsv2demo/providers/Microsoft.OperationalInsights/workspaces/log-loganalyticsv2-migration-demo" 
 
         $AzDcrSetLogIngestApiAppPermissionsDcrLevel   = $false
-        $AzDcrLogIngestServicePrincipalObjectId       = "xxxxx" 
+        $AzDcrLogIngestServicePrincipalObjectId       = "xxxx" 
 
         $AzLogDcrTableCreateFromReferenceMachine      = @()
         $AzLogDcrTableCreateFromAnyMachine            = $true
@@ -721,203 +713,95 @@ Function AzLogAnalytics-V1-Post-Data ($customerId, $sharedKey, $body, $logType)
 
         $Verbose                                      = $true
 
-pause
 
     #-------------------------------------------------------------------------------------------
-    # (5A) Migration of existing table to V2-format (DCR-based)
+    # (5) Get info about DCEs & DCRs
     #-------------------------------------------------------------------------------------------
 
-        $Headers = Get-AzAccessTokenManagement -AzAppId $LogIngestAppId `
-                                               -AzAppSecret $LogIngestAppSecret `
-                                               -TenantId $TenantId -Verbose:$Verbose
-
-        # Get existing LA table info
-            $TableUrl = "https://management.azure.com" + $LogAnalyticsWorkspaceResourceId + "/tables?api-version=2021-12-01-preview"
-            $tbl = invoke-restmethod -UseBasicParsing -Uri $TableUrl -Method GET -Headers $Headers
-            $res = $tbl.value.properties | Where-Object { $_.schema.name -like "*$($DemoNumber)*" }
-            $res.schema
-            $res.schema.columns
-            pause
-
-        # Migrate table to v2 (DCR-based)
-            $Uri         = "https://management.azure.com" + $LogAnalyticsWorkspaceResourceId + "/tables/$($TableName)_CL/migrate?api-version=2021-12-01-preview"
-            $Response    = invoke-webrequest -UseBasicParsing -Method POST -Uri $Uri -Headers $Headers
-
-    #-------------------------------------------------------------------------------------------
-    # (5B) Create a DCR based on existing LA table schema in Migrate-mode
-    #-------------------------------------------------------------------------------------------
-
-            #----------------------------------------
-            # (M1) Data to Upload (sample)
-            #----------------------------------------
-                $DataVariable = @()
-
-                $item = New-Object PSObject
-                $item | Add-Member -type NoteProperty -Name 'Computer' -Value $Env:ComputerName
-                $item | Add-Member -type NoteProperty -Name 'ColumnString' -Value 'StringText'
-                $item | Add-Member -type NoteProperty -Name 'ColumnDate' -Value (Get-date)
-                $item | Add-Member -type NoteProperty -Name 'ColumnNumber' -Value (Get-random -max 10000)
-                #$item | Add-Member -type NoteProperty -Name 'ColumnStringExtra' -Value "Extra"
-
-                $DataVariable += $item
-
-
-            #-------------------------------------------------------------------------------------------
-            # (M2) Get info about DCEs & DCRs
-            #-------------------------------------------------------------------------------------------
-
-                # building global variable with all DCEs, which can be viewed by Log Ingestion app
-                $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+        # building global variable with all DCEs, which can be viewed by Log Ingestion app
+        $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId `
+                                                -AzAppSecret $LogIngestAppSecret `
+                                                -TenantId $TenantId `
+                                                -Verbose:$Verbose
     
-                # building global variable with all DCRs, which can be viewed by Log Ingestion app
-                $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+        # building global variable with all DCRs, which can be viewed by Log Ingestion app
+        $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId `
+                                                -AzAppSecret $LogIngestAppSecret `
+                                                -TenantId $TenantId `
+                                                -Verbose:$Verbose
 
-
-            #----------------------------------------
-            # (M3) Data Manipulation
-            #----------------------------------------
-
-                If ($DataVariable)
-                    {
-                        # add CollectionTime to existing array
-                        $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
-
-                        # add Computer, ComputerFqdn & UserLoggedOn info to existing array
-                        $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name ComputerFqdn -Column2Data $DnsName -Column3Name UserLoggedOn -Column3Data $UserLoggedOn -Verbose:$Verbose
-
-                        # Validating/fixing schema data structure of source data
-                        $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
-
-                        # Aligning data structure with schema (requirement for DCR)
-                        $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
-                }
-
-
-            #-------------------------------------------------------------------------------------------
-            # (M4) Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
-            #-------------------------------------------------------------------------------------------
-
-                If ($DataVariable)
-                    {
-
-                        $ResultMgmt = CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaMode Migrate `
-                                                                            -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose `
-                                                                            -DceName $DceName -DcrName $DcrName -DcrResourceGroup $AzDcrResourceGroup -TableName $TableName -Data $DataVariable `
-                                                                            -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
-                                                                            -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                            -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
-                                                                            -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
-                    }
-
-
-            #-------------------------------------------------------------------------------------------
-            # (M5) Get info about infrastructure
-            #-------------------------------------------------------------------------------------------
-
-                # building global variable with all DCEs, which can be viewed by Log Ingestion app
-                $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-    
-                # building global variable with all DCRs, which can be viewed by Log Ingestion app
-                $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
-
-
-    ###################################################################
 
     #----------------------------------------
     # (6) Data to Upload (sample)
     #----------------------------------------
-        $DataVariable = @()
-        [double]$RandomNumber = (Get-random -max 10000)
-        $item = New-Object PSObject
-        $item | Add-Member -type NoteProperty -Name 'Computer' -Value $Env:ComputerName
-        $item | Add-Member -type NoteProperty -Name 'ColumnString' -Value 'StringText'
-        $item | Add-Member -type NoteProperty -Name 'ColumnDate' -Value (Get-date)
-        $item | Add-Member -type NoteProperty -Name 'ColumnNumber' -Value $RandomNumber
-        #$item | Add-Member -type NoteProperty -Name 'ColumnStringExtra' -Value "Extra"
-
-        $DataVariable += $item
-
-
-    #-------------------------------------------------------------------------------------------
-    # (7) Get info about DCEs & DCRs
-    #-------------------------------------------------------------------------------------------
-
-        # building global variable with all DCEs, which can be viewed by Log Ingestion app
-        $global:AzDceDetails = Get-AzDceListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-    
-        # building global variable with all DCRs, which can be viewed by Log Ingestion app
-        $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-
+        # Build DataVariable
+        $DataVariable = Get-MPComputerStatus
 
     #----------------------------------------
-    # (8) Data Manipulation
+    # (7) Data Manipulation
     #----------------------------------------
 
         If ($DataVariable)
             {
                 # add CollectionTime to existing array
-                $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable -Verbose:$Verbose
+                $DataVariable = Add-CollectionTimeToAllEntriesInArray -Data $DataVariable `
+                                                                      -Verbose:$Verbose
 
                 # add Computer, ComputerFqdn & UserLoggedOn info to existing array
-                $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable -Column1Name Computer -Column1Data $Env:ComputerName -Column2Name ComputerFqdn -Column2Data $DnsName -Column3Name UserLoggedOn -Column3Data $UserLoggedOn -Verbose:$Verbose
+                $DataVariable = Add-ColumnDataToAllEntriesInArray -Data $DataVariable `
+                                                                  -Column1Name Computer `
+                                                                  -Column1Data $Env:ComputerName `
+                                                                  -Column2Name ComputerFqdn `
+                                                                  -Column2Data $DnsName `
+                                                                  -Column3Name UserLoggedOn `
+                                                                  -Column3Data $UserLoggedOn `
+                                                                  -Verbose:$Verbose
 
                 # Validating/fixing schema data structure of source data
-                $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable -Verbose:$Verbose
+                $DataVariable = ValidateFix-AzLogAnalyticsTableSchemaColumnNames -Data $DataVariable `
+                                                                                 -Verbose:$Verbose
 
                 # Aligning data structure with schema (requirement for DCR)
-                $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable -Verbose:$Verbose
+                $DataVariable = Build-DataArrayToAlignWithSchema -Data $DataVariable `
+                                                                 -Verbose:$Verbose
         }
 
 
     #-------------------------------------------------------------------------------------------
-    # (9) Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
+    # (8) Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
 
         If ($DataVariable)
             {
-
-                $ResultMgmt = CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId -SchemaMode Merge `
-                                                                    -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose `
-                                                                    -DceName $DceName -DcrName $DcrName -DcrResourceGroup $AzDcrResourceGroup -TableName $TableName -Data $DataVariable `
-                                                                    -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
-                                                                    -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                    -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
-                                                                    -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine
+                $ResultMgmt = CheckCreateUpdate-TableDcr-Structure -AzLogWorkspaceResourceId $LogAnalyticsWorkspaceResourceId `
+                                                                   -AzAppId $LogIngestAppId `
+                                                                   -AzAppSecret $LogIngestAppSecret `
+                                                                   -TenantId $TenantId `
+                                                                   -DceName $DceName `
+                                                                   -DcrName $DcrName `
+                                                                   -DcrResourceGroup $AzDcrResourceGroup `
+                                                                   -TableName $TableName `
+                                                                   -Data $DataVariable `
+                                                                   -LogIngestServicePricipleObjectId $AzDcrLogIngestServicePrincipalObjectId `
+                                                                   -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
+                                                                   -AzLogDcrTableCreateFromAnyMachine $AzLogDcrTableCreateFromAnyMachine `
+                                                                   -AzLogDcrTableCreateFromReferenceMachine $AzLogDcrTableCreateFromReferenceMachine `
+                                                                   -Verbose:$Verbose
             }
-
         
     #-----------------------------------------------------------------------------------------------
-    # (10) Upload data to LogAnalytics using DCR / DCE / Log Ingestion API (LogAnalytics v2)
+    # (9) Upload data to LogAnalytics using DCR / DCE / Log Ingestion API (LogAnalytics v2)
     #-----------------------------------------------------------------------------------------------
 
         If ($DataVariable)
             {
-                $ResultPost = Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
-                                                                                 -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
+                $ResultPost = Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                                                 -DcrName $DcrName `
+                                                                                 -Data $DataVariable `
+                                                                                 -TableName $TableName `
+                                                                                 -AzAppId $LogIngestAppId `
+                                                                                 -AzAppSecret $LogIngestAppSecret `
+                                                                                 -TenantId $TenantId `
+                                                                                 -Verbose:$Verbose
             } # If $DataVariable
 
-
-###################################################################
-# (11) Transform data into old fields
-###################################################################
-
-pause
-
-    $transformKql = "source | extend TimeGenerated = now(), ColumnDate_value_t = ColumnDate, ColumnString_s = ColumnString"
-
-    $DcrResourceId = ($global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }).id
-    Update-AzDataCollectionRuleTransformKql -DcrResourceId $DcrResourceId -transformKql $transformKql -Verbose:$Verbose
-
-    Get-AzDataCollectionRuleTransformKql -DcrResourceId $DcrResourceId 
-
-
-    #-----------------------------------------------------------------------------------------------
-    # (12) Upload data to LogAnalytics using DCR / DCE / Log Ingestion API with transformation
-    #-----------------------------------------------------------------------------------------------
-
-        If ($DataVariable)
-            {
-                $ResultPost = Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $DcrName -Data $DataVariable -TableName $TableName `
-                                                                                 -AzAppId $LogIngestAppId -AzAppSecret $LogIngestAppSecret -TenantId $TenantId -Verbose:$Verbose
-            } # If $DataVariable
