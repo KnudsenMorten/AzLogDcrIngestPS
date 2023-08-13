@@ -204,7 +204,7 @@ pause
                         "Directory.AccessAsUser.All",
                         "RoleManagement.ReadWrite.Directory"
                     )
-        Connect-MgGraph -TenantId $TenantId -ForceRefresh -Scopes $MgScope
+        Connect-MgGraph -TenantId $TenantId  -Scopes $MgScope
 
     #region section prereqv2
     #-------------------------------------------------------------------------------------------
