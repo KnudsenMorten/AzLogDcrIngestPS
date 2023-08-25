@@ -304,6 +304,11 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
                                 $IssuesFound = $true
                                 Write-Verbose "  ISSUE - Column name must start with character [ $($ColumnName) ]"
                             }
+                        ElseIf ($ColumnName -like "*-*")   # includes - (hyphen)
+                            {
+                                $IssuesFound = $true
+                                Write-Verbose "  ISSUE - Column name include - (hyphen) - must be removed [ $($ColumnName) ]"
+                            }
                         ElseIf ($ColumnName -like "*:*")   # includes : (semicolon)
                             {
                                 $IssuesFound = $true
@@ -357,6 +362,13 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
                             ElseIf ($ColumnName -like "*:*")   # remove any : (semicolon)
                                 {
                                     $UpdColumn = $ColumnName.Replace(":","")
+                                    $ColumnData = $Entry.$Column
+                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
+                                    $_.PSObject.Properties.Remove($ColumnName)
+                                }
+                            ElseIf ($ColumnName -like "*-*")   # remove any - (hyphen)
+                                {
+                                    $UpdColumn = $ColumnName.Replace("-","")
                                     $ColumnData = $Entry.$Column
                                     $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
                                     $_.PSObject.Properties.Remove($ColumnName)
@@ -418,8 +430,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUoNEdVr29e7D/UeVQnVtNwhib
-# mguggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUOYupR1lh+NQDAgw2F+/lx9K7
+# OAiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -498,16 +510,16 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# xhhvYIf+85ieVBVh6XPEJrXactgwDQYJKoZIhvcNAQEBBQAEggIAZGhA9f3/iYJu
-# QI6f3m6HPuZMiHr5wB2T+LEohtvL13XCSjY0uwDHMGDFpLwNA4AeJl2HUjyIwNFW
-# xlc8N01ADext2Z+mPzqgh/wtHAw5LJzG9x0XCyXTtrOomx5fSwXYXX1sBp5Xr7g2
-# c/+N6XGwD1bX9R//ZL4V6OOISJGuX3vbbSsu+MBm8tIVPXf2k+seqDkUmHaLZiB0
-# izzPaIWGhbXNYHmD0cBT3zCab1IkJ1DGYnhb7d/HFc8WJxXFdH14pL37wLRhmd+f
-# UJCRcOtmlFnUMXCJ0pbuwTkICMztiLUwo4REVLl30soJlp3CjeWvH1wwyiivHEoN
-# EjPBXJFD2VBVjeBYS7iYWG51GoqFWjIj+AV3sXh0AmGYJyBHOik+yVxdNGv3KJkp
-# /UWcqxd03gIfdhp9rl877Gm2SU4+LpNFDwPu18WJvv8B0XYN2284awPsP+gja5Cj
-# LhhgSxXCrkN+3ylD1W8Zo5g8HnDpPWZT9GBoPgfzFTS0ZK6HB5GOq1QfZLEdmdPq
-# zdrsm/aAlJusS+PkWiOOBjbi4a9XO8p3FckjmhSKvzvVncmf0U+X55h4Vpk28X/c
-# T68Y2ozMky6sTY8wk3BypbyFtpMx4eLE/owFDlnlosUv/OpB4qZbzSJHCj2Qtd7Q
-# DnpPexQae330G5lxnWrr2NE0lfyxAUw=
+# b2ylAo4o3FH0cnSUz6cDS6ThriYwDQYJKoZIhvcNAQEBBQAEggIAf+yluv0vLh1k
+# TL2fBVPcLCzt53ywlKPPYb1lTF3IDMAVigXpE9ZRMZPU/O3RVUj4qCRC6nrJvN0S
+# G0+l9dnWdVBt/1TVPLWtMHUG8J9OAxnnXK6+eBu3UxQMLVKwZmvB2rGgp9q+ty8d
+# HEbVZhhJuM/P1C1sJS1pZUPbVkbxKGj9g4ZsvIUyumbG1H9TMPYieDa99bjWPHgJ
+# sAbW/16pN7nbhzYhpl546zxSlObjFSenoUYB6S8MKSiIFG08QQqfwiO7gTigZV7p
+# PGvqKTZhI5tpEwozyoDqLFIpXAvOgMh79Etkk4MfdRWaUuX7J/cTrN4Au4UfWTeJ
+# gQlN59yLASf4nH6h4+wVY24QNFJ5aDFSeUEltcnyW2yXSTxRBxiBu1xECWK9I9rR
+# QgW7/Of3v6o5sNHrCLxFiwga6maLf+obu4glI/y3mR0C+b/tpmRdSaUI6LYGaLAG
+# djcFJtwC7F2OOI/a+QIczVWfDrq5WXm5MYA0jD+Daj/YMWAxe8mJyNLG4E5AJxgl
+# gZ7okONceH2Q1mUqUd3jRUbblhaH12B03kAol3KCCB+ONJg4kDAxRGU5jAOryf3N
+# jB+ozSifyWwxefHaEoIKeGW84eUP0OU9JoR/zgFgrtbqL3rIzgKOXN4HDX1PMeEe
+# ec+xIRJbVac71n/Ria1eeIDqCaMaGSE=
 # SIG # End signature block
