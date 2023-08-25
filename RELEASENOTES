@@ -1,8 +1,11 @@
 RELEASE NOTES
+
+v1.4.4   Check for - (hyphen) in column names has been added, as it is now prohibited. Table name check now looks for prohibited names like - (hypen), . (period), whitespace
+
 v1.4.0   Support for migration from HTTP Data Collector API to Log Ingestion API
 
 V1.3.0   Minor changes. Decided to change to v1.3, as we had 39 minor version changes under v1.2.xx
- 
+
 v1.2.39  Removed so script will only change schema if name is not found - not if property type is different (who wins?)
 
 v1.2.38  Changed the logic around SchemaMode = Merge, so the schema in DCR will be based on LogAnalytics table schema - and not the source object schema. 
@@ -26,7 +29,7 @@ v1.2.31  Added parameter SchemaMode = Merge/Overwrite for functions CheckCreateU
 			SchemaMode = Overwrite
 			It will overwrite existing schema in DCR/table – based on source object schema
 			This parameter can be useful for separate overflow work
-
+	
 		 Signing of PSM1 and PS1-files is changed from SHA1 to SHA256
 
 v1.2.30  Added new function Get-AzDataCollectionRuleTransformKql. 
