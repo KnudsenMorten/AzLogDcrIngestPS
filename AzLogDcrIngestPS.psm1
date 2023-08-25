@@ -863,8 +863,47 @@ Function CheckCreateUpdate-TableDcr-Structure
     #-------------------------------------------------------------------------------------------
     # Create/Update Schema for LogAnalytics Table & Data Collection Rule schema
     #-------------------------------------------------------------------------------------------
+        # default
+        $IssuesFound = $false
 
-        If ($EnableUploadViaLogHub -eq $false)
+        # Check for prohibited table names
+        If ($TableName -like "_*")   # remove any leading underscores - column in DCR/LA must start with a character
+            {
+                $IssuesFound = $true
+                Write-Verbose ""
+                Write-Verbose "  ISSUE - Table name must start with character [ $($TableName) ]"
+                Write-Verbose ""
+            }
+        ElseIf ($TableName -like "*-*")   # includes - (hyphen)
+            {
+                $IssuesFound = $true
+                Write-Verbose ""
+                Write-Verbose "  ISSUE - Table name include - (hyphen) - must be removed [ $($TableName) ]"
+                Write-Verbose ""
+            }
+        ElseIf ($TableName -like "*:*")   # includes : (semicolon)
+            {
+                $IssuesFound = $true
+                Write-Verbose ""
+                Write-Verbose "  ISSUE - Table name include : (semicolon) - must be removed [ $($TableName) ]"
+                Write-Verbose ""
+            }
+        ElseIf ($TableName -like "*.*")   # includes . (period)
+            {
+                $IssuesFound = $true
+                Write-Verbose ""
+                Write-Verbose "  ISSUE - Table name include . (period) - must be removed [ $($TableName) ]"
+                Write-Verbose ""
+            }
+        ElseIf ($TableName -like "* *")   # includes whitespace " "
+            {
+                $IssuesFound = $true
+                Write-Verbose ""
+                Write-Verbose "  ISSUE - Table name include whitespace - must be removed [ $($TableName) ]"
+                Write-Verbose ""
+            }
+
+        If ( ($EnableUploadViaLogHub -eq $false) -and ($IssuesFound -eq $false) )
             {
                 If ( ($AzAppId) -and ($AzAppSecret) )
                     {
@@ -6332,8 +6371,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCrxNZ1T8LvfOtW
-# mQOM6VBlhv1g/AqcC9twKzZP6g8W5aCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAzs9P6Ueprts6/
+# bK3j8NEJ46jIaVlWTQFhotjRD1E3KaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -6441,17 +6480,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIFPYg8Qf1jkQ2zLB9zsVCdtd
-# BAHFMooktMOlzsGpQSOsMA0GCSqGSIb3DQEBAQUABIICAEj66zuFxDDIh+SPRm8n
-# O9Uvmz/SUVMbCd6Rdwf8NrzU8CXV4txxEBj0lLc56LKrle7hLe6Ob/NON/uAapjE
-# KWGPKA+DewZMNz9i08PRyrMxAPlXrgx1d0VQeyItmsxrrDmSzaEyrLiwag1oXaav
-# +1JrkSMDWAWXeE0m7XtgC6GC+gel6bvFzL5c6oZC8Es5aqAL2IZ3/rd8cQrCah0n
-# bGAiZMP2ev57ohSnP2tCp0wjv7yLWErl+cYpp1Ntjxql1kGf6elbg87MPL82W9CD
-# el8kmN3f5/rHeXl55iOK0vdg/4urcKTTXZhhmrSZfkRPIoZrbgleF5gppxWyZA0t
-# Km0SIopYmV8lUTKvHeZ9eV2sN1FhhR6xZ32tjhVDB3yXrkfg6mAkFJnGn5DKwKV/
-# gYkrEyvBXItb09xmPS0G7nEQyMPwNavrq7hxndfNp3kT8ldr7pQFkhav08ipkb9X
-# rp+qTHs4wjSwelPHiAxOeg3mCxmgp45PvmzNBRQeH4+deXhExNcSr85iZr6oWbdD
-# U2qXEQnC1yu+5Ta3D7VD9I0922FBXLtZSccyQHnVCXLZBv7+Bz5/j5pc07A3ZqnS
-# TfCWJuKD1ZIRl+ryRqmnjBlp2toP9Vrvbw3aYQB37HC3LHk6+//GcfTD2xKHkzyc
-# izYKIYVvPOmRyza6hcsZ3WcW
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIA8AiG13rmndyGnAekCrw57z
+# 7V0XuWXJ1Je+nlqqg5QtMA0GCSqGSIb3DQEBAQUABIICAFsituSn5Rv/XHW90nEs
+# t4k1L29h2z/daiU5HB12bpY1EmHV6H43n1evyPkFqGq/PE5C7g+KkSVsMKbOeHZA
+# FfBwIHH6ppb3CNdr/76lbknrNElcbwg+HOPxo6s7t9MKryRkb7van5S1bP+jMRNG
+# MyrwfKzXuvCDlC5j+X2/opGXDQCcqnn8AsJHdByf3KyEL1DdRSOPAVt54PmUzUk+
+# Ct6nM5exuw45/gq0PLD6eHxJke4Tp0Jie3kG/PzlqE7YPIWIUYU6yiw6Vj2/rMsX
+# lSmNdWKutv5ECPZvoB3Nov8VEhOSRS6D3bvOwZUwkYJQPINXaR/bXOUVQnzlXsiP
+# lzKM+92Mwu6SdvS66WiAUnkE8oPg5LHh+GTM8wuzbeSraydiCgHEUe9wkxutOHKY
+# kI8kvNaC2oMhBXphgFB8i4je32OHy8m3ZcvhNah9zEEHxDE4eLCjSfMdhzkKF/vP
+# ch0TcKAJP1AxpKrex2ALYORmDHXKJAlBqesEzGSPWtaZadKLZAnYarJtBLqubn1Y
+# faC09vJvxIQ9daBTeLnQkk0OdhA+m/3kNVtyutwqMfFwqPD/oxlxkQeL2Hi7EZYj
+# sRbrUWed0q2fOSX6JbEgWGHQs5vbKukxTwx2nwV66vCtrn/N7pwFYoFlyhCAH9z/
+# Z0bqfOsvmb1jtK7ya4xNsoJZ
 # SIG # End signature block
