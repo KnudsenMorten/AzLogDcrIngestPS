@@ -90,8 +90,18 @@ Function Get-AzAccessTokenManagement
         }
     Else
         {
+            function ConvertFrom-SecureStringToPlainText {
+                param (
+                    [System.Security.SecureString]$SecureString
+                )
+                $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)
+                $PlainText = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+                [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+                return $PlainText
+            }
+
             $AccessToken = Get-AzAccessToken -ResourceUrl https://management.azure.com/ -AsSecureString -Verbose:$Verbose
-            $Token = ($AccessToken.Token | ConvertFrom-SecureString)
+            $Token = ConvertFrom-SecureStringToPlainText $AccessToken.Token
 
             $Headers = @{
                             'Content-Type' = 'application/json'
@@ -106,8 +116,8 @@ Function Get-AzAccessTokenManagement
 # SIG # Begin signature block
 # MIIXAgYJKoZIhvcNAQcCoIIW8zCCFu8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFB5fu22OMEKA5FmBsL1gGiI6
-# zy6gghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVcMBDBt/oko71nUm6O6WuEfH
+# ooOgghNiMIIFojCCBIqgAwIBAgIQeAMYQkVwikHPbwG47rSpVDANBgkqhkiG9w0B
 # AQwFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEGA1UE
 # ChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjAeFw0yMDA3MjgwMDAw
 # MDBaFw0yOTAzMTgwMDAwMDBaMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i
@@ -215,16 +225,16 @@ Function Get-AzAccessTokenManagement
 # U2lnbiBHQ0MgUjQ1IENvZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJ
 # BgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0B
 # CQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAj
-# BgkqhkiG9w0BCQQxFgQUc/BLXyDkBPa13Lp/0xqSwr65sDkwDQYJKoZIhvcNAQEB
-# BQAEggIAJjtQQwFZ4R1gb7IA8uWlGCIk6lm1mOstj99QPC1n0yTsnLcwBr8B6dGt
-# JGz5DHqg+2E+ukhDn6rf1c35WjGUBU298nbeYU7wpZ886Vm3ZXDBpyVybvive5e0
-# p8MkSP36JB5seMUe5nK6rZ14PYTF7ttcL7FLtbzjFE5ZDFcD6kypbs9Oa/6eS7oj
-# vt+g4V3Zy6FPtI9Zi/sT6yFyawnDddwrNpse1DNR+9jPZLmUGe2gCCHwrsFlsSDP
-# GP6Iv31/gM7aw23n+Q/FB3Qpa+Ood8YHf1dBIU1IFBTdhgQU3HawLuq5MuZVZ02J
-# xfOYc4g13nPORyw/ndmruzkprTLOFGT6BpwL/l6EhHtogt1cHFq0n6hfigITihpv
-# MMv9do7EHYVyI69I/mYj7usf67mKuabDOg92pSc+v00j4MyBWF5eyg84z3uWtAw6
-# 20BWilf8erRBS+D6OLcmM0fICzCnKCPNQd3klFJXLCGlkce2XnihAsFrSf6lvDb3
-# nCA1+Xv7bQpo1ZpHMqvi5Pz2qVHCRdRQsU7WXmPzNow+n33Gp4+PReTrxMLN8oVP
-# yfpiTE1Mw7xEd3I2j+JD+VviKYoPcKQrDCarbQ56xKr/zInn4oZzk9vlOt+JURWo
-# uvg+6RO8Z4fDTTPJC1PMWWMkUGhsiqKkxGQu2MUuo0oBrLD4BE4=
+# BgkqhkiG9w0BCQQxFgQUuqUgNCTRahXeq1yvJjOH85hSfI0wDQYJKoZIhvcNAQEB
+# BQAEggIAxN9dNJXYy5ojCzKzxDJuvylVBf08Uste4PcfUt3X58WyQMprTZgmep92
+# osfgS7pG2owAXtHRoyaXOCSUqgpiJnaBaOkaMciNGEchV+nD0H+KYlHX1tbfwJuZ
+# g+fLToVq6dwq5+WyIVsxe+3S8+OcFEKkaXJqvA/4E6NLoKR6qMCfJmVJsaBvdNXP
+# gUu8jERLIpanE4iAdJmYtPmHcgJev40Bptn4QZi+vFB5+f2IsXbMKt6OozdkLP+Z
+# v9+1+2wx+klWpD95CzYwoFjuSSMRD+mFi/rF5YuBTdaLgkIWJshzVB/MsCJWAXYv
+# EwEwjabhOgbrquggRBYCfV9XxYELbbh44mR45NDtoKC+5Oh2Q7exSa8m5QUPiSj9
+# w8Zkl9nYlAM9R2e2vigsqawg56hUZyhkDFhffqaGAo+H3Ce6HOO35g4EPdzzbayX
+# 0Vy+zabIoc+tygrejk+KEGFQ7sBWmCHT1ii1T4B9ZXUhGQH93cJ2Mux8vJXOVOz+
+# SkIj9swLFAwtc1Hp5GN9qnc3/Cy7e0vDBTDeoY3WxH2Ck3c3wDhN5jbIrCy2bJpk
+# rXPXC/WSHeCvSc3OVYBGlPaHnOhjgMBxG2RmyyUNoD2m6+4b/kEJ5osy6Wbnx/+E
+# 965PRJsI7dha5SdILgfnMsFHRD1BTIi4BA+0XFS3q4yqn2sT/Dg=
 # SIG # End signature block

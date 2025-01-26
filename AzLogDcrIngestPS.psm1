@@ -3141,8 +3141,18 @@ Function Get-AzAccessTokenManagement
         }
     Else
         {
+            function ConvertFrom-SecureStringToPlainText {
+                param (
+                    [System.Security.SecureString]$SecureString
+                )
+                $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)
+                $PlainText = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+                [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+                return $PlainText
+            }
+
             $AccessToken = Get-AzAccessToken -ResourceUrl https://management.azure.com/ -AsSecureString -Verbose:$Verbose
-            $Token = ($AccessToken.Token | ConvertFrom-SecureString)
+            $Token = ConvertFrom-SecureStringToPlainText $AccessToken.Token
 
             $Headers = @{
                             'Content-Type' = 'application/json'
@@ -6371,8 +6381,8 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # SIG # Begin signature block
 # MIIaigYJKoZIhvcNAQcCoIIaezCCGncCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBxSuznvkaN119j
-# iztwwL3DOvvSB7GYCBEt5kT2CoRf4qCCFsUwggNfMIICR6ADAgECAgsEAAAAAAEh
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAhQ0xlp/1D+A7L
+# t05CxIoz1b06iMSr9SRRYULZywJXe6CCFsUwggNfMIICR6ADAgECAgsEAAAAAAEh
 # WFMIojANBgkqhkiG9w0BAQsFADBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3Qg
 # Q0EgLSBSMzETMBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2ln
 # bjAeFw0wOTAzMTgxMDAwMDBaFw0yOTAzMTgxMDAwMDBaMEwxIDAeBgNVBAsTF0ds
@@ -6498,17 +6508,17 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames
 # IG52LXNhMS8wLQYDVQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcg
 # Q0EgMjAyMAIMeWPZY2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQB
 # gjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYK
-# KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIB8kCyv7
-# hzqg55XZzCgTdMLnoVSqfbA9mfhw0FxDmO63MA0GCSqGSIb3DQEBAQUABIICAJAz
-# njzI0yn+FADsAtK+TVOdTH6RrZQ+sGQ80NoME37W9zgl1GFZobDnrLRoK39hAf1O
-# ZlHxmJh2Kf0HZO69S7jp6WjnFeDdyIRVMaDbLX4RvovaVlW/OYJNdNJ3eRpZElee
-# 0DY3Lmnb9sX65+pmhluDzzY1hM5d+Z61p2mBbGtI2iH87jVvXP2z0Z5VrQEjbXe7
-# CItZOHp9muZRBWJs7WnaXEkBjN/VUw5tboXLeyxCq0THovDvI0YmhFYWFrftl/in
-# x5T5CftB/QQyhG2H4Uox0goK/wQe5VV54707Nt8F9l7Y/CJ0U6FhmkwbGdhTOZFa
-# cxoLjJ1RHyJs8jTqnoyjI9DOcfJSEpQU5LLOvWPnjHCxHFAESzq42lM7pDkvsLO4
-# WQTGUXNWLiBVsOe/jt58XembPusN3qC+z8Gf2iYIA7Mm/C8F+ZJ1UOOb1kklX1gw
-# 2BIeKyUfMvV5tFurNaEi5HbSDLAopA2yRDVFkcujZ1gAA7t4bTqjQmoy0IHxHejn
-# 0pvYEEjDJ8IEa1hmLqntkM9KQWYJTRsUl2NSIugDKWb2JwYG0fn637HclPxEsS2f
-# GF2DSGlZlDEYHoN7W2vA0CQ7KJpOaEpeyvq3sybPkKorssHFXa30dS1mbaugSF/+
-# CnQDw4n6r2Bbv1yy7fDI/xkptOKkWL52XhFLpxwR
+# KwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIMQC+6+6
+# i5e2Cg3sCxQ9Lf8rP9BsOMCTzI1gUn2OHVlpMA0GCSqGSIb3DQEBAQUABIICADdr
+# 2buIOa5jLzf3U8edTlGUIsF1Jmg/Q2k5xpjHg268rro8zm6DHbUY7KWwaR7BUBV0
+# n8VgzixmYBDox8uykvhhwD8n1gsvgFQo4SwQ92FWZ7/SBVT5YQP8xNZnxe1dYExZ
+# AXKPhqdU/ojkgzxLmBeorvB/tn8kX95RSG2dAd4vn1lWXjzlhuV+kOH3GTXyuCUx
+# lj9x9T+Io36dFKVE0mXBHHhum445VwMy32lD61Dnv5JqnZa/AsZoWKszoYOWPJex
+# 3uqNNoPU1cRSR8Ulfx6tiH1XazyGb/D5wjAjRutalOHQ3LM+DOzY7xAah+u/hKLo
+# ScNapVQrauPnVANbar8WZU9hKHfQWPp+MO5THokKe2HtoiTfKUZtGt1j5RnPPM7E
+# 7p5rIgIA3H2xJFGDC2dvq3Rq98Fx3oet/HHmM8K4UqGmlMS4dnpcUD/R10hjiqiY
+# zY8K4Pg1ZfsdH1cCMeJruW29W6DlshfLp7YFsWdeFShqa7ZOII+BWQJxabS5o783
+# Hx8fLo8iriiFvB3IiE0AIHQ25Jz7VRQFLkEO3ebLC7i4kV7FSR6Vmj+npGnuUrsP
+# xVD/gEPfxpNEjEGw6JEKT9tX+UxsXpkdMc0Mqg4XED4DIN4fTJ01taB0ZW7SWDYn
+# 7eSuJWaJ0YFPvg+CUgGfjY9ewvAcXnSAdlCqsx7C
 # SIG # End signature block
