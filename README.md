@@ -722,12 +722,74 @@ Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName -DcrName $D
 
 <br>
 
-**TIP:  error 513 - entity is too large**  
-By default AzLogDcrIngestPS POST-function will send the data in batches depending on an calculated average size per record. In case your recordset is of different size, you might receive an error 513. 
+**Compression & Managed Identity**
 
-Cause is that you are hitting the limitation of 1 mb for each upload (Azure Pipeline limitation). Microsoft wants to receive many smaller chunks of data, as this is a shared environment. I have seen this issue when retrieving the list of all installed applications. Apparently the applications are storing information of very different degree of size.
+AzLogDcrIngestPS supports **gzip compression** and **Azure Managed Identity** authentication. These can be configured globally (applies to all calls) or per individual call.
 
-You can mitigate this issue, by adding the parameter **-BatchAmount <number of records to send per batch>** to the Post-command. If you want to be sure, set it to 1
+**Option 1: Global defaults (recommended)**
+
+Set global variables before calling any ingestion functions. When set, these apply to every call that doesn't explicitly override them:
+
+```powershell
+# Enable compression for ALL ingestion calls (default: off if not set)
+$global:EnableCompressionDefault  = $true
+
+# Use Managed Identity for ALL ingestion calls (default: off if not set)
+$global:UseManagedIdentityDefault = $true
+```
+
+If the global variable is **not defined**, the feature is **off**. This means you only need to set the variables you want to enable.
+
+```powershell
+# Example: enable compression globally, but don't use managed identity
+$global:EnableCompressionDefault = $true
+# $global:UseManagedIdentityDefault is not set → managed identity stays off
+```
+
+**Option 2: Per-call override**
+
+You can also pass `-EnableCompression` and `-UseManagedIdentity` directly on any individual call. This overrides the global default for that specific call:
+
+```powershell
+# Explicitly enable compression for this call (regardless of global setting)
+Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                   -DcrName $DcrName `
+                                                   -Data $DataVariable `
+                                                   -TableName $TableName `
+                                                   -AzAppId $LogIngestAppId `
+                                                   -AzAppSecret $LogIngestAppSecret `
+                                                   -TenantId $TenantId `
+                                                   -EnableCompression $true `
+                                                   -Verbose:$Verbose
+
+# Explicitly use Managed Identity for this call
+Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                   -DcrName $DcrName `
+                                                   -Data $DataVariable `
+                                                   -TableName $TableName `
+                                                   -UseManagedIdentity $true `
+                                                   -ManagedIdentityClientId "your-client-id" `
+                                                   -Verbose:$Verbose
+```
+
+**Priority order:** Per-call parameter → Global default → Off
+
+<br>
+
+**Automatic batch sizing (1 MB limit)**
+
+The Log Ingestion API enforces a **1 MB payload limit** per request. AzLogDcrIngestPS now handles this automatically:
+
+1. **Fast path** — serializes all data at once and checks if it fits in 1 MB. If yes, sends it in a single request (fastest)
+2. **Auto-batching** — if data exceeds 1 MB, it measures the actual compression ratio, builds an optimized index, and splits into the fewest possible batches that each fit under 1 MB
+3. **Progress bars** — shows progress during serialization, compression, and upload
+
+With compression enabled, payloads are typically 2-5% of their raw size, meaning you can send far more data per batch.
+
+<br>
+
+**TIP: error 513 - entity is too large**  
+In rare cases with records of very different sizes, you can force a specific number of records per batch using `-BatchAmount`. When BatchAmount is set, it takes priority over automatic batch sizing:
 
 ```
 Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
@@ -738,7 +800,7 @@ Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
                                                    -AzAppSecret $LogIngestAppSecret `
                                                    -TenantId $TenantId `
                                                    -BatchAmount 1 `
-												   -Verbose:$Verbose
+                                                   -Verbose:$Verbose
 ```
 
 
@@ -1672,6 +1734,11 @@ Else
 |:-------|:-------|
 |Post-AzLogAnalyticsLogIngestCustomLogDcrDce|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule|
 |Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output|Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)|
+|Compress-GzipBytes|Compresses a byte array using gzip for payload optimization|
+|Get-JsonPayloadBytes|Converts a data array to a JSON byte payload, optionally gzip-compressed|
+|New-AzLogIngestRowJsonCache|Pre-serializes all data rows into a cache with cumulative byte sums for fast batch sizing|
+|Get-AzLogIngestBatchEndIndex|Finds the optimal batch end index using cumulative sums and binary search (O(log n))|
+|Get-AzLogIngestPayloadBytesFromCache|Assembles a JSON payload from cached row bytes, optionally gzip-compressed via streaming|
 |Get-AzDceListAll|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|Builds list of all Data Collection Endpoints (DCEs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
 |Get-AzDcrListAll|Builds list of all Data Collection Rules (DCRs), which can be retrieved by Azure using the RBAC context of the Log Ingestion App|
 
@@ -4828,23 +4895,24 @@ Else
     Send data to LogAnalytics using Log Ingestion API and Data Collection Rule (combined)
     
     .DESCRIPTION
-    Combined function which will combine 3 functions in one call:
-    Get-AzDcrDceDetails
-    Post-AzLogAnalyticsLogIngestCustomLogDcrDce
+    Combined function which will combine Get-AzDcrDceDetails and Post-AzLogAnalyticsLogIngestCustomLogDcrDce in one call.
     
-    Data is either sent as one record (if only one exist), batches (calculated value of number of records to send per batch)
-    - or BatchAmount (used only if the size of the records changes so you run into problems with limitations. 
-    In case of diffent sizes, use 1 for BatchAmount
-    Sending data in UTF8 format
+    Supports gzip compression and Azure Managed Identity authentication, configured either
+    globally via $global:EnableCompressionDefault / $global:UseManagedIdentityDefault, or
+    per call via -EnableCompression / -UseManagedIdentity parameters.
     
-    .PARAMETER DceUri
-    Here you can put in the DCE uri - typically found using Get-DceDcrDetails
+    Data upload uses a 3-tier approach for optimal performance:
+    1. Fast path: if all data fits in 1 MB (compressed or raw), sends in a single request
+    2. Auto-batching: if data exceeds 1 MB, measures compression ratio and splits into
+       the fewest batches possible, each fitting under 1 MB
+    3. Fixed batching: if -BatchAmount is set, sends exactly that many records per request
+       (overrides auto-batching)
     
-    .PARAMETER DcrImmutableId
-    Here you can put in the DCR ImmunetableId - typically found using Get-DceDcrDetails
+    .PARAMETER DceName
+    Specifies the name of the Data Collection Endpoint (DCE)
     
-    .PARAMETER DcrStream
-    Here you can put in the DCR Stream name - typically found using Get-DceDcrDetails
+    .PARAMETER DcrName
+    Specifies the name of the Data Collection Rule (DCR)
     
     .PARAMETER Tablename
     Specifies the table name in LogAnalytics
@@ -4853,16 +4921,85 @@ Else
     This is the data array
     
     .PARAMETER BatchAmount
-    Sometimes it happens, that the data entries are of very different sizes. This parameter will allow you to force to specific amount per batch
+    Forces a specific number of records per batch. When set, overrides automatic batch sizing.
+    Use 1 for maximum safety with records of very different sizes.
+    
+    .PARAMETER EnableCompression
+    Enables gzip compression for the upload payload ($true / $false / $null).
+    If $null (default), uses the global default $global:EnableCompressionDefault.
+    If the global variable is not defined, compression is off.
+    
+    .PARAMETER UseManagedIdentity
+    Uses Azure Managed Identity for authentication ($true / $false / $null).
+    If $null (default), uses the global default $global:UseManagedIdentityDefault.
+    If the global variable is not defined, managed identity is off.
+    
+    .PARAMETER ManagedIdentityClientId
+    The client ID of the user-assigned managed identity to use for authentication.
+    Only needed when using a user-assigned managed identity (not system-assigned).
     
     .PARAMETER AzAppId
-    This is the Azure app id og an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
+    This is the Azure app id of an app with Contributor permissions in LogAnalytics + Resource Group for DCRs
         
     .PARAMETER AzAppSecret
     This is the secret of the Azure app
     
     .PARAMETER TenantId
     This is the Azure AD tenant id
+    
+    .EXAMPLE
+    # ── Using global defaults (recommended for scripts) ──────────────────
+    
+    # Set once at the top of your script — applies to all calls
+    $global:EnableCompressionDefault  = $true
+    $global:UseManagedIdentityDefault = $false
+    
+    # No need to pass -EnableCompression on each call — the global default handles it
+    Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                       -DcrName $DcrName `
+                                                       -Data $DataVariable `
+                                                       -TableName $TableName `
+                                                       -AzAppId $LogIngestAppId `
+                                                       -AzAppSecret $LogIngestAppSecret `
+                                                       -TenantId $TenantId `
+                                                       -Verbose:$Verbose
+    
+    .EXAMPLE
+    # ── Per-call override with explicit compression ──────────────────────
+    
+    Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                       -DcrName $DcrName `
+                                                       -Data $DataVariable `
+                                                       -TableName $TableName `
+                                                       -AzAppId $LogIngestAppId `
+                                                       -AzAppSecret $LogIngestAppSecret `
+                                                       -TenantId $TenantId `
+                                                       -EnableCompression $true `
+                                                       -Verbose:$Verbose
+    
+    .EXAMPLE
+    # ── Using Managed Identity ───────────────────────────────────────────
+    
+    Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                       -DcrName $DcrName `
+                                                       -Data $DataVariable `
+                                                       -TableName $TableName `
+                                                       -UseManagedIdentity $true `
+                                                       -EnableCompression $true `
+                                                       -Verbose:$Verbose
+    
+    .EXAMPLE
+    # ── Fixed batch size (for records with very different sizes) ─────────
+    
+    Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                       -DcrName $DcrName `
+                                                       -Data $DataVariable `
+                                                       -TableName $TableName `
+                                                       -AzAppId $LogIngestAppId `
+                                                       -AzAppSecret $LogIngestAppSecret `
+                                                       -TenantId $TenantId `
+                                                       -BatchAmount 1 `
+                                                       -Verbose:$Verbose
     
     .EXAMPLE
     #-------------------------------------------------------------------------------------------
