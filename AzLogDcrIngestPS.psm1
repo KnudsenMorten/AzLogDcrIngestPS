@@ -854,6 +854,9 @@ Function CheckCreateUpdate-TableDcr-Structure {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -913,7 +916,7 @@ Function CheckCreateUpdate-TableDcr-Structure {
                             # Get insight about the schema structure
                             $Schema = Get-ObjectSchemaAsArray -Data $Data
                             $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
-                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
 
                         #-----------------------------------------------------------------------------------------------
                         # Structure check = $true -> Create/update table & DCR with necessary schema
@@ -928,7 +931,7 @@ Function CheckCreateUpdate-TableDcr-Structure {
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
                                             $ResultLA = CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
+                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
 
 
                                             # build schema to be used for DCR
@@ -938,7 +941,7 @@ Function CheckCreateUpdate-TableDcr-Structure {
                                                                                                              -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
                                                                                                              -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId -SchemaMode $SchemaMode `
                                                                                                              -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
 
                                             Return $ResultLA, $ResultDCR
                                         }
@@ -1552,6 +1555,9 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -1561,6 +1567,8 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
     #--------------------------------------------------------------------------
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -1811,7 +1819,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 # updating DCR list using Azure Resource Graph due to new DCR was created
                 #--------------------------------------------------------------------------
 
-                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
 
                 #--------------------------------------------------------------------------
                 # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
@@ -2192,7 +2200,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 # updating DCR list using Azure Resource Graph due to new DCR was created
                 #--------------------------------------------------------------------------
 
-                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
 
                 #--------------------------------------------------------------------------
                 # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
@@ -2422,6 +2430,9 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -2432,6 +2443,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr {
     #--------------------------------------------------------------------------
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
 
@@ -2720,6 +2733,9 @@ Function Delete-AzDataCollectionRules {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -2730,6 +2746,8 @@ Function Delete-AzDataCollectionRules {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -2881,6 +2899,9 @@ Function Delete-AzLogAnalyticsCustomLogTables {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -2891,6 +2912,8 @@ Function Delete-AzLogAnalyticsCustomLogTables {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
 
@@ -3118,6 +3141,9 @@ function Get-AzAccessTokenManagement {
         [string]$AzAppId,
         [string]$AzAppSecret,
         [string]$TenantId,
+        [string]$AzAppCertificateThumbprint,
+        [ValidateSet('CurrentUser','LocalMachine')]
+        [string]$AzAppCertificateStoreLocation = 'LocalMachine',
         [switch]$UseManagedIdentity,
         [string]$ManagedIdentityClientId
     )
@@ -3127,6 +3153,8 @@ function Get-AzAccessTokenManagement {
         -AzAppId $AzAppId `
         -AzAppSecret $AzAppSecret `
         -TenantId $TenantId `
+        -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+        -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
         -UseManagedIdentity:$UseManagedIdentity `
         -ManagedIdentityClientId $ManagedIdentityClientId
 
@@ -3180,6 +3208,9 @@ Function Get-AzDataCollectionRuleTransformKql {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -3190,6 +3221,8 @@ Function Get-AzDataCollectionRuleTransformKql {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3278,6 +3311,9 @@ Function Get-AzDceListAll {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -3291,6 +3327,8 @@ Function Get-AzDceListAll {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3450,6 +3488,9 @@ Function Get-AzDcrDceDetails {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -3460,6 +3501,8 @@ Function Get-AzDcrDceDetails {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3762,6 +3805,9 @@ Function Get-AzDcrListAll {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -3775,6 +3821,8 @@ Function Get-AzDcrListAll {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3930,6 +3978,9 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -3946,6 +3997,8 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
         #--------------------------------------------------------------------------
@@ -4109,7 +4162,7 @@ function Get-AzLogIngestBatchEndIndex {
     small sample (100 rows), then uses that ratio to estimate the uncompressed ceiling, finds
     the candidate via binary search, and verifies with a single real compression call.
 
-    The compression ratio is adaptive — it learns from each batch and improves accuracy
+    The compression ratio is adaptive   it learns from each batch and improves accuracy
     for subsequent batches in the same ingestion run.
 
     .PARAMETER Cache
@@ -4148,7 +4201,7 @@ function Get-AzLogIngestBatchEndIndex {
     }
 
     # -- Helper: get uncompressed payload size for rows [Start..End] ------
-    # Uses the pre-computed CumulativePayloadSize array — O(1) per lookup.
+    # Uses the pre-computed CumulativePayloadSize array   O(1) per lookup.
     # CumulativePayloadSize[i] = size of JSON array for rows [0..i]
     # For a sub-range [Start..End]:
     #   size = CumulativePayloadSize[End] - CumulativePayloadSize[Start] + RowByteLengths[Start] + 2
@@ -4183,7 +4236,7 @@ function Get-AzLogIngestBatchEndIndex {
     }
 
     # -- Binary search for the last index that fits the byte limit --------
-    # This is O(log n) using the cumulative sum — no row-by-row scanning.
+    # This is O(log n) using the cumulative sum   no row-by-row scanning.
     function Find-LastFittingIndex {
         param([long]$ByteLimit)
         $lo = $StartIndex
@@ -4204,7 +4257,7 @@ function Get-AzLogIngestBatchEndIndex {
     }
 
     if (-not $EnableCompression) {
-        # Exact — binary search on uncompressed size
+        # Exact   binary search on uncompressed size
         return (Find-LastFittingIndex -ByteLimit $MaxPayloadBytes)
     }
 
@@ -4300,7 +4353,7 @@ function Get-AzLogIngestBatchEndIndex {
         return $candidateEnd
     }
     else {
-        # Too big — binary search downward with real compression
+        # Too big   binary search downward with real compression
         $lo = $StartIndex
         $hi = $candidateEnd - 1
         $lastGood = $StartIndex
@@ -4437,6 +4490,10 @@ function Get-AzTokenForResource {
         [string]$AzAppSecret,
         [string]$TenantId,
 
+        [string]$AzAppCertificateThumbprint,
+        [ValidateSet('CurrentUser','LocalMachine')]
+        [string]$AzAppCertificateStoreLocation = 'LocalMachine',
+
         [Nullable[bool]]$UseManagedIdentity = $null,
         [string]$ManagedIdentityClientId
     )
@@ -4457,6 +4514,98 @@ function Get-AzTokenForResource {
             -Uri $uri `
             -Method Get `
             -Headers @{ Metadata = 'true' } `
+            -ErrorAction Stop
+
+        return $tokenResponse.access_token
+    }
+
+    # -- SPN with certificate thumbprint (client_assertion / JWT) --
+    if ($AzAppId -and $AzAppCertificateThumbprint -and $TenantId) {
+
+        $thumb = $AzAppCertificateThumbprint -replace '\s',''   # strip spaces if user pasted them
+        $storePath = "Cert:\$AzAppCertificateStoreLocation\My"
+
+        $cert = Get-ChildItem -Path $storePath -ErrorAction Stop |
+                    Where-Object { $_.Thumbprint -eq $thumb } |
+                    Select-Object -First 1
+
+        if (-not $cert) {
+            throw "Certificate with thumbprint '$thumb' was not found in $storePath."
+        }
+        if (-not $cert.HasPrivateKey) {
+            throw "Certificate '$thumb' in $storePath has no associated private key - cannot sign client assertion."
+        }
+
+        $tokenEndpoint = "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token"
+
+        # JOSE-base64url helper
+        $b64url = {
+            param([byte[]]$bytes)
+            [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+','-').Replace('/','_')
+        }
+
+        # Header: include x5t (base64url of cert SHA1 hash) so AAD can find the right key
+        $x5tBytes = $cert.GetCertHash()
+        $header = @{
+            alg = 'RS256'
+            typ = 'JWT'
+            x5t = (& $b64url $x5tBytes)
+        }
+
+        $now    = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+        $exp    = $now + 600    # 10 minutes
+        $jti    = [Guid]::NewGuid().ToString()
+
+        $payload = @{
+            aud = $tokenEndpoint
+            iss = $AzAppId
+            sub = $AzAppId
+            jti = $jti
+            nbf = $now
+            exp = $exp
+        }
+
+        $headerJson  = ($header  | ConvertTo-Json -Compress)
+        $payloadJson = ($payload | ConvertTo-Json -Compress)
+
+        $headerEnc   = & $b64url ([System.Text.Encoding]::UTF8.GetBytes($headerJson))
+        $payloadEnc  = & $b64url ([System.Text.Encoding]::UTF8.GetBytes($payloadJson))
+        $toSign      = "$headerEnc.$payloadEnc"
+        $toSignBytes = [System.Text.Encoding]::UTF8.GetBytes($toSign)
+
+        # Sign with the cert's private key (RSA, SHA256, PKCS#1 v1.5)
+        $rsa = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($cert)
+        if (-not $rsa) {
+            throw "Could not obtain an RSA private key from certificate '$thumb'. Cert-based AAD auth requires an RSA cert."
+        }
+
+        try {
+            $sigBytes = $rsa.SignData(
+                $toSignBytes,
+                [System.Security.Cryptography.HashAlgorithmName]::SHA256,
+                [System.Security.Cryptography.RSASignaturePadding]::Pkcs1
+            )
+        }
+        finally {
+            if ($rsa -is [System.IDisposable]) { $rsa.Dispose() }
+        }
+
+        $sigEnc       = & $b64url $sigBytes
+        $clientAssert = "$toSign.$sigEnc"
+
+        $scope = [System.Web.HttpUtility]::UrlEncode("$($ResourceUrl.TrimEnd('/'))/.default")
+        $body  = "client_id=$AzAppId" +
+                 "&scope=$scope" +
+                 "&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer" +
+                 "&client_assertion=$clientAssert" +
+                 "&grant_type=client_credentials"
+
+        $tokenResponse = Invoke-RestMethod `
+            -UseBasicParsing `
+            -Uri $tokenEndpoint `
+            -Method Post `
+            -Body $body `
+            -ContentType 'application/x-www-form-urlencoded' `
             -ErrorAction Stop
 
         return $tokenResponse.access_token
@@ -4490,7 +4639,7 @@ function Get-JsonPayloadBytes {
     Converts a data array to JSON bytes, optionally gzip-compressed (active version).
 
     .DESCRIPTION
-    Last-loaded version — this is the one PowerShell uses at runtime.
+    Last-loaded version   this is the one PowerShell uses at runtime.
     Serializes data to compact JSON, encodes to UTF-8, optionally compresses.
 
     .PARAMETER Data
@@ -5395,7 +5544,7 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output {
     Forces a specific number of records per batch. Overrides automatic 1 MB batch sizing.
 
     .EXAMPLE
-    # Global defaults — set once, applies to all calls
+    # Global defaults   set once, applies to all calls
     $global:EnableCompressionDefault  = $true
     $global:UseManagedIdentityDefault = $false
 
@@ -5437,6 +5586,9 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output {
         [string]$LogHubPath,
         [string]$AzAppId,
         [string]$AzAppSecret,
+        [string]$AzAppCertificateThumbprint,
+        [ValidateSet('CurrentUser','LocalMachine')]
+        [string]$AzAppCertificateStoreLocation = 'LocalMachine',
         [string]$TenantId,
 
         [Nullable[bool]]$EnableCompression = $null,
@@ -5459,6 +5611,8 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output {
             -DceName $DceName `
             -AzAppId $AzAppId `
             -AzAppSecret $AzAppSecret `
+            -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+            -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
             -TenantId $TenantId `
             -Verbose:$VerbosePreference
 
@@ -5471,6 +5625,8 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output {
             -BatchAmount $BatchAmount `
             -AzAppId $AzAppId `
             -AzAppSecret $AzAppSecret `
+            -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+            -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
             -TenantId $TenantId `
             -EnableCompression $EnableCompression `
             -UseManagedIdentity $UseManagedIdentity `
@@ -5562,6 +5718,9 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce {
         [string]$BatchAmount,
         [string]$AzAppId,
         [string]$AzAppSecret,
+        [string]$AzAppCertificateThumbprint,
+        [ValidateSet('CurrentUser','LocalMachine')]
+        [string]$AzAppCertificateStoreLocation = 'LocalMachine',
         [string]$TenantId,
 
         [Nullable[bool]]$EnableCompression = $null,
@@ -5586,6 +5745,8 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce {
         -ResourceUrl 'https://monitor.azure.com/' `
         -AzAppId $AzAppId `
         -AzAppSecret $AzAppSecret `
+        -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+        -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
         -TenantId $TenantId `
         -UseManagedIdentity $UseManagedIdentity `
         -ManagedIdentityClientId $ManagedIdentityClientId
@@ -5625,9 +5786,10 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce {
         Write-Progress -Activity "Preparing $totalDataLines rows for upload to [ $($TableName)_CL ]" -Id 2 -Completed
 
         if ($bulkPayload.Length -le $maxPayloadBytes) {
-            # Everything fits in one batch — send it directly, no cache needed
+            # Everything fits in one batch   send it directly, no cache needed
             $compressionText = if ($EnableCompression -eq $true) { "Compression=ON" } else { "Compression=OFF" }
             if ($UseManagedIdentity -eq $true) { $authText = "Auth=ManagedIdentity" }
+            elseif ($AzAppId -and $AzAppCertificateThumbprint -and $TenantId) { $authText = "Auth=SPN-Cert" }
             elseif ($AzAppId -and $AzAppSecret -and $TenantId) { $authText = "Auth=SPN" }
             else { $authText = "Auth=AzContext" }
 
@@ -5678,8 +5840,8 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce {
             }
         }
 
-        # Bulk didn't fit — fall through to per-row batching
-        Write-Verbose "  Bulk payload ($($bulkPayload.Length) bytes) exceeds 1 MB limit — switching to batched upload"
+        # Bulk didn't fit   fall through to per-row batching
+        Write-Verbose "  Bulk payload ($($bulkPayload.Length) bytes) exceeds 1 MB limit   switching to batched upload"
         $bulkJson = $null; $bulkBytes = $null; $bulkPayload = $null  # free memory
     }
 
@@ -5687,6 +5849,7 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce {
 
     $compressionText = if ($EnableCompression -eq $true) { "Compression=ON" } else { "Compression=OFF" }
     if ($UseManagedIdentity -eq $true) { $authText = "Auth=ManagedIdentity" }
+    elseif ($AzAppId -and $AzAppCertificateThumbprint -and $TenantId) { $authText = "Auth=SPN-Cert" }
     elseif ($AzAppId -and $AzAppSecret -and $TenantId) { $authText = "Auth=SPN" }
     else { $authText = "Auth=AzContext" }
 
@@ -5711,7 +5874,7 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce {
                            -Status "Sending batch $batchNumber (rows $($indexLoopFrom + 1)..$($indexLoopTo + 1) of $totalDataLines) ..." `
                            -PercentComplete $pctDone -Id 2
 
-            # Serialize this chunk directly — one ConvertTo-Json call, no cache
+            # Serialize this chunk directly   one ConvertTo-Json call, no cache
             $batchData = @($Data[$indexLoopFrom..$indexLoopTo])
             $json  = ConvertTo-Json -Depth 100 -InputObject @($batchData) -Compress
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
@@ -5982,6 +6145,9 @@ Function Update-AzDataCollectionRuleDceEndpoint {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -5992,6 +6158,8 @@ Function Update-AzDataCollectionRuleDceEndpoint {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -6172,6 +6340,9 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -6188,6 +6359,8 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -6308,6 +6481,9 @@ Function Update-AzDataCollectionRuleTransformKql {
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -6318,6 +6494,8 @@ Function Update-AzDataCollectionRuleTransformKql {
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------

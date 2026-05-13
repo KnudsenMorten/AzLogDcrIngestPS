@@ -309,6 +309,9 @@
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -368,7 +371,7 @@
                             # Get insight about the schema structure
                             $Schema = Get-ObjectSchemaAsArray -Data $Data
                             $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
-                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
 
                         #-----------------------------------------------------------------------------------------------
                         # Structure check = $true -> Create/update table & DCR with necessary schema
@@ -383,7 +386,7 @@
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
                                             $ResultLA = CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
+                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
 
 
                                             # build schema to be used for DCR
@@ -393,7 +396,7 @@
                                                                                                              -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
                                                                                                              -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId -SchemaMode $SchemaMode `
                                                                                                              -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -TenantId $TenantId -Verbose:$Verbose
+                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
 
                                             Return $ResultLA, $ResultDCR
                                         }

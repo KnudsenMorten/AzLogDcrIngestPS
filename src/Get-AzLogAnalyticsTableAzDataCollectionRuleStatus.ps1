@@ -122,6 +122,9 @@
                 [string]$AzAppId,
             [Parameter()]
                 [string]$AzAppSecret,
+                [string]$AzAppCertificateThumbprint,
+                [ValidateSet('CurrentUser','LocalMachine')]
+                [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
                 [string]$TenantId
          )
@@ -138,6 +141,8 @@
 
         $Headers = Get-AzAccessTokenManagement -AzAppId $AzAppId `
                                                -AzAppSecret $AzAppSecret `
+                                               -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+                                               -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
                                                -TenantId $TenantId -Verbose:$Verbose
 
         #--------------------------------------------------------------------------

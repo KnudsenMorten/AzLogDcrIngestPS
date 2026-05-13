@@ -27,7 +27,7 @@
     Forces a specific number of records per batch. Overrides automatic 1 MB batch sizing.
 
     .EXAMPLE
-    # Global defaults — set once, applies to all calls
+    # Global defaults   set once, applies to all calls
     $global:EnableCompressionDefault  = $true
     $global:UseManagedIdentityDefault = $false
 
@@ -69,6 +69,9 @@
         [string]$LogHubPath,
         [string]$AzAppId,
         [string]$AzAppSecret,
+        [string]$AzAppCertificateThumbprint,
+        [ValidateSet('CurrentUser','LocalMachine')]
+        [string]$AzAppCertificateStoreLocation = 'LocalMachine',
         [string]$TenantId,
 
         [Nullable[bool]]$EnableCompression = $null,
@@ -91,6 +94,8 @@
             -DceName $DceName `
             -AzAppId $AzAppId `
             -AzAppSecret $AzAppSecret `
+            -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+            -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
             -TenantId $TenantId `
             -Verbose:$VerbosePreference
 
@@ -103,6 +108,8 @@
             -BatchAmount $BatchAmount `
             -AzAppId $AzAppId `
             -AzAppSecret $AzAppSecret `
+            -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+            -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
             -TenantId $TenantId `
             -EnableCompression $EnableCompression `
             -UseManagedIdentity $UseManagedIdentity `

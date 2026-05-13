@@ -4,6 +4,9 @@
         [string]$AzAppId,
         [string]$AzAppSecret,
         [string]$TenantId,
+        [string]$AzAppCertificateThumbprint,
+        [ValidateSet('CurrentUser','LocalMachine')]
+        [string]$AzAppCertificateStoreLocation = 'LocalMachine',
         [switch]$UseManagedIdentity,
         [string]$ManagedIdentityClientId
     )
@@ -13,6 +16,8 @@
         -AzAppId $AzAppId `
         -AzAppSecret $AzAppSecret `
         -TenantId $TenantId `
+        -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+        -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
         -UseManagedIdentity:$UseManagedIdentity `
         -ManagedIdentityClientId $ManagedIdentityClientId
 

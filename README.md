@@ -483,7 +483,13 @@ Custom columns you add to an Azure table must have the suffix _CF.
 ### Authentication
 Authentication for the Logs Ingestion API is performed at the DCE, which uses standard Azure Resource Manager authentication. 
 
-A common strategy is to use an application ID and application secret.
+AzLogDcrIngestPS supports three authentication methods - choose the one that fits your environment:
+
+1. **App registration + client secret** - simplest to set up; works everywhere.
+2. **App registration + certificate thumbprint** - recommended for production; no secret to rotate or leak.
+3. **Managed Identity** - recommended when running on Azure resources (VM, Function App, Automation Account, etc.); no credentials in code at all.
+
+See the [Security](#security) section below for details on each method.
 
 ### Data collection rule
 Data collection rules define data collected by Azure Monitor and specify how and where that data should be sent or stored. The REST API call must specify a DCR to use. A single DCE can support multiple DCRs, so you can specify a different DCR for different sources and target tables.
@@ -602,10 +608,57 @@ By default Intune will do a BYPASS when running a remediation scripts.
 ## Azure app for log ingestion & table/dcr schema management
 You can choose to have one app for both log ingestion and table/DCR schema management, if you want to keep it . Alternative you can choose to have 2 Azure apps (recommended) to separate the log ingestion process with the table/DCR schema management process.
 
+### Authentication options for the Azure app
+Regardless of whether you use one app or two, every function in AzLogDcrIngestPS accepts **three authentication methods**. You pick the one that fits your environment - there is no dependency between them, supply the credentials for one method and it just works.
+
+| Method                          | Parameters used                                                                              | When to use                                                                                                              |
+|:--------------------------------|:---------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| Client secret                   | `-AzAppId`, `-AzAppSecret`, `-TenantId`                                                      | Simplest to set up. Fine for dev / lab, but the secret must be rotated and protected.                                    |
+| Certificate (thumbprint)        | `-AzAppId`, `-AzAppCertificateThumbprint`, `-TenantId` (optionally `-AzAppCertificateStoreLocation`) | Recommended for production. The private key never leaves the machine. No shared secret to rotate or leak.                |
+| Managed Identity                | `-UseManagedIdentity $true` (optionally `-ManagedIdentityClientId` for a user-assigned MI)   | Recommended when running on an Azure resource (VM, Function App, Automation Account, Container App, etc). No credentials in code at all. |
+
+Priority when more than one is supplied: `UseManagedIdentity` -> certificate thumbprint -> client secret -> fallback to current `Az` context. In practice you should only supply one.
+
+#### Using a certificate thumbprint
+Upload a certificate (public key, `.cer`) to the Azure app under **Certificates & secrets -> Certificates**. The matching certificate **with private key** must be importable on every machine that will run the module.
+
+By default the module looks in `Cert:\LocalMachine\My` (the Local Computer store). This is the recommended location for service / scheduled-task scenarios, because the script does not need to run as the user who imported the cert. If you instead place the cert in the per-user store, pass `-AzAppCertificateStoreLocation 'CurrentUser'`.
+
+```powershell
+##########################################
+# VARIABLES
+##########################################
+
+    $TenantId                          = "xxxxxx"
+    $LogIngestAppId                    = "xxxxxx"
+    $LogIngestAppCertificateThumbprint = "A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2"
+    # Optional - defaults to 'LocalMachine'
+    # $LogIngestAppCertificateStoreLocation = 'LocalMachine'   # or 'CurrentUser'
+```
+
+The thumbprint is the SHA-1 fingerprint of the certificate. You can read it from a machine that already has the cert installed:
+
+```powershell
+# Local computer store (default)
+Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like '*MyAzureApp*' } |
+    Select-Object Subject, Thumbprint, NotAfter, HasPrivateKey
+
+# Current user store
+Get-ChildItem Cert:\CurrentUser\My  | Where-Object { $_.Subject -like '*MyAzureApp*' } |
+    Select-Object Subject, Thumbprint, NotAfter, HasPrivateKey
+```
+
+Spaces in the thumbprint are stripped automatically, so it does not matter whether you paste `A1B2 C3D4 ...` or `A1B2C3D4...`.
+
+If the certificate cannot be found, or it has no private key on the current machine, the module throws a clear error before it tries to talk to AAD - so you find these problems immediately, not buried in a 401 response.
+
+#### Using Managed Identity
+On any Azure compute resource with a system-assigned or user-assigned Managed Identity, you can skip both the secret and the certificate entirely. See the **Compression & Managed Identity** examples further down for the per-call and global-default usage patterns - they apply to certificate auth as well (just substitute the cert parameters for `-AzAppSecret`).
+
 ## One Azure app for both log ingestion and table/schema management
 If you want to keep it simple, you can choose to go with a single Azure app that is used for both log ingestion and table/schema management.
 
-You will need to define  variables in your script for the AppId, Secret and TenantId
+You will need to define  variables in your script for the AppId, TenantId and either the secret or a certificate thumbprint:
 ```
 ##########################################
 # VARIABLES
@@ -613,7 +666,14 @@ You will need to define  variables in your script for the AppId, Secret and Tena
 
     $TenantId                                   = "xxxxxx" 
     $LogIngestAppId                             = "xxxxxx" 
+
+    # ---- Pick ONE credential type ----
+    # Option A: client secret
     $LogIngestAppSecret                         = "xxxxx" 
+
+    # Option B: certificate thumbprint (recommended for production)
+    # $LogIngestAppCertificateThumbprint        = "A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2"
+    # $LogIngestAppCertificateStoreLocation     = "LocalMachine"   # default; use "CurrentUser" if cert is in the per-user store
 ```
 
 You need to set permissions according to these settings:
@@ -770,6 +830,17 @@ Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
                                                    -UseManagedIdentity $true `
                                                    -ManagedIdentityClientId "your-client-id" `
                                                    -Verbose:$Verbose
+
+# Explicitly use a certificate thumbprint for this call
+Post-AzLogAnalyticsLogIngestCustomLogDcrDce-Output -DceName $DceName `
+                                                   -DcrName $DcrName `
+                                                   -Data $DataVariable `
+                                                   -TableName $TableName `
+                                                   -AzAppId $LogIngestAppId `
+                                                   -AzAppCertificateThumbprint $LogIngestAppCertificateThumbprint `
+                                                   -TenantId $TenantId `
+                                                   -Verbose:$Verbose
+                                                   # add  -AzAppCertificateStoreLocation 'CurrentUser'  if the cert is in the per-user store
 ```
 
 **Priority order:** Per-call parameter → Global default → Off

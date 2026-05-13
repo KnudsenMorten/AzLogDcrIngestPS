@@ -47,6 +47,9 @@
         [string]$BatchAmount,
         [string]$AzAppId,
         [string]$AzAppSecret,
+        [string]$AzAppCertificateThumbprint,
+        [ValidateSet('CurrentUser','LocalMachine')]
+        [string]$AzAppCertificateStoreLocation = 'LocalMachine',
         [string]$TenantId,
 
         [Nullable[bool]]$EnableCompression = $null,
@@ -71,6 +74,8 @@
         -ResourceUrl 'https://monitor.azure.com/' `
         -AzAppId $AzAppId `
         -AzAppSecret $AzAppSecret `
+        -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
+        -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
         -TenantId $TenantId `
         -UseManagedIdentity $UseManagedIdentity `
         -ManagedIdentityClientId $ManagedIdentityClientId
@@ -88,7 +93,7 @@
     $indexLoopFrom   = 0
     $resultLast      = $null
 
-    # ── Fast path: try sending everything in one shot ───────────────────
+    # -- Fast path: try sending everything in one shot -------------------
     # Serialize the entire array at once (much faster than per-row) and
     # check if it fits. For most tables this succeeds and skips all the
     # per-row cache/cumulative-sum machinery entirely.
@@ -110,9 +115,10 @@
         Write-Progress -Activity "Preparing $totalDataLines rows for upload to [ $($TableName)_CL ]" -Id 2 -Completed
 
         if ($bulkPayload.Length -le $maxPayloadBytes) {
-            # Everything fits in one batch — send it directly, no cache needed
+            # Everything fits in one batch   send it directly, no cache needed
             $compressionText = if ($EnableCompression -eq $true) { "Compression=ON" } else { "Compression=OFF" }
             if ($UseManagedIdentity -eq $true) { $authText = "Auth=ManagedIdentity" }
+            elseif ($AzAppId -and $AzAppCertificateThumbprint -and $TenantId) { $authText = "Auth=SPN-Cert" }
             elseif ($AzAppId -and $AzAppSecret -and $TenantId) { $authText = "Auth=SPN" }
             else { $authText = "Auth=AzContext" }
 
@@ -163,22 +169,23 @@
             }
         }
 
-        # Bulk didn't fit — fall through to per-row batching
-        Write-Verbose "  Bulk payload ($($bulkPayload.Length) bytes) exceeds 1 MB limit — switching to batched upload"
+        # Bulk didn't fit   fall through to per-row batching
+        Write-Verbose "  Bulk payload ($($bulkPayload.Length) bytes) exceeds 1 MB limit   switching to batched upload"
         $bulkJson = $null; $bulkBytes = $null; $bulkPayload = $null  # free memory
     }
 
-    # ── Per-row batching (only reached when data exceeds 1 MB or BatchAmount is set) ──
+    # -- Per-row batching (only reached when data exceeds 1 MB or BatchAmount is set) --
 
     $compressionText = if ($EnableCompression -eq $true) { "Compression=ON" } else { "Compression=OFF" }
     if ($UseManagedIdentity -eq $true) { $authText = "Auth=ManagedIdentity" }
+    elseif ($AzAppId -and $AzAppCertificateThumbprint -and $TenantId) { $authText = "Auth=SPN-Cert" }
     elseif ($AzAppId -and $AzAppSecret -and $TenantId) { $authText = "Auth=SPN" }
     else { $authText = "Auth=AzContext" }
 
     $uri = "$($DceURI.TrimEnd('/'))/dataCollectionRules/$($DcrImmutableId)/streams/$($DcrStream)?api-version=2021-11-01-preview"
 
     if ($BatchAmount) {
-        # ── Fixed batch size: skip cache, serialize each chunk directly ──
+        # -- Fixed batch size: skip cache, serialize each chunk directly --
         $fixedBatchSize = [int]$BatchAmount
         if ($fixedBatchSize -lt 1) { throw "BatchAmount must be 1 or higher." }
 
@@ -196,7 +203,7 @@
                            -Status "Sending batch $batchNumber (rows $($indexLoopFrom + 1)..$($indexLoopTo + 1) of $totalDataLines) ..." `
                            -PercentComplete $pctDone -Id 2
 
-            # Serialize this chunk directly — one ConvertTo-Json call, no cache
+            # Serialize this chunk directly   one ConvertTo-Json call, no cache
             $batchData = @($Data[$indexLoopFrom..$indexLoopTo])
             $json  = ConvertTo-Json -Depth 100 -InputObject @($batchData) -Compress
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
@@ -263,7 +270,7 @@
         return $resultLast
     }
 
-    # ── Auto-sizing path: build cache + cumulative sums for binary search ──
+    # -- Auto-sizing path: build cache + cumulative sums for binary search --
     $cache = New-AzLogIngestRowJsonCache -Data $Data
 
     # Reset adaptive compression ratio for this ingestion run
