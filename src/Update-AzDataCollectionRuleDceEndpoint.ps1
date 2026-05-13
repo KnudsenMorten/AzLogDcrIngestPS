@@ -102,6 +102,9 @@
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
   
@@ -113,6 +116,8 @@
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------

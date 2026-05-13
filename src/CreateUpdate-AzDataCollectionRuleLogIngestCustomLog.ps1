@@ -260,6 +260,9 @@
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -270,6 +273,8 @@
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -520,7 +525,7 @@
                 # updating DCR list using Azure Resource Graph due to new DCR was created
                 #--------------------------------------------------------------------------
 
-                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -UseManagedIdentity:$UseManagedIdentity -ManagedIdentityClientId $ManagedIdentityClientId -TenantId $TenantId -Verbose:$Verbose
 
                 #--------------------------------------------------------------------------
                 # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
@@ -901,7 +906,7 @@
                 # updating DCR list using Azure Resource Graph due to new DCR was created
                 #--------------------------------------------------------------------------
 
-                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -UseManagedIdentity:$UseManagedIdentity -ManagedIdentityClientId $ManagedIdentityClientId -TenantId $TenantId -Verbose:$Verbose
 
                 #--------------------------------------------------------------------------
                 # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App

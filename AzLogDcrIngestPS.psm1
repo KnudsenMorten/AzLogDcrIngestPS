@@ -858,6 +858,9 @@ Function CheckCreateUpdate-TableDcr-Structure {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -907,7 +910,7 @@ Function CheckCreateUpdate-TableDcr-Structure {
 
         If ( ($EnableUploadViaLogHub -eq $false) -and ($IssuesFound -eq $false) )
             {
-                If ( ($AzAppId) -and ( ($AzAppSecret) -or ($AzAppCertificateThumbprint) ) )
+                If ( ( ($AzAppId) -and ( ($AzAppSecret) -or ($AzAppCertificateThumbprint) ) ) -or ($UseManagedIdentity) )
                     {
                         #-----------------------------------------------------------------------------------------------
                         # Check if table and DCR exist - or schema must be updated due to source object schema changes
@@ -916,7 +919,7 @@ Function CheckCreateUpdate-TableDcr-Structure {
                             # Get insight about the schema structure
                             $Schema = Get-ObjectSchemaAsArray -Data $Data
                             $StructureCheck = Get-AzLogAnalyticsTableAzDataCollectionRuleStatus -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -TableName $TableName -DcrName $DcrName -SchemaSourceObject $Schema `
-                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
+                                                                                                -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -UseManagedIdentity:$UseManagedIdentity -ManagedIdentityClientId $ManagedIdentityClientId -TenantId $TenantId -Verbose:$Verbose
 
                         #-----------------------------------------------------------------------------------------------
                         # Structure check = $true -> Create/update table & DCR with necessary schema
@@ -931,7 +934,7 @@ Function CheckCreateUpdate-TableDcr-Structure {
                                             $Schema = Get-ObjectSchemaAsHash -Data $Data -ReturnType Table -Verbose:$Verbose
 
                                             $ResultLA = CreateUpdate-AzLogAnalyticsCustomLogTableDcr -AzLogWorkspaceResourceId $AzLogWorkspaceResourceId -SchemaSourceObject $Schema -TableName $TableName `
-                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
+                                                                                                     -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -UseManagedIdentity:$UseManagedIdentity -ManagedIdentityClientId $ManagedIdentityClientId -TenantId $TenantId -Verbose:$Verbose -SchemaMode $SchemaMode
 
 
                                             # build schema to be used for DCR
@@ -941,7 +944,7 @@ Function CheckCreateUpdate-TableDcr-Structure {
                                                                                                              -DceName $DceName -DcrName $DcrName -DcrResourceGroup $DcrResourceGroup -TableName $TableName `
                                                                                                              -LogIngestServicePricipleObjectId $LogIngestServicePricipleObjectId -SchemaMode $SchemaMode `
                                                                                                              -AzDcrSetLogIngestApiAppPermissionsDcrLevel $AzDcrSetLogIngestApiAppPermissionsDcrLevel `
-                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
+                                                                                                             -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -UseManagedIdentity:$UseManagedIdentity -ManagedIdentityClientId $ManagedIdentityClientId -TenantId $TenantId -Verbose:$Verbose
 
                                             Return $ResultLA, $ResultDCR
                                         }
@@ -1559,6 +1562,9 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -1569,6 +1575,8 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -1819,7 +1827,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 # updating DCR list using Azure Resource Graph due to new DCR was created
                 #--------------------------------------------------------------------------
 
-                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -UseManagedIdentity:$UseManagedIdentity -ManagedIdentityClientId $ManagedIdentityClientId -TenantId $TenantId -Verbose:$Verbose
 
                 #--------------------------------------------------------------------------
                 # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
@@ -2200,7 +2208,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 # updating DCR list using Azure Resource Graph due to new DCR was created
                 #--------------------------------------------------------------------------
 
-                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -TenantId $TenantId -Verbose:$Verbose
+                    $global:AzDcrDetails = Get-AzDcrListAll -AzAppId $AzAppId -AzAppSecret $AzAppSecret -AzAppCertificateThumbprint $AzAppCertificateThumbprint -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation -UseManagedIdentity:$UseManagedIdentity -ManagedIdentityClientId $ManagedIdentityClientId -TenantId $TenantId -Verbose:$Verbose
 
                 #--------------------------------------------------------------------------
                 # delegating Monitor Metrics Publisher Rolepermission to Log Ingest App
@@ -2434,6 +2442,9 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -2445,6 +2456,8 @@ Function CreateUpdate-AzLogAnalyticsCustomLogTableDcr {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
 
@@ -2737,6 +2750,9 @@ Function Delete-AzDataCollectionRules {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -2748,6 +2764,8 @@ Function Delete-AzDataCollectionRules {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -2903,6 +2921,9 @@ Function Delete-AzLogAnalyticsCustomLogTables {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -2914,6 +2935,8 @@ Function Delete-AzLogAnalyticsCustomLogTables {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
 
@@ -3212,6 +3235,9 @@ Function Get-AzDataCollectionRuleTransformKql {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -3223,6 +3249,8 @@ Function Get-AzDataCollectionRuleTransformKql {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3315,6 +3343,9 @@ Function Get-AzDceListAll {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -3329,6 +3360,8 @@ Function Get-AzDceListAll {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3492,6 +3525,9 @@ Function Get-AzDcrDceDetails {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -3503,6 +3539,8 @@ Function Get-AzDcrDceDetails {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3809,6 +3847,9 @@ Function Get-AzDcrListAll {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -3823,6 +3864,8 @@ Function Get-AzDcrListAll {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -3982,6 +4025,9 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -3999,6 +4045,8 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
         #--------------------------------------------------------------------------
@@ -6149,6 +6197,9 @@ Function Update-AzDataCollectionRuleDceEndpoint {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
   
@@ -6160,6 +6211,8 @@ Function Update-AzDataCollectionRuleDceEndpoint {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -6344,6 +6397,9 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -6361,6 +6417,8 @@ Function Update-AzDataCollectionRuleResetTransformKqlDefault {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
@@ -6485,6 +6543,9 @@ Function Update-AzDataCollectionRuleTransformKql {
                 [ValidateSet('CurrentUser','LocalMachine')]
                 [string]$AzAppCertificateStoreLocation = 'LocalMachine',
             [Parameter()]
+                [switch]$UseManagedIdentity,
+                [string]$ManagedIdentityClientId,
+            [Parameter()]
                 [string]$TenantId
          )
 
@@ -6496,6 +6557,8 @@ Function Update-AzDataCollectionRuleTransformKql {
                                                -AzAppSecret $AzAppSecret `
                                                -AzAppCertificateThumbprint $AzAppCertificateThumbprint `
                                                -AzAppCertificateStoreLocation $AzAppCertificateStoreLocation `
+                                               -UseManagedIdentity:$UseManagedIdentity `
+                                               -ManagedIdentityClientId $ManagedIdentityClientId `
                                                -TenantId $TenantId -Verbose:$Verbose
 
     #--------------------------------------------------------------------------
