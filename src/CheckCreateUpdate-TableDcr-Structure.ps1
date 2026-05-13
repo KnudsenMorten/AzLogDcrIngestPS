@@ -362,7 +362,7 @@
 
         If ( ($EnableUploadViaLogHub -eq $false) -and ($IssuesFound -eq $false) )
             {
-                If ( ($AzAppId) -and ($AzAppSecret) )
+                If ( ($AzAppId) -and ( ($AzAppSecret) -or ($AzAppCertificateThumbprint) ) )
                     {
                         #-----------------------------------------------------------------------------------------------
                         # Check if table and DCR exist - or schema must be updated due to source object schema changes
