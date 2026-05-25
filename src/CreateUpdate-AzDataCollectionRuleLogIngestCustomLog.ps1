@@ -285,8 +285,10 @@
             {
                 If ($global:AzDceDetails)   # global variables was defined. Used to mitigate throttling in Azure Resource Graph (free service)
                     {
-                        # Retrieve DCE in scope
-                        $DceInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Collapse multi-match array to a single
+                        # pscustomobject (or $null) so $DceInfo.* member access returns
+                        # scalar values consistently on both PS 5.1 and PS 7.
+                        $DceInfo = @($global:AzDceDetails | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -314,8 +316,12 @@
                         $DataJson = $ResponseData | ConvertFrom-Json
                         $Data     = $DataJson.data
 
-                        # Retrieve DCE in scope
-                        $DceInfo = $Data | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Wrap with @(...) | Select-Object -First 1
+                        # so that on PS 7 (where member enumeration on a multi-match array
+                        # surfaces array values via $DceInfo.id, not the unwrapped scalar
+                        # that PS 5.1 sometimes produces), the downstream consumers always
+                        # see a single pscustomobject or $null. Deterministic on both hosts.
+                        $DceInfo = @($Data | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -323,8 +329,10 @@
                     }
             }
 
-        # DCE ResourceId (target for DCR ingestion)
-        $DceResourceId  = $DceInfo.id
+        # DCE ResourceId (target for DCR ingestion). Cast to [string] so the
+        # downstream JSON payload renders dataCollectionEndpointId as a scalar
+        # string regardless of any residual array-leak on PS 7.
+        $DceResourceId  = [string]$DceInfo.id
         If ($DceInfo)
             {
                 Write-Verbose "Found required DCE info using Azure Resource Graph"
@@ -405,7 +413,7 @@
 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(
@@ -463,7 +471,7 @@
                 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(
@@ -635,8 +643,10 @@
                     }
 
 
-                # get current DCR schema
-                $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+                # get current DCR schema. Collapse multi-match array to a single
+                # pscustomobject (or $null) so $DcrInfo.properties.* member access
+                # returns scalar values on both PS 5.1 and PS 7.
+                $DcrInfo = @($global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
 
                 $StreamDeclaration = 'Custom-' + $TableName + '_CL'
                 $CurrentDcrSchema = $DcrInfo.properties.streamDeclarations.$StreamDeclaration.columns
@@ -667,7 +677,7 @@
                             {
                                 $DcrObject = [pscustomobject][ordered]@{
                                                 properties = @{
-                                                                dataCollectionEndpointId = $DceResourceId
+                                                                dataCollectionEndpointId = [string]$DceResourceId
                                                                 streamDeclarations = @{
                                                                                         $StreamName = @{
 	  				                                                                                        columns = @(
@@ -786,7 +796,7 @@
 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(
@@ -844,7 +854,7 @@
                 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(

@@ -156,8 +156,10 @@
             {
                 If ($global:AzDceDetails)   # global variables was defined. Used to mitigate throttling in Azure Resource Graph (free service)
                     {
-                        # Retrieve DCE in scope
-                        $DceInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Collapse to scalar pscustomobject so
+                        # downstream .id / .location / .properties.* member access returns
+                        # scalar values consistently on both PS 5.1 and PS 7.
+                        $DceInfo = @($global:AzDceDetails | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     # record not found - rebuild list and try again
@@ -183,8 +185,8 @@
                                     $DataJson = $ResponseData | ConvertFrom-Json
                                     $Data     = $DataJson.data
 
-                                    # Retrieve DCE in scope
-                                    $DceInfo = $Data | Where-Object { $_.name -eq $DceName }
+                                    # Retrieve DCE in scope. Collapse multi-match array to scalar.
+                                    $DceInfo = @($Data | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                                         If (!($DceInfo))
                                             {
                                                 Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -213,8 +215,8 @@
                         $DataJson = $ResponseData | ConvertFrom-Json
                         $Data     = $DataJson.data
 
-                        # Retrieve DCE in scope
-                        $DceInfo = $Data | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Collapse multi-match array to scalar.
+                        $DceInfo = @($Data | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -230,8 +232,10 @@
             {
                 If ($global:AzDcrDetails)   # global variables was defined. Used to mitigate throttling in Azure Resource Graph (free service)
                     {
-                        # Retrieve DCE in scope
-                        $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+                        # Retrieve DCE in scope. Collapse to scalar so downstream
+                        # consumers (DcrResourceId, immutableId, etc) get scalar values
+                        # regardless of PS version array-handling differences.
+                        $DcrInfo = @($global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                             If (!($DcrInfo))
                                 {
                                     Write-Output "DCR name was not found in index ... fallback to Azure Resource Graph query !"
@@ -255,8 +259,8 @@
                                         }
                                     $DataJson = $ResponseData | ConvertFrom-Json
                                     $Data     = $DataJson.data
-    
-                                    $DcrInfo = $Data | Where-Object { $_.name -eq $DcrName }
+
+                                    $DcrInfo = @($Data | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                                        If (!($DcrInfo))
                                         {
                                             Write-Output "Could not find DCR with name [ $($DcrName) ]"
@@ -285,7 +289,7 @@
                         $DataJson = $ResponseData | ConvertFrom-Json
                         $Data     = $DataJson.data
 
-                        $DcrInfo = $Data | Where-Object { $_.name -eq $DcrName }
+                        $DcrInfo = @($Data | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                             If (!($DcrInfo))
                                 {
                                     Write-Output "Could not find DCR with name [ $($DcrName) ]"
@@ -294,14 +298,17 @@
             }
 
     #--------------------------------------------------------------------------
-    # values
+    # values. Cast every scalar field to [string] / [object] explicitly so that
+    # downstream JSON serialization renders ARM payload fields as scalars even
+    # if any prior code path leaked an array of one. Defensive on both PS 5.1
+    # and PS 7 -- the cast is a no-op when the value is already a scalar.
     #--------------------------------------------------------------------------
         If ( ($DceName) -and ($DceInfo) )
             {
-                $DceResourceId                                  = $DceInfo.id
-                $DceLocation                                    = $DceInfo.location
-                $DceURI                                         = $DceInfo.properties.logsIngestion.endpoint
-                $DceImmutableId                                 = $DceInfo.properties.immutableId
+                $DceResourceId                                  = [string]$DceInfo.id
+                $DceLocation                                    = [string]$DceInfo.location
+                $DceURI                                         = [string]$DceInfo.properties.logsIngestion.endpoint
+                $DceImmutableId                                 = [string]$DceInfo.properties.immutableId
 
                 # return / output
                 $DceResourceId
@@ -312,14 +319,14 @@
 
         If ( ($DcrName) -and ($DcrInfo) )
             {
-                $DcrResourceId                                  = $DcrInfo.id
-                $DcrLocation                                    = $DcrInfo.location
-                $DcrImmutableId                                 = $DcrInfo.properties.immutableId
-                $DcrStream                                      = $DcrInfo.properties.dataflows.outputStream
-                $DcrDestinationsLogAnalyticsWorkSpaceName       = $DcrInfo.properties.destinations.logAnalytics.name
-                $DcrDestinationsLogAnalyticsWorkSpaceId         = $DcrInfo.properties.destinations.logAnalytics.workspaceId
-                $DcrDestinationsLogAnalyticsWorkSpaceResourceId = $DcrInfo.properties.destinations.logAnalytics.workspaceResourceId
-                $DcrTransformKql                                = $DcrInfo.properties.dataFlows[0].transformKql
+                $DcrResourceId                                  = [string]$DcrInfo.id
+                $DcrLocation                                    = [string]$DcrInfo.location
+                $DcrImmutableId                                 = [string]$DcrInfo.properties.immutableId
+                $DcrStream                                      = [string]$DcrInfo.properties.dataflows.outputStream
+                $DcrDestinationsLogAnalyticsWorkSpaceName       = [string]$DcrInfo.properties.destinations.logAnalytics.name
+                $DcrDestinationsLogAnalyticsWorkSpaceId         = [string]$DcrInfo.properties.destinations.logAnalytics.workspaceId
+                $DcrDestinationsLogAnalyticsWorkSpaceResourceId = [string]$DcrInfo.properties.destinations.logAnalytics.workspaceResourceId
+                $DcrTransformKql                                = [string]$DcrInfo.properties.dataFlows[0].transformKql
 
 
                 # return / output

@@ -131,7 +131,7 @@
     # update payload object
     #--------------------------------------------------------------------------
 
-        $DCR.properties.dataCollectionEndpointId = $DceResourceId
+        $DCR.properties.dataCollectionEndpointId = [string]$DceResourceId
 
     #--------------------------------------------------------------------------
     # update existing DCR

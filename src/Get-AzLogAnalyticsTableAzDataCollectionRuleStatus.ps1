@@ -209,8 +209,10 @@
         # Check if Azure Data Collection Rule exist
         #--------------------------------------------------------------------------
 
-            # Check in global variable
-            $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+            # Check in global variable. Collapse to scalar so any downstream
+            # member access ($DcrInfo.properties.*) returns scalar values
+            # consistently on both PS 5.1 and PS 7.
+            $DcrInfo = @($global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                 If (!($DcrInfo))
                     {
                         Write-Verbose "  DCR was not found [ $($DcrName) ]"

@@ -1587,8 +1587,10 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
             {
                 If ($global:AzDceDetails)   # global variables was defined. Used to mitigate throttling in Azure Resource Graph (free service)
                     {
-                        # Retrieve DCE in scope
-                        $DceInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Collapse multi-match array to a single
+                        # pscustomobject (or $null) so $DceInfo.* member access returns
+                        # scalar values consistently on both PS 5.1 and PS 7.
+                        $DceInfo = @($global:AzDceDetails | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -1616,8 +1618,12 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                         $DataJson = $ResponseData | ConvertFrom-Json
                         $Data     = $DataJson.data
 
-                        # Retrieve DCE in scope
-                        $DceInfo = $Data | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Wrap with @(...) | Select-Object -First 1
+                        # so that on PS 7 (where member enumeration on a multi-match array
+                        # surfaces array values via $DceInfo.id, not the unwrapped scalar
+                        # that PS 5.1 sometimes produces), the downstream consumers always
+                        # see a single pscustomobject or $null. Deterministic on both hosts.
+                        $DceInfo = @($Data | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -1625,8 +1631,10 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                     }
             }
 
-        # DCE ResourceId (target for DCR ingestion)
-        $DceResourceId  = $DceInfo.id
+        # DCE ResourceId (target for DCR ingestion). Cast to [string] so the
+        # downstream JSON payload renders dataCollectionEndpointId as a scalar
+        # string regardless of any residual array-leak on PS 7.
+        $DceResourceId  = [string]$DceInfo.id
         If ($DceInfo)
             {
                 Write-Verbose "Found required DCE info using Azure Resource Graph"
@@ -1707,7 +1715,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(
@@ -1765,7 +1773,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(
@@ -1937,8 +1945,10 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                     }
 
 
-                # get current DCR schema
-                $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+                # get current DCR schema. Collapse multi-match array to a single
+                # pscustomobject (or $null) so $DcrInfo.properties.* member access
+                # returns scalar values on both PS 5.1 and PS 7.
+                $DcrInfo = @($global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
 
                 $StreamDeclaration = 'Custom-' + $TableName + '_CL'
                 $CurrentDcrSchema = $DcrInfo.properties.streamDeclarations.$StreamDeclaration.columns
@@ -1969,7 +1979,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                             {
                                 $DcrObject = [pscustomobject][ordered]@{
                                                 properties = @{
-                                                                dataCollectionEndpointId = $DceResourceId
+                                                                dataCollectionEndpointId = [string]$DceResourceId
                                                                 streamDeclarations = @{
                                                                                         $StreamName = @{
 	  				                                                                                        columns = @(
@@ -2088,7 +2098,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(
@@ -2146,7 +2156,7 @@ Function CreateUpdate-AzDataCollectionRuleLogIngestCustomLog {
                 
                     $DcrObject = [pscustomobject][ordered]@{
                                     properties = @{
-                                                    dataCollectionEndpointId = $DceResourceId
+                                                    dataCollectionEndpointId = [string]$DceResourceId
                                                     streamDeclarations = @{
                                                                             $StreamName = @{
 	  				                                                                            columns = @(
@@ -3551,8 +3561,10 @@ Function Get-AzDcrDceDetails {
             {
                 If ($global:AzDceDetails)   # global variables was defined. Used to mitigate throttling in Azure Resource Graph (free service)
                     {
-                        # Retrieve DCE in scope
-                        $DceInfo = $global:AzDceDetails | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Collapse to scalar pscustomobject so
+                        # downstream .id / .location / .properties.* member access returns
+                        # scalar values consistently on both PS 5.1 and PS 7.
+                        $DceInfo = @($global:AzDceDetails | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     # record not found - rebuild list and try again
@@ -3578,8 +3590,8 @@ Function Get-AzDcrDceDetails {
                                     $DataJson = $ResponseData | ConvertFrom-Json
                                     $Data     = $DataJson.data
 
-                                    # Retrieve DCE in scope
-                                    $DceInfo = $Data | Where-Object { $_.name -eq $DceName }
+                                    # Retrieve DCE in scope. Collapse multi-match array to scalar.
+                                    $DceInfo = @($Data | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                                         If (!($DceInfo))
                                             {
                                                 Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -3608,8 +3620,8 @@ Function Get-AzDcrDceDetails {
                         $DataJson = $ResponseData | ConvertFrom-Json
                         $Data     = $DataJson.data
 
-                        # Retrieve DCE in scope
-                        $DceInfo = $Data | Where-Object { $_.name -eq $DceName }
+                        # Retrieve DCE in scope. Collapse multi-match array to scalar.
+                        $DceInfo = @($Data | Where-Object { $_.name -eq $DceName }) | Select-Object -First 1
                             If (!($DceInfo))
                                 {
                                     Write-Output "Could not find DCE with name [ $($DceName) ]"
@@ -3625,8 +3637,10 @@ Function Get-AzDcrDceDetails {
             {
                 If ($global:AzDcrDetails)   # global variables was defined. Used to mitigate throttling in Azure Resource Graph (free service)
                     {
-                        # Retrieve DCE in scope
-                        $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+                        # Retrieve DCE in scope. Collapse to scalar so downstream
+                        # consumers (DcrResourceId, immutableId, etc) get scalar values
+                        # regardless of PS version array-handling differences.
+                        $DcrInfo = @($global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                             If (!($DcrInfo))
                                 {
                                     Write-Output "DCR name was not found in index ... fallback to Azure Resource Graph query !"
@@ -3650,8 +3664,8 @@ Function Get-AzDcrDceDetails {
                                         }
                                     $DataJson = $ResponseData | ConvertFrom-Json
                                     $Data     = $DataJson.data
-    
-                                    $DcrInfo = $Data | Where-Object { $_.name -eq $DcrName }
+
+                                    $DcrInfo = @($Data | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                                        If (!($DcrInfo))
                                         {
                                             Write-Output "Could not find DCR with name [ $($DcrName) ]"
@@ -3680,7 +3694,7 @@ Function Get-AzDcrDceDetails {
                         $DataJson = $ResponseData | ConvertFrom-Json
                         $Data     = $DataJson.data
 
-                        $DcrInfo = $Data | Where-Object { $_.name -eq $DcrName }
+                        $DcrInfo = @($Data | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                             If (!($DcrInfo))
                                 {
                                     Write-Output "Could not find DCR with name [ $($DcrName) ]"
@@ -3689,14 +3703,17 @@ Function Get-AzDcrDceDetails {
             }
 
     #--------------------------------------------------------------------------
-    # values
+    # values. Cast every scalar field to [string] / [object] explicitly so that
+    # downstream JSON serialization renders ARM payload fields as scalars even
+    # if any prior code path leaked an array of one. Defensive on both PS 5.1
+    # and PS 7 -- the cast is a no-op when the value is already a scalar.
     #--------------------------------------------------------------------------
         If ( ($DceName) -and ($DceInfo) )
             {
-                $DceResourceId                                  = $DceInfo.id
-                $DceLocation                                    = $DceInfo.location
-                $DceURI                                         = $DceInfo.properties.logsIngestion.endpoint
-                $DceImmutableId                                 = $DceInfo.properties.immutableId
+                $DceResourceId                                  = [string]$DceInfo.id
+                $DceLocation                                    = [string]$DceInfo.location
+                $DceURI                                         = [string]$DceInfo.properties.logsIngestion.endpoint
+                $DceImmutableId                                 = [string]$DceInfo.properties.immutableId
 
                 # return / output
                 $DceResourceId
@@ -3707,14 +3724,14 @@ Function Get-AzDcrDceDetails {
 
         If ( ($DcrName) -and ($DcrInfo) )
             {
-                $DcrResourceId                                  = $DcrInfo.id
-                $DcrLocation                                    = $DcrInfo.location
-                $DcrImmutableId                                 = $DcrInfo.properties.immutableId
-                $DcrStream                                      = $DcrInfo.properties.dataflows.outputStream
-                $DcrDestinationsLogAnalyticsWorkSpaceName       = $DcrInfo.properties.destinations.logAnalytics.name
-                $DcrDestinationsLogAnalyticsWorkSpaceId         = $DcrInfo.properties.destinations.logAnalytics.workspaceId
-                $DcrDestinationsLogAnalyticsWorkSpaceResourceId = $DcrInfo.properties.destinations.logAnalytics.workspaceResourceId
-                $DcrTransformKql                                = $DcrInfo.properties.dataFlows[0].transformKql
+                $DcrResourceId                                  = [string]$DcrInfo.id
+                $DcrLocation                                    = [string]$DcrInfo.location
+                $DcrImmutableId                                 = [string]$DcrInfo.properties.immutableId
+                $DcrStream                                      = [string]$DcrInfo.properties.dataflows.outputStream
+                $DcrDestinationsLogAnalyticsWorkSpaceName       = [string]$DcrInfo.properties.destinations.logAnalytics.name
+                $DcrDestinationsLogAnalyticsWorkSpaceId         = [string]$DcrInfo.properties.destinations.logAnalytics.workspaceId
+                $DcrDestinationsLogAnalyticsWorkSpaceResourceId = [string]$DcrInfo.properties.destinations.logAnalytics.workspaceResourceId
+                $DcrTransformKql                                = [string]$DcrInfo.properties.dataFlows[0].transformKql
 
 
                 # return / output
@@ -4108,8 +4125,10 @@ Function Get-AzLogAnalyticsTableAzDataCollectionRuleStatus {
         # Check if Azure Data Collection Rule exist
         #--------------------------------------------------------------------------
 
-            # Check in global variable
-            $DcrInfo = $global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }
+            # Check in global variable. Collapse to scalar so any downstream
+            # member access ($DcrInfo.properties.*) returns scalar values
+            # consistently on both PS 5.1 and PS 7.
+            $DcrInfo = @($global:AzDcrDetails | Where-Object { $_.name -eq $DcrName }) | Select-Object -First 1
                 If (!($DcrInfo))
                     {
                         Write-Verbose "  DCR was not found [ $($DcrName) ]"
@@ -6226,7 +6245,7 @@ Function Update-AzDataCollectionRuleDceEndpoint {
     # update payload object
     #--------------------------------------------------------------------------
 
-        $DCR.properties.dataCollectionEndpointId = $DceResourceId
+        $DCR.properties.dataCollectionEndpointId = [string]$DceResourceId
 
     #--------------------------------------------------------------------------
     # update existing DCR
