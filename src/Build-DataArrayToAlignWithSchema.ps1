@@ -180,43 +180,68 @@
          )
 
     Write-Verbose "  Aligning source object structure with schema ... Please Wait !"
-    
+
     # Get schema
     $Schema = Get-ObjectSchemaAsArray -Data $Data -Verbose:$Verbose
 
     $DataCount  = ($Data | Measure-Object).Count
+    If ($DataCount -eq 0) { Return $Data }
 
-    $DataVariableQA = @()
+    #------------------------------------------------------------------------------------------
+    # v1.7.0 (perf). The original did, per row: one Add-Member -Force per schema column, then
+    # $DataVariableQA += $_ , then a Write-Progress. On a 6,339-row x 299-column upload that is
+    # ~1.9M cmdlet invocations, a quadratic array copy and 6,339 progress repaints - measured at
+    # 264 ms PER ROW on Windows PowerShell 5.1 (~28 minutes before a single byte is posted).
+    #
+    # Building one ordered hashtable per row and casting it to [pscustomobject] produces the same
+    # object for a fraction of the cost. Two behaviours from the original are deliberately kept:
+    #   1. a column present in the SCHEMA but missing from the row still materialises, as $null;
+    #   2. a column present on the ROW but not in the schema is NOT dropped. That case is real -
+    #      Get-ObjectSchemaAsArray excludes a literal "TimeGenerated" data column from the DCR
+    #      schema, and the original left such a column on the row untouched.
+    #------------------------------------------------------------------------------------------
 
-    $Data | ForEach-Object -Begin  {
-            $i = 0
-    } -Process {
-                    # get column names
-                  #  $ObjColumns = $_ | Get-Member -MemberType NoteProperty
+    $SchemaNames = New-Object 'System.Collections.Generic.List[string]'
+    ForEach ($Column in $Schema)
+        {
+            [void]$SchemaNames.Add([string]$Column.Name)
+        }
 
-                    # enum schema
-                    ForEach ($Column in $Schema)
-                        {
-                            # get column name & data
-                            $ColumnName = $Column.Name
-                            $ColumnData = $_.$ColumnName
+    $DataVariableQA = New-Object 'System.Collections.Generic.List[object]'
+    $ProgressStep   = [Math]::Max(1, [int]($DataCount / 20))
+    $i = 0
 
-                            $_ | Add-Member -MemberType NoteProperty -Name $ColumnName -Value $ColumnData -Force
-                        }
-                    $DataVariableQA += $_
+    ForEach ($Row in $Data)
+        {
+            $RowProperties = $Row.PSObject.Properties
+            $Aligned       = [ordered]@{}
 
-                    # Increment the $i counter variable which is used to create the progress bar.
-                    $i = $i+1
+            ForEach ($ColumnName in $SchemaNames)
+                {
+                    $Property = $RowProperties[$ColumnName]
+                    If ($null -ne $Property) { $Aligned[$ColumnName] = $Property.Value }
+                    Else                     { $Aligned[$ColumnName] = $null }
+                }
 
-                    # Determine the completion percentage
+            # carry over anything the row has that the schema does not list (see note 2 above)
+            ForEach ($Property in $RowProperties)
+                {
+                    If (-not $Aligned.Contains($Property.Name)) { $Aligned[$Property.Name] = $Property.Value }
+                }
+
+            [void]$DataVariableQA.Add([pscustomobject]$Aligned)
+
+            $i = $i + 1
+            If (($i % $ProgressStep) -eq 0)
+                {
                     $Completed = ($i/$DataCount) * 100
                     Write-Progress -Activity "Aligning source object structure with schema" -Status "Progress:" -PercentComplete $Completed
-            } -End {
-                
-                Write-Progress -Activity "Aligning source object structure with schema" -Status "Ready" -Completed
-                # return data from temporary array to original $Data
-                $Data = $DataVariableQA
-            }
-        Return $Data
+                }
+        }
+
+    Write-Progress -Activity "Aligning source object structure with schema" -Status "Ready" -Completed
+
+    $Data = $DataVariableQA.ToArray()
+    Return $Data
 }
 

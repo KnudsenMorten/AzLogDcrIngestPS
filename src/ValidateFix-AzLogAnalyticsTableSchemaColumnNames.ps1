@@ -277,151 +277,132 @@
 
     Write-Verbose "  Validating schema structure of source data ... Please Wait !"
 
-    #-----------------------------------------------------------------------    
-    # Initial check
+    #----------------------------------------------------------------------------------------------
+    # v1.7.0 (perf). A column NAME is a name - asking whether it is legal a second time cannot
+    # produce a different answer. The original re-ran all seven checks for every column of every
+    # row (rows x cols questions to establish at most `cols` distinct facts) and then accumulated
+    # the rebuilt rows with $DataVariableQA += $_ , which copies the whole array per row.
+    #
+    # v1.7.0 (BUG FIX - please read, this one changes DATA, not just speed).
+    # The rebuild branches for hyphen / colon / period / leading-underscore / whitespace / >45-char
+    # names read their value as   $ColumnData = $Entry.$Column
+    # where $Entry is a leftover from the DETECTION loop above (it holds the LAST row) and $Column
+    # is a Get-Member MemberDefinition object rather than a name string. Both are wrong, so the
+    # renamed column was created with a $null value and the real data was silently discarded.
+    # Only the prohibited-name branch (Type, Id, TenantId, Date, ...) used $_.$ColumnName and so
+    # only that branch preserved data. Observed on 1.6.8:
+    #     Good=g1  HasHyphen=<NULL>  HasPeriod=<NULL>  Type_=T1  Leading=<NULL>
+    # Every renamed column now carries its own row value.
+    #
+    # Column ORDER of the renamed columns may differ from 1.6.8. That is intentional. 1.6.8's order
+    # was an artefact of enumerating a Get-Member snapshot (sorted, punctuation-weighted) while
+    # simultaneously appending and removing properties on the live object - it was not a designed
+    # order and is not reproducible by inspection. Key order carries no meaning to the Log Ingestion
+    # API or the resulting Log Analytics table, so 1.7.0 uses the row's own declaration order:
+    # untouched columns keep their position, renamed columns are appended in the order they appear.
+    #----------------------------------------------------------------------------------------------
+
+    # ---- pass 1: decide each DISTINCT column name once ----
+    $CheckedColumnNames = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $RenameMap   = @{}          # bad name -> replacement name (case-insensitive, PowerShell default)
     $IssuesFound = $false
 
-        # loop through data
-        ForEach ($Entry in $Data)
-            {
-                $ObjColumns = $Entry | Get-Member -MemberType NoteProperty
-
-                ForEach ($Column in $ObjColumns)
-                    {
-                        # get column name
-                        $ColumnName = $Column.Name
+    ForEach ($Entry in $Data)
+        {
+            ForEach ($Property in $Entry.PSObject.Properties)
+                {
+                    $ColumnName = $Property.Name
+                    If (-not $CheckedColumnNames.Add($ColumnName)) { Continue }
 
                         If ($ColumnName -in $ProhibitedColumnNames)   # prohibited column names
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName + "_"
                                 Write-Verbose "  ISSUE - Column name is prohibited [ $($ColumnName) ]"
-                            }
-
-                        ElseIf ($ColumnName -like "_*")   # remove any leading underscores - column in DCR/LA must start with a character
-                            {
-                                $IssuesFound = $true
-                                Write-Verbose "  ISSUE - Column name must start with character [ $($ColumnName) ]"
-                            }
-                        ElseIf ($ColumnName -like "*-*")   # includes - (hyphen)
-                            {
-                                $IssuesFound = $true
-                                Write-Verbose "  ISSUE - Column name include - (hyphen) - must be removed [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName -like "*:*")   # includes : (semicolon)
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Replace(":","")
                                 Write-Verbose "  ISSUE - Column name include : (semicolon) - must be removed [ $($ColumnName) ]"
+                            }
+                        ElseIf ($ColumnName -like "*-*")   # includes - (hyphen)
+                            {
+                                $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Replace("-","")
+                                Write-Verbose "  ISSUE - Column name include - (hyphen) - must be removed [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName -like "*.*")   # includes . (period)
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Replace(".","")
                                 Write-Verbose "  ISSUE - Column name include . (period) - must be removed [ $($ColumnName) ]"
+                            }
+                        ElseIf ($ColumnName -like "_*")   # remove any leading underscores - column in DCR/LA must start with a character
+                            {
+                                $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.TrimStart("_")
+                                Write-Verbose "  ISSUE - Column name must start with character [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName -like "* *")   # includes whitespace " "
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.TrimStart()
                                 Write-Verbose "  ISSUE - Column name include whitespace - must be removed [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName.Length -gt 45)   # trim the length to maximum 45 characters
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Substring(0,45)
                                 Write-Verbose "  ISSUE - Column length is greater than 45 characters (trimming column name is neccessary)  [ $($ColumnName) ]"
                             }
-                    }
-            }
-
-    If ($IssuesFound)
-        {
-            Write-Verbose "  Issues found .... fixing schema structure of source data ... Please Wait !"
-
-            $DataCount  = ($Data | Measure-Object).Count
-
-            $DataVariableQA = @()
-
-            $Data | ForEach-Object -Begin  {
-                    $i = 0
-            } -Process {
-
-                    # get column names
-                    $ObjColumns = $_ | Get-Member -MemberType NoteProperty
-
-                    ForEach ($Column in $ObjColumns)
-                        {
-                            # get column name
-                            $ColumnName = $Column.Name
-
-                            If ($ColumnName -in $ProhibitedColumnNames)   # phohibited column names
-                                {
-                                    $UpdColumn  = $ColumnName + "_"
-                                    $ColumnData = $_.$ColumnName
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "*:*")   # remove any : (semicolon)
-                                {
-                                    $UpdColumn = $ColumnName.Replace(":","")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "*-*")   # remove any - (hyphen)
-                                {
-                                    $UpdColumn = $ColumnName.Replace("-","")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "*.*")   # remove any . (period)
-                                {
-                                    $UpdColumn = $ColumnName.Replace(".","")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "_*")   # remove any leading underscores - column in DCR/LA must start with a character
-                                {
-                                    $UpdColumn = $ColumnName.TrimStart("_")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "* *")   # remove any whitespaces
-                                {
-                                    $UpdColumn = $ColumnName.TrimStart()
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName.Length -gt 45)   # trim the length to maximum 45 characters
-                                {
-                                    $UpdColumn = $ColumnName.Substring(0,45)
-                                    $ColumnData = $_.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            Else    # write column name and data (OK)
-                                {
-                                    $ColumnData = $_.$ColumnName
-                                    $_ | Add-Member -MemberType NoteProperty -Name $ColumnName -Value $ColumnData -Force
-                                }
-                        }
-                    $DataVariableQA += $_
-
-                    # Increment the $i counter variable which is used to create the progress bar.
-                    $i = $i+1
-
-                    # Determine the completion percentage
-                    $Completed = ($i/$DataCount) * 100
-                    Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Progress:" -PercentComplete $Completed
-            } -End {
-                $Data = $DataVariableQA
-                Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Ready" -Completed
-            }
+                }
         }
-    Else
+
+    If (-not $IssuesFound)
         {
             Write-Verbose "  SUCCESS - No issues found in schema structure"
+            Return [array]$Data
         }
+
+    # ---- pass 2: rebuild only when there is something to fix ----
+    Write-Verbose "  Issues found .... fixing schema structure of source data ... Please Wait !"
+
+    $DataCount      = ($Data | Measure-Object).Count
+    $DataVariableQA = New-Object 'System.Collections.Generic.List[object]'
+    $ProgressStep   = [Math]::Max(1, [int]($DataCount / 20))
+    $i = 0
+
+    ForEach ($Row in $Data)
+        {
+            $Rebuilt = [ordered]@{}
+            $Renamed = New-Object 'System.Collections.Generic.List[object]'
+
+            ForEach ($Property in $Row.PSObject.Properties)
+                {
+                    If ($RenameMap.ContainsKey($Property.Name)) { [void]$Renamed.Add($Property) }
+                    Else                                        { $Rebuilt[$Property.Name] = $Property.Value }
+                }
+
+            # renamed columns land at the end, in the order the row declared them
+            ForEach ($Property in $Renamed)
+                {
+                    $Rebuilt[[string]$RenameMap[$Property.Name]] = $Property.Value
+                }
+
+            [void]$DataVariableQA.Add([pscustomobject]$Rebuilt)
+
+            $i = $i + 1
+            If (($i % $ProgressStep) -eq 0)
+                {
+                    $Completed = ($i/$DataCount) * 100
+                    Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Progress:" -PercentComplete $Completed
+                }
+        }
+
+    Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Ready" -Completed
+
+    $Data = $DataVariableQA.ToArray()
     Return [array]$Data
 }
 

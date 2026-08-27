@@ -154,7 +154,9 @@
          )
 
     Write-Verbose "  Adding columns to all entries in array .... please wait !"
-    $IntermediateObj = @()
+
+    # v1.7.0 (perf) - see Add-CollectionTimeToAllEntriesInArray: List.Add instead of += .
+    $IntermediateObj = New-Object 'System.Collections.Generic.List[object]'
     ForEach ($Entry in $Data)
         {
             If ($Column1Name)
@@ -172,8 +174,8 @@
                     $Entry | Add-Member -MemberType NoteProperty -Name $Column3Name -Value $Column3Data -Force
                 }
 
-            $IntermediateObj += $Entry
+            [void]$IntermediateObj.Add($Entry)
         }
-    return [array]$IntermediateObj
+    return [array]$IntermediateObj.ToArray()
 }
 

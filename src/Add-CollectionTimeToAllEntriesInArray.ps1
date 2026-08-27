@@ -125,14 +125,17 @@
 
     Write-Verbose "  Adding CollectionTime to all entries in array .... please wait !"
 
-    $IntermediateObj = @()
+    # v1.7.0 (perf) - was $IntermediateObj += $Entry, which reallocates and copies the entire
+    # array on every row (O(n^2)). List.Add is O(1). The objects handed back are the SAME
+    # instances Add-Member stamped, exactly as before.
+    $IntermediateObj = New-Object 'System.Collections.Generic.List[object]'
     ForEach ($Entry in $Data)
         {
             $Entry | Add-Member -MemberType NoteProperty -Name CollectionTime -Value $CollectionTime -Force | Out-Null
 
-            $IntermediateObj += $Entry
+            [void]$IntermediateObj.Add($Entry)
         }
 
-    return [array]$IntermediateObj
+    return [array]$IntermediateObj.ToArray()
 }
 

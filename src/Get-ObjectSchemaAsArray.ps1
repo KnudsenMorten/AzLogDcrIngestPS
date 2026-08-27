@@ -151,31 +151,53 @@
                 [string[]]$ReturnType
          )
 
+        #--------------------------------------------------------------------------------------
+        # v1.7.0 (perf). The original inferred the schema by running
+        #     $Entry | ConvertTo-Json -Depth 100 | ConvertFrom-Json | Get-Member
+        # on EVERY row, and then testing each column with
+        #     $Column.Name -notin $SchemaArrayLogAnalyticsTableFormat.name
+        # which re-projects a growing array once per column - O(rows x cols^2). On a
+        # 6,339-row x 299-column upload that is ~567M comparisons plus 6,339 JSON round-trips.
+        #
+        # Two changes, no semantic difference:
+        #   1. a HashSet answers "have I seen this column?" in O(1) instead of rescanning;
+        #   2. the JSON round-trip - which is what infers the TYPE - now runs only for rows that
+        #      actually introduce a column not yet seen. Because the original took each column
+        #      type from the FIRST row that carried it and skipped it forever after, restricting
+        #      the round-trip to those same rows yields identical output. In practice only the
+        #      first row (plus any row with a genuinely new column) pays for it.
+        #--------------------------------------------------------------------------------------
 
-        $SchemaArrayLogAnalyticsTableFormat = @()
-        $SchemaArrayDcrFormat = @()
-        $SchemaArrayLogAnalyticsTableFormatHash = @()
-        $SchemaArrayDcrFormatHash = @()
+        $SchemaArrayLogAnalyticsTableFormat = New-Object 'System.Collections.Generic.List[object]'
+        $SchemaArrayDcrFormat               = New-Object 'System.Collections.Generic.List[object]'
 
-        # Requirement - Add TimeGenerated to array
-        $SchemaArrayLogAnalyticsTableFormatHash += @{
+        # OrdinalIgnoreCase matches the case-insensitive -notin comparison it replaces
+        $SeenColumnNames = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+
+        # Requirement - Add TimeGenerated to array (table format only, exactly as before)
+        [void]$SeenColumnNames.Add("TimeGenerated")
+        [void]$SchemaArrayLogAnalyticsTableFormat.Add( [PSCustomObject]@{
                                                      name        = "TimeGenerated"
                                                      type        = "datetime"
                                                      description = ""
-                                                    }
-
-        $SchemaArrayLogAnalyticsTableFormat += [PSCustomObject]@{
-                                                     name        = "TimeGenerated"
-                                                     type        = "datetime"
-                                                     description = ""
-                                               }
+                                               } )
 
         # Loop source object and build hash for table schema
         ForEach ($Entry in $Data)
             {
+                # cheap pre-check: does this row introduce anything new at all?
+                $EntryHasNewColumn = $false
+                ForEach ($Property in $Entry.PSObject.Properties)
+                    {
+                        If (-not $SeenColumnNames.Contains($Property.Name)) { $EntryHasNewColumn = $true; Break }
+                    }
+                If (-not $EntryHasNewColumn) { Continue }
+
                 $ObjColumns = $Entry | ConvertTo-Json -Depth 100 | ConvertFrom-Json | Get-Member -MemberType NoteProperty
                 ForEach ($Column in $ObjColumns)
                     {
+                        If ($SeenColumnNames.Contains($Column.Name)) { Continue }
+
                         $ObjDefinitionStr = $Column.Definition
                                 If ($ObjDefinitionStr -like "int*")                                            { $ObjType = "int" }
                             ElseIf ($ObjDefinitionStr -like "real*")                                           { $ObjType = "int" }
@@ -187,54 +209,35 @@
                             ElseIf ($ObjDefinitionStr -like "object*")                                         { $ObjType = "dynamic" }
                             ElseIf ($ObjDefinitionStr -like "System.Management.Automation.PSCustomObject*")    { $ObjType = "dynamic" }
 
-                        # build for array check
-                        $SchemaLogAnalyticsTableFormatObjHash = @{
+                        [void]$SeenColumnNames.Add($Column.Name)
+
+                        [void]$SchemaArrayLogAnalyticsTableFormat.Add( [PSCustomObject]@{
                                                                    name        = $Column.Name
                                                                    type        = $ObjType
                                                                    description = ""
-                                                                 }
+                                                                } )
 
-                        $SchemaLogAnalyticsTableFormatObj     = [PSCustomObject]@{
-                                                                   name        = $Column.Name
-                                                                   type        = $ObjType
-                                                                   description = ""
-                                                                }
-                        $SchemaDcrFormatObjHash = @{
+                        [void]$SchemaArrayDcrFormat.Add( [PSCustomObject]@{
                                                       name        = $Column.Name
                                                       type        = $ObjType
-                                                   }
-
-                        $SchemaDcrFormatObj     = [PSCustomObject]@{
-                                                      name        = $Column.Name
-                                                      type        = $ObjType
-                                                  }
-
-
-                        If ($Column.Name -notin $SchemaArrayLogAnalyticsTableFormat.name)
-                            {
-                                $SchemaArrayLogAnalyticsTableFormat       += $SchemaLogAnalyticsTableFormatObj
-                                $SchemaArrayDcrFormat                     += $SchemaDcrFormatObj
-
-                                $SchemaArrayLogAnalyticsTableFormatHash   += $SchemaLogAnalyticsTableFormatObjHash
-                                $SchemaArrayDcrFormatHash                 += $SchemaDcrFormatObjHash
-                            }
+                                                  } )
                     }
             }
 
             If ($ReturnType -eq "Table")
             {
                 # Return schema format for LogAnalytics table
-                Return $SchemaArrayLogAnalyticsTableFormat
+                Return $SchemaArrayLogAnalyticsTableFormat.ToArray()
             }
         ElseIf ($ReturnType -eq "DCR")
             {
                 # Return schema format for DCR
-                Return $SchemaArrayDcrFormat
+                Return $SchemaArrayDcrFormat.ToArray()
             }
         Else
             {
                 # Return schema format for DCR
-                Return $SchemaArrayDcrFormat
+                Return $SchemaArrayDcrFormat.ToArray()
             }
 }
 

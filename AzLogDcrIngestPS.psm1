@@ -125,15 +125,18 @@ Function Add-CollectionTimeToAllEntriesInArray {
 
     Write-Verbose "  Adding CollectionTime to all entries in array .... please wait !"
 
-    $IntermediateObj = @()
+    # v1.7.0 (perf) - was $IntermediateObj += $Entry, which reallocates and copies the entire
+    # array on every row (O(n^2)). List.Add is O(1). The objects handed back are the SAME
+    # instances Add-Member stamped, exactly as before.
+    $IntermediateObj = New-Object 'System.Collections.Generic.List[object]'
     ForEach ($Entry in $Data)
         {
             $Entry | Add-Member -MemberType NoteProperty -Name CollectionTime -Value $CollectionTime -Force | Out-Null
 
-            $IntermediateObj += $Entry
+            [void]$IntermediateObj.Add($Entry)
         }
 
-    return [array]$IntermediateObj
+    return [array]$IntermediateObj.ToArray()
 }
 
 
@@ -294,7 +297,9 @@ Function Add-ColumnDataToAllEntriesInArray {
          )
 
     Write-Verbose "  Adding columns to all entries in array .... please wait !"
-    $IntermediateObj = @()
+
+    # v1.7.0 (perf) - see Add-CollectionTimeToAllEntriesInArray: List.Add instead of += .
+    $IntermediateObj = New-Object 'System.Collections.Generic.List[object]'
     ForEach ($Entry in $Data)
         {
             If ($Column1Name)
@@ -312,9 +317,9 @@ Function Add-ColumnDataToAllEntriesInArray {
                     $Entry | Add-Member -MemberType NoteProperty -Name $Column3Name -Value $Column3Data -Force
                 }
 
-            $IntermediateObj += $Entry
+            [void]$IntermediateObj.Add($Entry)
         }
-    return [array]$IntermediateObj
+    return [array]$IntermediateObj.ToArray()
 }
 
 
@@ -501,44 +506,69 @@ Function Build-DataArrayToAlignWithSchema {
          )
 
     Write-Verbose "  Aligning source object structure with schema ... Please Wait !"
-    
+
     # Get schema
     $Schema = Get-ObjectSchemaAsArray -Data $Data -Verbose:$Verbose
 
     $DataCount  = ($Data | Measure-Object).Count
+    If ($DataCount -eq 0) { Return $Data }
 
-    $DataVariableQA = @()
+    #------------------------------------------------------------------------------------------
+    # v1.7.0 (perf). The original did, per row: one Add-Member -Force per schema column, then
+    # $DataVariableQA += $_ , then a Write-Progress. On a 6,339-row x 299-column upload that is
+    # ~1.9M cmdlet invocations, a quadratic array copy and 6,339 progress repaints - measured at
+    # 264 ms PER ROW on Windows PowerShell 5.1 (~28 minutes before a single byte is posted).
+    #
+    # Building one ordered hashtable per row and casting it to [pscustomobject] produces the same
+    # object for a fraction of the cost. Two behaviours from the original are deliberately kept:
+    #   1. a column present in the SCHEMA but missing from the row still materialises, as $null;
+    #   2. a column present on the ROW but not in the schema is NOT dropped. That case is real -
+    #      Get-ObjectSchemaAsArray excludes a literal "TimeGenerated" data column from the DCR
+    #      schema, and the original left such a column on the row untouched.
+    #------------------------------------------------------------------------------------------
 
-    $Data | ForEach-Object -Begin  {
-            $i = 0
-    } -Process {
-                    # get column names
-                  #  $ObjColumns = $_ | Get-Member -MemberType NoteProperty
+    $SchemaNames = New-Object 'System.Collections.Generic.List[string]'
+    ForEach ($Column in $Schema)
+        {
+            [void]$SchemaNames.Add([string]$Column.Name)
+        }
 
-                    # enum schema
-                    ForEach ($Column in $Schema)
-                        {
-                            # get column name & data
-                            $ColumnName = $Column.Name
-                            $ColumnData = $_.$ColumnName
+    $DataVariableQA = New-Object 'System.Collections.Generic.List[object]'
+    $ProgressStep   = [Math]::Max(1, [int]($DataCount / 20))
+    $i = 0
 
-                            $_ | Add-Member -MemberType NoteProperty -Name $ColumnName -Value $ColumnData -Force
-                        }
-                    $DataVariableQA += $_
+    ForEach ($Row in $Data)
+        {
+            $RowProperties = $Row.PSObject.Properties
+            $Aligned       = [ordered]@{}
 
-                    # Increment the $i counter variable which is used to create the progress bar.
-                    $i = $i+1
+            ForEach ($ColumnName in $SchemaNames)
+                {
+                    $Property = $RowProperties[$ColumnName]
+                    If ($null -ne $Property) { $Aligned[$ColumnName] = $Property.Value }
+                    Else                     { $Aligned[$ColumnName] = $null }
+                }
 
-                    # Determine the completion percentage
+            # carry over anything the row has that the schema does not list (see note 2 above)
+            ForEach ($Property in $RowProperties)
+                {
+                    If (-not $Aligned.Contains($Property.Name)) { $Aligned[$Property.Name] = $Property.Value }
+                }
+
+            [void]$DataVariableQA.Add([pscustomobject]$Aligned)
+
+            $i = $i + 1
+            If (($i % $ProgressStep) -eq 0)
+                {
                     $Completed = ($i/$DataCount) * 100
                     Write-Progress -Activity "Aligning source object structure with schema" -Status "Progress:" -PercentComplete $Completed
-            } -End {
-                
-                Write-Progress -Activity "Aligning source object structure with schema" -Status "Ready" -Completed
-                # return data from temporary array to original $Data
-                $Data = $DataVariableQA
-            }
-        Return $Data
+                }
+        }
+
+    Write-Progress -Activity "Aligning source object structure with schema" -Status "Ready" -Completed
+
+    $Data = $DataVariableQA.ToArray()
+    Return $Data
 }
 
 
@@ -4447,6 +4477,145 @@ function Get-AzLogIngestBatchEndIndex {
 
 
 
+function Get-AzLogIngestCachedRowBytes
+{
+<#
+    .SYNOPSIS
+    Returns one row's UTF-8 JSON bytes from the cache, re-serializing it if it was not retained.
+
+    .DESCRIPTION
+    New-AzLogIngestRowJsonCache retains every row's bytes only while the total stays within a
+    ceiling it can always afford. Past that it keeps just the lengths -- which is all the batch
+    binary search needs -- and clears the byte arrays, because holding them scaled to ~1.2 GB on a
+    real 153,622-row dataset and exhausted memory before a single batch was sent.
+
+    This returns the retained bytes when present, and otherwise rebuilds that one row with the
+    same serialization the cache used, so the assembled payload is byte-for-byte identical either
+    way. Only rows in the batch being sent are ever rebuilt.
+
+    .PARAMETER Cache
+    Cache object from New-AzLogIngestRowJsonCache.
+
+    .PARAMETER Index
+    Zero-based row index.
+
+    .OUTPUTS
+    [byte[]]
+#>
+    [CmdletBinding()]
+    [OutputType([byte[]])]
+    param(
+        [Parameter(Mandatory)] $Cache,
+        [Parameter(Mandatory)] [int]$Index
+    )
+
+    if ($null -ne $Cache.RowUtf8Bytes) {
+        return $Cache.RowUtf8Bytes[$Index]
+    }
+
+    $rowJson = ConvertTo-Json -Depth 100 -InputObject $Cache.SourceData[$Index] -Compress
+    return [System.Text.Encoding]::UTF8.GetBytes($rowJson)
+}
+
+
+
+function Get-AzLogIngestEstimatedPayloadBytes
+{
+<#
+    .SYNOPSIS
+    Estimates a dataset's serialized size from a small sample, without serializing all of it.
+
+    .DESCRIPTION
+    The bulk ("fast path") send serializes the WHOLE array to decide whether it fits the 1 MB
+    transaction limit. That decision is cheap at ordinary sizes and fatal at large ones: a customer
+    ingest of 153,622 rows x 291 columns died with
+
+        ConvertTo-Json : Insufficient memory to continue the execution of the program.
+
+    -- while merely ASKING whether the data fits. The whole run was then absent from Log Analytics
+    even though the caller reported success. Measured on that dataset: 8,259 bytes/row
+    uncompressed, so the string alone is ~1.2 GB before its UTF-8 byte copy and ConvertTo-Json's
+    own buffers.
+
+    Two different questions need two different numbers, and conflating them is what made the
+    original check dangerous:
+
+      * RawBytes      - what the bulk serialization would ALLOCATE. This is the memory risk.
+      * PayloadBytes  - what the 1 MB limit actually measures (gzip when compression is on).
+
+    A dataset can be tiny compressed and enormous raw: the same customer data compresses to 3.6%,
+    so 43 MB of payload comes from 1.2 GB of string.
+
+    Deliberately conservative in the safe direction: gzip is MORE efficient over a larger window
+    than the sample, so PayloadBytes is over-stated. The estimate errs toward "skip the fast path",
+    which costs a little speed and never costs data.
+
+    .PARAMETER Data
+    The source data array.
+
+    .PARAMETER SampleRows
+    Rows to sample. Bounded by the dataset size.
+
+    .PARAMETER EnableCompression
+    Match the caller's compression setting so PayloadBytes measures what the limit measures.
+
+    .OUTPUTS
+    [PSCustomObject] with RawBytes, PayloadBytes, BytesPerRow, SampledRows, TotalRows.
+#>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [array]$Data,
+
+        [int]$SampleRows = 200,
+
+        [switch]$EnableCompression
+    )
+
+    $total = @($Data).Count
+    if ($total -le 0) {
+        return [PSCustomObject]@{
+            RawBytes = [double]0; PayloadBytes = [double]0
+            BytesPerRow = [double]0; SampledRows = 0; TotalRows = 0
+        }
+    }
+
+    $n = [int]$SampleRows
+    if ($n -lt 1)      { $n = 1 }
+    if ($n -gt $total) { $n = $total }
+
+    # Index explicitly rather than slicing with [0..($n-1)]: on a single-element array the range
+    # operator yields a scalar in Windows PowerShell 5.1, and ConvertTo-Json would then emit an
+    # object instead of an array -- mis-measuring the per-row cost of the smallest datasets.
+    $sample = New-Object 'System.Collections.Generic.List[object]'
+    for ($i = 0; $i -lt $n; $i++) { [void]$sample.Add($Data[$i]) }
+
+    $sampleJson    = ConvertTo-Json -Depth 100 -InputObject @($sample.ToArray()) -Compress
+    $sampleRawLen  = [System.Text.Encoding]::UTF8.GetByteCount($sampleJson)
+    $rawPerRow     = [double]$sampleRawLen / [double]$n
+
+    if ($EnableCompression) {
+        $sampleBytes      = [System.Text.Encoding]::UTF8.GetBytes($sampleJson)
+        $samplePayload    = Compress-GzipBytes -InputBytes $sampleBytes
+        $payloadPerRow    = [double]$samplePayload.Length / [double]$n
+    }
+    else {
+        $payloadPerRow = $rawPerRow
+    }
+
+    [PSCustomObject]@{
+        RawBytes     = $rawPerRow     * [double]$total
+        PayloadBytes = $payloadPerRow * [double]$total
+        BytesPerRow  = $rawPerRow
+        SampledRows  = $n
+        TotalRows    = $total
+    }
+}
+
+
+
 function Get-AzLogIngestPayloadBytesFromCache {
 <#
     .SYNOPSIS
@@ -4506,7 +4675,7 @@ function Get-AzLogIngestPayloadBytesFromCache {
                     if ($i -gt $StartIndex) {
                         $gzipStream.WriteByte($comma)
                     }
-                    $rowBytes = $Cache.RowUtf8Bytes[$i]
+                    $rowBytes = Get-AzLogIngestCachedRowBytes -Cache $Cache -Index $i
                     $gzipStream.Write($rowBytes, 0, $rowBytes.Length)
                 }
                 $gzipStream.WriteByte($bracketClose)
@@ -4536,7 +4705,7 @@ function Get-AzLogIngestPayloadBytesFromCache {
         if ($i -gt $StartIndex) {
             $result[$pos++] = $comma
         }
-        $rowBytes = $Cache.RowUtf8Bytes[$i]
+        $rowBytes = Get-AzLogIngestCachedRowBytes -Cache $Cache -Index $i
         [System.Buffer]::BlockCopy($rowBytes, 0, $result, $pos, $rowBytes.Length)
         $pos += $rowBytes.Length
     }
@@ -4888,31 +5057,53 @@ Function Get-ObjectSchemaAsArray {
                 [string[]]$ReturnType
          )
 
+        #--------------------------------------------------------------------------------------
+        # v1.7.0 (perf). The original inferred the schema by running
+        #     $Entry | ConvertTo-Json -Depth 100 | ConvertFrom-Json | Get-Member
+        # on EVERY row, and then testing each column with
+        #     $Column.Name -notin $SchemaArrayLogAnalyticsTableFormat.name
+        # which re-projects a growing array once per column - O(rows x cols^2). On a
+        # 6,339-row x 299-column upload that is ~567M comparisons plus 6,339 JSON round-trips.
+        #
+        # Two changes, no semantic difference:
+        #   1. a HashSet answers "have I seen this column?" in O(1) instead of rescanning;
+        #   2. the JSON round-trip - which is what infers the TYPE - now runs only for rows that
+        #      actually introduce a column not yet seen. Because the original took each column
+        #      type from the FIRST row that carried it and skipped it forever after, restricting
+        #      the round-trip to those same rows yields identical output. In practice only the
+        #      first row (plus any row with a genuinely new column) pays for it.
+        #--------------------------------------------------------------------------------------
 
-        $SchemaArrayLogAnalyticsTableFormat = @()
-        $SchemaArrayDcrFormat = @()
-        $SchemaArrayLogAnalyticsTableFormatHash = @()
-        $SchemaArrayDcrFormatHash = @()
+        $SchemaArrayLogAnalyticsTableFormat = New-Object 'System.Collections.Generic.List[object]'
+        $SchemaArrayDcrFormat               = New-Object 'System.Collections.Generic.List[object]'
 
-        # Requirement - Add TimeGenerated to array
-        $SchemaArrayLogAnalyticsTableFormatHash += @{
+        # OrdinalIgnoreCase matches the case-insensitive -notin comparison it replaces
+        $SeenColumnNames = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+
+        # Requirement - Add TimeGenerated to array (table format only, exactly as before)
+        [void]$SeenColumnNames.Add("TimeGenerated")
+        [void]$SchemaArrayLogAnalyticsTableFormat.Add( [PSCustomObject]@{
                                                      name        = "TimeGenerated"
                                                      type        = "datetime"
                                                      description = ""
-                                                    }
-
-        $SchemaArrayLogAnalyticsTableFormat += [PSCustomObject]@{
-                                                     name        = "TimeGenerated"
-                                                     type        = "datetime"
-                                                     description = ""
-                                               }
+                                               } )
 
         # Loop source object and build hash for table schema
         ForEach ($Entry in $Data)
             {
+                # cheap pre-check: does this row introduce anything new at all?
+                $EntryHasNewColumn = $false
+                ForEach ($Property in $Entry.PSObject.Properties)
+                    {
+                        If (-not $SeenColumnNames.Contains($Property.Name)) { $EntryHasNewColumn = $true; Break }
+                    }
+                If (-not $EntryHasNewColumn) { Continue }
+
                 $ObjColumns = $Entry | ConvertTo-Json -Depth 100 | ConvertFrom-Json | Get-Member -MemberType NoteProperty
                 ForEach ($Column in $ObjColumns)
                     {
+                        If ($SeenColumnNames.Contains($Column.Name)) { Continue }
+
                         $ObjDefinitionStr = $Column.Definition
                                 If ($ObjDefinitionStr -like "int*")                                            { $ObjType = "int" }
                             ElseIf ($ObjDefinitionStr -like "real*")                                           { $ObjType = "int" }
@@ -4924,54 +5115,35 @@ Function Get-ObjectSchemaAsArray {
                             ElseIf ($ObjDefinitionStr -like "object*")                                         { $ObjType = "dynamic" }
                             ElseIf ($ObjDefinitionStr -like "System.Management.Automation.PSCustomObject*")    { $ObjType = "dynamic" }
 
-                        # build for array check
-                        $SchemaLogAnalyticsTableFormatObjHash = @{
+                        [void]$SeenColumnNames.Add($Column.Name)
+
+                        [void]$SchemaArrayLogAnalyticsTableFormat.Add( [PSCustomObject]@{
                                                                    name        = $Column.Name
                                                                    type        = $ObjType
                                                                    description = ""
-                                                                 }
+                                                                } )
 
-                        $SchemaLogAnalyticsTableFormatObj     = [PSCustomObject]@{
-                                                                   name        = $Column.Name
-                                                                   type        = $ObjType
-                                                                   description = ""
-                                                                }
-                        $SchemaDcrFormatObjHash = @{
+                        [void]$SchemaArrayDcrFormat.Add( [PSCustomObject]@{
                                                       name        = $Column.Name
                                                       type        = $ObjType
-                                                   }
-
-                        $SchemaDcrFormatObj     = [PSCustomObject]@{
-                                                      name        = $Column.Name
-                                                      type        = $ObjType
-                                                  }
-
-
-                        If ($Column.Name -notin $SchemaArrayLogAnalyticsTableFormat.name)
-                            {
-                                $SchemaArrayLogAnalyticsTableFormat       += $SchemaLogAnalyticsTableFormatObj
-                                $SchemaArrayDcrFormat                     += $SchemaDcrFormatObj
-
-                                $SchemaArrayLogAnalyticsTableFormatHash   += $SchemaLogAnalyticsTableFormatObjHash
-                                $SchemaArrayDcrFormatHash                 += $SchemaDcrFormatObjHash
-                            }
+                                                  } )
                     }
             }
 
             If ($ReturnType -eq "Table")
             {
                 # Return schema format for LogAnalytics table
-                Return $SchemaArrayLogAnalyticsTableFormat
+                Return $SchemaArrayLogAnalyticsTableFormat.ToArray()
             }
         ElseIf ($ReturnType -eq "DCR")
             {
                 # Return schema format for DCR
-                Return $SchemaArrayDcrFormat
+                Return $SchemaArrayDcrFormat.ToArray()
             }
         Else
             {
                 # Return schema format for DCR
-                Return $SchemaArrayDcrFormat
+                Return $SchemaArrayDcrFormat.ToArray()
             }
 }
 
@@ -5425,31 +5597,37 @@ Function Get-ObjectSchemaAsHash {
                 [string[]]$ReturnType
          )
 
+        # v1.7.0 (perf) - same rewrite as Get-ObjectSchemaAsArray; see the note there.
+        # This function EMITS its result to the pipeline rather than returning it - preserved.
 
-        $SchemaArrayLogAnalyticsTableFormat = @()
-        $SchemaArrayDcrFormat = @()
-        $SchemaArrayLogAnalyticsTableFormatHash = @()
-        $SchemaArrayDcrFormatHash = @()
+        $SchemaArrayLogAnalyticsTableFormatHash = New-Object 'System.Collections.Generic.List[object]'
+        $SchemaArrayDcrFormatHash               = New-Object 'System.Collections.Generic.List[object]'
 
-        # Requirement - Add TimeGenerated to array
-        $SchemaArrayLogAnalyticsTableFormatHash += @{
+        $SeenColumnNames = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+
+        # Requirement - Add TimeGenerated to array (table format only, exactly as before)
+        [void]$SeenColumnNames.Add("TimeGenerated")
+        [void]$SchemaArrayLogAnalyticsTableFormatHash.Add( @{
                                                      name        = "TimeGenerated"
                                                      type        = "datetime"
                                                      description = ""
-                                                    }
-
-        $SchemaArrayLogAnalyticsTableFormat += [PSCustomObject]@{
-                                                     name        = "TimeGenerated"
-                                                     type        = "datetime"
-                                                     description = ""
-                                               }
+                                                    } )
 
         # Loop source object and build hash for table schema
         ForEach ($Entry in $Data)
             {
+                $EntryHasNewColumn = $false
+                ForEach ($Property in $Entry.PSObject.Properties)
+                    {
+                        If (-not $SeenColumnNames.Contains($Property.Name)) { $EntryHasNewColumn = $true; Break }
+                    }
+                If (-not $EntryHasNewColumn) { Continue }
+
                 $ObjColumns = $Entry | ConvertTo-Json -Depth 100 | ConvertFrom-Json | Get-Member -MemberType NoteProperty
                 ForEach ($Column in $ObjColumns)
                     {
+                        If ($SeenColumnNames.Contains($Column.Name)) { Continue }
+
                         $ObjDefinitionStr = $Column.Definition
                                 If ($ObjDefinitionStr -like "int*")                                            { $ObjType = "int" }
                             ElseIf ($ObjDefinitionStr -like "real*")                                           { $ObjType = "int" }
@@ -5461,51 +5639,32 @@ Function Get-ObjectSchemaAsHash {
                             ElseIf ($ObjDefinitionStr -like "object*")                                         { $ObjType = "dynamic" }
                             ElseIf ($ObjDefinitionStr -like "System.Management.Automation.PSCustomObject*")    { $ObjType = "dynamic" }
 
-                        # build for array check
-                        $SchemaLogAnalyticsTableFormatObjHash = @{
+                        [void]$SeenColumnNames.Add($Column.Name)
+
+                        [void]$SchemaArrayLogAnalyticsTableFormatHash.Add( @{
                                                                    name        = $Column.Name
                                                                    type        = $ObjType
                                                                    description = ""
-                                                                 }
+                                                                 } )
 
-                        $SchemaLogAnalyticsTableFormatObj     = [PSCustomObject]@{
-                                                                   name        = $Column.Name
-                                                                   type        = $ObjType
-                                                                   description = ""
-                                                                }
-                        $SchemaDcrFormatObjHash = @{
+                        [void]$SchemaArrayDcrFormatHash.Add( @{
                                                       name        = $Column.Name
                                                       type        = $ObjType
-                                                   }
-
-                        $SchemaDcrFormatObj     = [PSCustomObject]@{
-                                                      name        = $Column.Name
-                                                      type        = $ObjType
-                                                  }
-
-
-                        If ($Column.Name -notin $SchemaArrayLogAnalyticsTableFormat.name)
-                            {
-                                $SchemaArrayLogAnalyticsTableFormat       += $SchemaLogAnalyticsTableFormatObj
-                                $SchemaArrayDcrFormat                     += $SchemaDcrFormatObj
-
-                                $SchemaArrayLogAnalyticsTableFormatHash   += $SchemaLogAnalyticsTableFormatObjHash
-                                $SchemaArrayDcrFormatHash                 += $SchemaDcrFormatObjHash
-                            }
+                                                   } )
                     }
             }
 
             If ($ReturnType -eq "Table")
             {
                 # Return schema format for Table
-                $SchemaArrayLogAnalyticsTableFormatHash
+                $SchemaArrayLogAnalyticsTableFormatHash.ToArray()
             }
         ElseIf ($ReturnType -eq "DCR")
             {
                 # Return schema format for DCR
-                $SchemaArrayDcrFormatHash
+                $SchemaArrayDcrFormatHash.ToArray()
             }
-        
+
         Return
 }
 
@@ -5543,6 +5702,20 @@ function New-AzLogIngestRowJsonCache {
     )
 
     $totalRows = $Data.Count
+
+    # ?? RETAINING EVERY ROW'S BYTES IS WHAT MAKES THIS CACHE UNUSABLE AT SCALE.
+    # RowUtf8Bytes held one byte[] per row: at 153,622 rows x 291 columns that is ~1.2 GB
+    # (8,259 bytes/row, measured on real customer data), and it is all built BEFORE the first
+    # batch is sent. The binary search never needs it -- it needs RowByteLengths and
+    # CumulativePayloadSize, which together cost about 2 MB at the same row count.
+    # The bytes serve only to ASSEMBLE the single batch being sent, so past a size we can always
+    # afford to hold, stop retaining and let the assembler re-serialize that batch's rows.
+    # Cost: those rows are serialized twice. Benefit: the memory ceiling stops scaling with the
+    # dataset. Smaller datasets keep the retained bytes and behave exactly as before -- and this
+    # cache is only ever built once the payload already exceeds 1 MB.
+    $retainCeilingBytes = 64MB
+    $retainRowBytes     = $true
+
     $rowUtf8Bytes   = New-Object 'System.Collections.Generic.List[byte[]]'
     $rowByteLengths = New-Object 'int[]' $totalRows
 
@@ -5556,7 +5729,18 @@ function New-AzLogIngestRowJsonCache {
     for ($i = 0; $i -lt $totalRows; $i++) {
         $rowJson  = ConvertTo-Json -Depth 100 -InputObject $Data[$i] -Compress
         $rowBytes = [System.Text.Encoding]::UTF8.GetBytes($rowJson)
-        $null = $rowUtf8Bytes.Add($rowBytes)
+        if ($retainRowBytes) {
+            if (($runningSum + $rowBytes.Length) -gt $retainCeilingBytes) {
+                # Crossed the ceiling: stop retaining and release what is already held, so the
+                # peak is bounded by the ceiling instead of by the size of the data.
+                $retainRowBytes = $false
+                $rowUtf8Bytes.Clear()
+                $rowUtf8Bytes = $null
+            }
+            else {
+                $null = $rowUtf8Bytes.Add($rowBytes)
+            }
+        }
         $rowByteLengths[$i] = $rowBytes.Length
         $runningSum += $rowBytes.Length
         # Payload size for rows [0..i] = 2 (brackets) + runningSum + i (commas)
@@ -5573,10 +5757,12 @@ function New-AzLogIngestRowJsonCache {
     Write-Progress -Activity "Preparing data for upload" -Id 1 -Completed
 
     return [pscustomobject]@{
+        # $null when the dataset was too large to hold; the assembler then uses SourceData.
         RowUtf8Bytes          = $rowUtf8Bytes
         RowByteLengths        = $rowByteLengths
         CumulativePayloadSize = $cumulativePayloadSize
         Count                 = $totalRows
+        SourceData            = $Data
     }
 }
 
@@ -5835,7 +6021,36 @@ function Post-AzLogAnalyticsLogIngestCustomLogDcrDce {
     # Serialize the entire array at once (much faster than per-row) and
     # check if it fits. For most tables this succeeds and skips all the
     # per-row cache/cumulative-sum machinery entirely.
+    #
+    # GUARDED BY AN ESTIMATE, because serializing the whole array just to ASK whether it fits is
+    # fatal at scale: 153,622 rows x 291 columns is ~1.2 GB of JSON string (8,259 bytes/row
+    # measured), and ConvertTo-Json exhausted memory before the question could be answered. The
+    # entire ingest was lost while the caller reported success.
+    #
+    # Two conditions, because there are two different risks and they do not move together:
+    #   * PayloadBytes  -- can it fit at all? This is what the 1 MB limit measures.
+    #   * RawBytes      -- is BUILDING it safe? This is the allocation, and it is the memory risk.
+    # The same customer data compresses to 3.6%, so a payload of 43 MB comes from 1.2 GB of string:
+    # judging only by the compressed size would have walked straight back into the same failure.
+    #
+    # The raw ceiling is an allocation we can always afford on any supported host, not a row count
+    # -- what matters is that building the estimate can never be the thing that kills the process.
+    $fastPathViable = $false
     if (-not $BatchAmount) {
+        $sizeEstimate   = Get-AzLogIngestEstimatedPayloadBytes -Data $Data `
+                              -EnableCompression:($EnableCompression -eq $true)
+        $rawCeiling     = 64MB
+        $fastPathViable = ($sizeEstimate.PayloadBytes -le $maxPayloadBytes) -and
+                          ($sizeEstimate.RawBytes     -le $rawCeiling)
+
+        if (-not $fastPathViable) {
+            Write-Verbose ("  Bulk send skipped ({0:N0} rows sampled {1:N0}): payload ~{2:N0} B vs {3:N0} B limit, raw ~{4:N1} MB vs {5:N0} MB ceiling. Sizing batches instead." -f `
+                           $sizeEstimate.TotalRows, $sizeEstimate.SampledRows, $sizeEstimate.PayloadBytes, `
+                           $maxPayloadBytes, ($sizeEstimate.RawBytes / 1MB), ($rawCeiling / 1MB))
+        }
+    }
+
+    if ($fastPathViable) {
         Write-Progress -Activity "Preparing $totalDataLines rows for upload to [ $($TableName)_CL ]" `
                        -Status "Serializing data ..." -PercentComplete 20 -Id 2
 
@@ -6900,151 +7115,132 @@ Function ValidateFix-AzLogAnalyticsTableSchemaColumnNames {
 
     Write-Verbose "  Validating schema structure of source data ... Please Wait !"
 
-    #-----------------------------------------------------------------------    
-    # Initial check
+    #----------------------------------------------------------------------------------------------
+    # v1.7.0 (perf). A column NAME is a name - asking whether it is legal a second time cannot
+    # produce a different answer. The original re-ran all seven checks for every column of every
+    # row (rows x cols questions to establish at most `cols` distinct facts) and then accumulated
+    # the rebuilt rows with $DataVariableQA += $_ , which copies the whole array per row.
+    #
+    # v1.7.0 (BUG FIX - please read, this one changes DATA, not just speed).
+    # The rebuild branches for hyphen / colon / period / leading-underscore / whitespace / >45-char
+    # names read their value as   $ColumnData = $Entry.$Column
+    # where $Entry is a leftover from the DETECTION loop above (it holds the LAST row) and $Column
+    # is a Get-Member MemberDefinition object rather than a name string. Both are wrong, so the
+    # renamed column was created with a $null value and the real data was silently discarded.
+    # Only the prohibited-name branch (Type, Id, TenantId, Date, ...) used $_.$ColumnName and so
+    # only that branch preserved data. Observed on 1.6.8:
+    #     Good=g1  HasHyphen=<NULL>  HasPeriod=<NULL>  Type_=T1  Leading=<NULL>
+    # Every renamed column now carries its own row value.
+    #
+    # Column ORDER of the renamed columns may differ from 1.6.8. That is intentional. 1.6.8's order
+    # was an artefact of enumerating a Get-Member snapshot (sorted, punctuation-weighted) while
+    # simultaneously appending and removing properties on the live object - it was not a designed
+    # order and is not reproducible by inspection. Key order carries no meaning to the Log Ingestion
+    # API or the resulting Log Analytics table, so 1.7.0 uses the row's own declaration order:
+    # untouched columns keep their position, renamed columns are appended in the order they appear.
+    #----------------------------------------------------------------------------------------------
+
+    # ---- pass 1: decide each DISTINCT column name once ----
+    $CheckedColumnNames = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $RenameMap   = @{}          # bad name -> replacement name (case-insensitive, PowerShell default)
     $IssuesFound = $false
 
-        # loop through data
-        ForEach ($Entry in $Data)
-            {
-                $ObjColumns = $Entry | Get-Member -MemberType NoteProperty
-
-                ForEach ($Column in $ObjColumns)
-                    {
-                        # get column name
-                        $ColumnName = $Column.Name
+    ForEach ($Entry in $Data)
+        {
+            ForEach ($Property in $Entry.PSObject.Properties)
+                {
+                    $ColumnName = $Property.Name
+                    If (-not $CheckedColumnNames.Add($ColumnName)) { Continue }
 
                         If ($ColumnName -in $ProhibitedColumnNames)   # prohibited column names
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName + "_"
                                 Write-Verbose "  ISSUE - Column name is prohibited [ $($ColumnName) ]"
-                            }
-
-                        ElseIf ($ColumnName -like "_*")   # remove any leading underscores - column in DCR/LA must start with a character
-                            {
-                                $IssuesFound = $true
-                                Write-Verbose "  ISSUE - Column name must start with character [ $($ColumnName) ]"
-                            }
-                        ElseIf ($ColumnName -like "*-*")   # includes - (hyphen)
-                            {
-                                $IssuesFound = $true
-                                Write-Verbose "  ISSUE - Column name include - (hyphen) - must be removed [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName -like "*:*")   # includes : (semicolon)
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Replace(":","")
                                 Write-Verbose "  ISSUE - Column name include : (semicolon) - must be removed [ $($ColumnName) ]"
+                            }
+                        ElseIf ($ColumnName -like "*-*")   # includes - (hyphen)
+                            {
+                                $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Replace("-","")
+                                Write-Verbose "  ISSUE - Column name include - (hyphen) - must be removed [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName -like "*.*")   # includes . (period)
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Replace(".","")
                                 Write-Verbose "  ISSUE - Column name include . (period) - must be removed [ $($ColumnName) ]"
+                            }
+                        ElseIf ($ColumnName -like "_*")   # remove any leading underscores - column in DCR/LA must start with a character
+                            {
+                                $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.TrimStart("_")
+                                Write-Verbose "  ISSUE - Column name must start with character [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName -like "* *")   # includes whitespace " "
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.TrimStart()
                                 Write-Verbose "  ISSUE - Column name include whitespace - must be removed [ $($ColumnName) ]"
                             }
                         ElseIf ($ColumnName.Length -gt 45)   # trim the length to maximum 45 characters
                             {
                                 $IssuesFound = $true
+                                $RenameMap[$ColumnName] = $ColumnName.Substring(0,45)
                                 Write-Verbose "  ISSUE - Column length is greater than 45 characters (trimming column name is neccessary)  [ $($ColumnName) ]"
                             }
-                    }
-            }
-
-    If ($IssuesFound)
-        {
-            Write-Verbose "  Issues found .... fixing schema structure of source data ... Please Wait !"
-
-            $DataCount  = ($Data | Measure-Object).Count
-
-            $DataVariableQA = @()
-
-            $Data | ForEach-Object -Begin  {
-                    $i = 0
-            } -Process {
-
-                    # get column names
-                    $ObjColumns = $_ | Get-Member -MemberType NoteProperty
-
-                    ForEach ($Column in $ObjColumns)
-                        {
-                            # get column name
-                            $ColumnName = $Column.Name
-
-                            If ($ColumnName -in $ProhibitedColumnNames)   # phohibited column names
-                                {
-                                    $UpdColumn  = $ColumnName + "_"
-                                    $ColumnData = $_.$ColumnName
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "*:*")   # remove any : (semicolon)
-                                {
-                                    $UpdColumn = $ColumnName.Replace(":","")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "*-*")   # remove any - (hyphen)
-                                {
-                                    $UpdColumn = $ColumnName.Replace("-","")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "*.*")   # remove any . (period)
-                                {
-                                    $UpdColumn = $ColumnName.Replace(".","")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "_*")   # remove any leading underscores - column in DCR/LA must start with a character
-                                {
-                                    $UpdColumn = $ColumnName.TrimStart("_")
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName -like "* *")   # remove any whitespaces
-                                {
-                                    $UpdColumn = $ColumnName.TrimStart()
-                                    $ColumnData = $Entry.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            ElseIf ($ColumnName.Length -gt 45)   # trim the length to maximum 45 characters
-                                {
-                                    $UpdColumn = $ColumnName.Substring(0,45)
-                                    $ColumnData = $_.$Column
-                                    $_ | Add-Member -MemberType NoteProperty -Name $UpdColumn -Value $ColumnData -Force
-                                    $_.PSObject.Properties.Remove($ColumnName)
-                                }
-                            Else    # write column name and data (OK)
-                                {
-                                    $ColumnData = $_.$ColumnName
-                                    $_ | Add-Member -MemberType NoteProperty -Name $ColumnName -Value $ColumnData -Force
-                                }
-                        }
-                    $DataVariableQA += $_
-
-                    # Increment the $i counter variable which is used to create the progress bar.
-                    $i = $i+1
-
-                    # Determine the completion percentage
-                    $Completed = ($i/$DataCount) * 100
-                    Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Progress:" -PercentComplete $Completed
-            } -End {
-                $Data = $DataVariableQA
-                Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Ready" -Completed
-            }
+                }
         }
-    Else
+
+    If (-not $IssuesFound)
         {
             Write-Verbose "  SUCCESS - No issues found in schema structure"
+            Return [array]$Data
         }
+
+    # ---- pass 2: rebuild only when there is something to fix ----
+    Write-Verbose "  Issues found .... fixing schema structure of source data ... Please Wait !"
+
+    $DataCount      = ($Data | Measure-Object).Count
+    $DataVariableQA = New-Object 'System.Collections.Generic.List[object]'
+    $ProgressStep   = [Math]::Max(1, [int]($DataCount / 20))
+    $i = 0
+
+    ForEach ($Row in $Data)
+        {
+            $Rebuilt = [ordered]@{}
+            $Renamed = New-Object 'System.Collections.Generic.List[object]'
+
+            ForEach ($Property in $Row.PSObject.Properties)
+                {
+                    If ($RenameMap.ContainsKey($Property.Name)) { [void]$Renamed.Add($Property) }
+                    Else                                        { $Rebuilt[$Property.Name] = $Property.Value }
+                }
+
+            # renamed columns land at the end, in the order the row declared them
+            ForEach ($Property in $Renamed)
+                {
+                    $Rebuilt[[string]$RenameMap[$Property.Name]] = $Property.Value
+                }
+
+            [void]$DataVariableQA.Add([pscustomobject]$Rebuilt)
+
+            $i = $i + 1
+            If (($i % $ProgressStep) -eq 0)
+                {
+                    $Completed = ($i/$DataCount) * 100
+                    Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Progress:" -PercentComplete $Completed
+                }
+        }
+
+    Write-Progress -Activity "Validating/fixing schema structure of source object" -Status "Ready" -Completed
+
+    $Data = $DataVariableQA.ToArray()
     Return [array]$Data
 }
 

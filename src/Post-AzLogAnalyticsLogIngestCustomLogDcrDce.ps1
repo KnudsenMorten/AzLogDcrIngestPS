@@ -97,7 +97,36 @@
     # Serialize the entire array at once (much faster than per-row) and
     # check if it fits. For most tables this succeeds and skips all the
     # per-row cache/cumulative-sum machinery entirely.
+    #
+    # GUARDED BY AN ESTIMATE, because serializing the whole array just to ASK whether it fits is
+    # fatal at scale: 153,622 rows x 291 columns is ~1.2 GB of JSON string (8,259 bytes/row
+    # measured), and ConvertTo-Json exhausted memory before the question could be answered. The
+    # entire ingest was lost while the caller reported success.
+    #
+    # Two conditions, because there are two different risks and they do not move together:
+    #   * PayloadBytes  -- can it fit at all? This is what the 1 MB limit measures.
+    #   * RawBytes      -- is BUILDING it safe? This is the allocation, and it is the memory risk.
+    # The same customer data compresses to 3.6%, so a payload of 43 MB comes from 1.2 GB of string:
+    # judging only by the compressed size would have walked straight back into the same failure.
+    #
+    # The raw ceiling is an allocation we can always afford on any supported host, not a row count
+    # -- what matters is that building the estimate can never be the thing that kills the process.
+    $fastPathViable = $false
     if (-not $BatchAmount) {
+        $sizeEstimate   = Get-AzLogIngestEstimatedPayloadBytes -Data $Data `
+                              -EnableCompression:($EnableCompression -eq $true)
+        $rawCeiling     = 64MB
+        $fastPathViable = ($sizeEstimate.PayloadBytes -le $maxPayloadBytes) -and
+                          ($sizeEstimate.RawBytes     -le $rawCeiling)
+
+        if (-not $fastPathViable) {
+            Write-Verbose ("  Bulk send skipped ({0:N0} rows sampled {1:N0}): payload ~{2:N0} B vs {3:N0} B limit, raw ~{4:N1} MB vs {5:N0} MB ceiling. Sizing batches instead." -f `
+                           $sizeEstimate.TotalRows, $sizeEstimate.SampledRows, $sizeEstimate.PayloadBytes, `
+                           $maxPayloadBytes, ($sizeEstimate.RawBytes / 1MB), ($rawCeiling / 1MB))
+        }
+    }
+
+    if ($fastPathViable) {
         Write-Progress -Activity "Preparing $totalDataLines rows for upload to [ $($TableName)_CL ]" `
                        -Status "Serializing data ..." -PercentComplete 20 -Id 2
 
